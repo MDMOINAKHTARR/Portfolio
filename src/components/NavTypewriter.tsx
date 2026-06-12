@@ -1,5 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { audioEngine } from '../lib/audio';
+
+// Module-level cache: once a label has finished typing, store the result so
+// subsequent mounts skip the animation loop entirely (no more 5x concurrent timers).
+const completedLabels = new Set<string>();
 
 export function NavTypewriter({ 
   text, 
@@ -10,45 +14,64 @@ export function NavTypewriter({
   delay?: number; 
   speed?: number;
 }) {
-  const [displayedText, setDisplayedText] = useState("");
+  const alreadyDone = completedLabels.has(text);
+  const [displayedText, setDisplayedText] = useState(alreadyDone ? text : "");
   const [isTyping, setIsTyping] = useState(false);
+  const rafRef = useRef<number>(0);
 
   useEffect(() => {
+    // Skip animation if this label was already typed before
+    if (completedLabels.has(text)) {
+      setDisplayedText(text);
+      return;
+    }
+
     let timeout: ReturnType<typeof setTimeout>;
     let index = 0;
     let isActive = true;
-    
-    setDisplayedText("");
-    
-    const typeNext = () => {
-      if (!isActive) return;
-      
-      if (index < text.length) {
-        setDisplayedText(text.slice(0, index + 1));
-        setIsTyping(true);
-        
-        if (text[index] !== ' ' && !audioEngine.isMuted) {
-          audioEngine.playClack(); // Play soft clack for typing
-        }
+    let lastTime = 0;
+    let nextDelay = delay > 0 ? delay : 0;
 
+    setDisplayedText("");
+
+    const step = (timestamp: number) => {
+      if (!isActive) return;
+      if (timestamp - lastTime < (nextDelay || Math.max(20, speed * (0.7 + Math.random() * 0.6)))) {
+        rafRef.current = requestAnimationFrame(step);
+        return;
+      }
+      lastTime = timestamp;
+      nextDelay = 0;
+
+      if (index < text.length) {
+        const slice = text.slice(0, index + 1);
+        setDisplayedText(slice);
+        setIsTyping(true);
+        if (text[index] !== ' ' && !audioEngine.isMuted) {
+          audioEngine.playClack();
+        }
         index++;
-        
-        const randomSpeed = Math.max(20, speed * (0.7 + Math.random() * 0.6));
-        timeout = setTimeout(typeNext, randomSpeed);
+        rafRef.current = requestAnimationFrame(step);
       } else {
         setIsTyping(false);
+        completedLabels.add(text);
       }
     };
-    
+
+    const startFn = () => {
+      rafRef.current = requestAnimationFrame(step);
+    };
+
     if (delay > 0) {
-      timeout = setTimeout(typeNext, delay);
+      timeout = setTimeout(startFn, delay);
     } else {
-      typeNext();
+      startFn();
     }
-    
+
     return () => {
       isActive = false;
       clearTimeout(timeout);
+      cancelAnimationFrame(rafRef.current);
     };
   }, [text, delay, speed]);
 
@@ -58,7 +81,7 @@ export function NavTypewriter({
       <span className="absolute inset-0 flex items-center justify-center whitespace-nowrap">
         <span>
           {displayedText}
-          {isTyping && <span className="animate-pulse bg-ink w-[4px] h-[10px] inline-block ml-[1px] translate-y-[-1px] opacity-70" />}
+          {isTyping && <span className="bg-ink w-[4px] h-[10px] inline-block ml-[1px] translate-y-[-1px] opacity-70 animate-pulse" />}
         </span>
       </span>
     </span>

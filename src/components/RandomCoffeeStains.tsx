@@ -25,6 +25,15 @@ export function RandomCoffeeStains() {
 
   return (
     <>
+      {/* Single shared SVG filter definition — all CoffeeStain instances reference this via url(#stain-displacement) */}
+      <svg className="absolute w-0 h-0 overflow-hidden" aria-hidden="true">
+        <defs>
+          <filter id="stain-displacement">
+            <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" result="noise" />
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="5" xChannelSelector="R" yChannelSelector="G" />
+          </filter>
+        </defs>
+      </svg>
       <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-b-sm rounded-tr-sm z-10 print:hidden mix-blend-multiply">
         {stains.map((stain) => (
           <CoffeeStain 

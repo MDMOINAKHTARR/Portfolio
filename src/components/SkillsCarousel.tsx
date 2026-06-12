@@ -43,50 +43,33 @@ const row3 = [
 ];
 
 const MarqueeRow = ({ items, reverse = false, speed = 20 }: { items: any[], reverse?: boolean, speed?: number }) => {
+  const doubled = [...items, ...items];
   return (
-    <div className="flex overflow-hidden group select-none flex-nowrap" style={{ maskImage: 'linear-gradient(to right, transparent, black 5%, black 95%, transparent)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 5%, black 95%, transparent)' }}>
-      <div 
-        className={`flex shrink-0 items-center gap-4 min-w-full pb-3 ${reverse ? 'animate-marquee-reverse' : 'animate-marquee'} group-hover:[animation-play-state:paused]`}
+    <div
+      className="flex overflow-hidden group select-none flex-nowrap"
+      style={{
+        maskImage: 'linear-gradient(to right, transparent, black 5%, black 95%, transparent)',
+        WebkitMaskImage: 'linear-gradient(to right, transparent, black 5%, black 95%, transparent)',
+      }}
+    >
+      <div
+        className={`flex shrink-0 items-center gap-4 pb-3 ${reverse ? 'animate-marquee-reverse' : 'animate-marquee'} group-hover:[animation-play-state:paused]`}
         style={{ animationDuration: `${speed}s` }}
       >
-        {items.map((item, i) => (
-          <div key={`${item.name}-${i}`} className="flex items-center gap-2 px-4 py-2 bg-paper border border-ink/20 rounded-full shadow-sm mx-2 -mb-2">
-            <item.icon className="w-5 h-5 shrink-0" style={{ color: item.color }} />
-            <span className="font-mono text-xs font-bold text-ink whitespace-nowrap">{item.name}</span>
-          </div>
-        ))}
-        {items.map((item, i) => (
-          <div key={`repeat1-${item.name}-${i}`} className="flex items-center gap-2 px-4 py-2 bg-paper border border-ink/20 rounded-full shadow-sm mx-2 -mb-2">
-            <item.icon className="w-5 h-5 shrink-0" style={{ color: item.color }} />
-            <span className="font-mono text-xs font-bold text-ink whitespace-nowrap">{item.name}</span>
-          </div>
-        ))}
-        {items.map((item, i) => (
-          <div key={`repeat2-${item.name}-${i}`} className="flex items-center gap-2 px-4 py-2 bg-paper border border-ink/20 rounded-full shadow-sm mx-2 -mb-2">
+        {doubled.map((item, i) => (
+          <div key={`a-${i}`} className="flex items-center gap-2 px-4 py-2 bg-paper border border-ink/20 rounded-full shadow-sm mx-2 -mb-2">
             <item.icon className="w-5 h-5 shrink-0" style={{ color: item.color }} />
             <span className="font-mono text-xs font-bold text-ink whitespace-nowrap">{item.name}</span>
           </div>
         ))}
       </div>
-      <div 
-        className={`flex shrink-0 items-center gap-4 min-w-full pb-3 ${reverse ? 'animate-marquee-reverse' : 'animate-marquee'} group-hover:[animation-play-state:paused]`}
+      <div
+        className={`flex shrink-0 items-center gap-4 pb-3 ${reverse ? 'animate-marquee-reverse' : 'animate-marquee'} group-hover:[animation-play-state:paused]`}
         style={{ animationDuration: `${speed}s` }}
         aria-hidden="true"
       >
-        {items.map((item, i) => (
-          <div key={`${item.name}-${i}-2`} className="flex items-center gap-2 px-4 py-2 bg-paper border border-ink/20 rounded-full shadow-sm mx-2 -mb-2">
-            <item.icon className="w-5 h-5 shrink-0" style={{ color: item.color }} />
-            <span className="font-mono text-xs font-bold text-ink whitespace-nowrap">{item.name}</span>
-          </div>
-        ))}
-        {items.map((item, i) => (
-          <div key={`repeat1-${item.name}-${i}-2`} className="flex items-center gap-2 px-4 py-2 bg-paper border border-ink/20 rounded-full shadow-sm mx-2 -mb-2">
-            <item.icon className="w-5 h-5 shrink-0" style={{ color: item.color }} />
-            <span className="font-mono text-xs font-bold text-ink whitespace-nowrap">{item.name}</span>
-          </div>
-        ))}
-        {items.map((item, i) => (
-          <div key={`repeat2-${item.name}-${i}-2`} className="flex items-center gap-2 px-4 py-2 bg-paper border border-ink/20 rounded-full shadow-sm mx-2 -mb-2">
+        {doubled.map((item, i) => (
+          <div key={`b-${i}`} className="flex items-center gap-2 px-4 py-2 bg-paper border border-ink/20 rounded-full shadow-sm mx-2 -mb-2">
             <item.icon className="w-5 h-5 shrink-0" style={{ color: item.color }} />
             <span className="font-mono text-xs font-bold text-ink whitespace-nowrap">{item.name}</span>
           </div>
@@ -98,7 +81,7 @@ const MarqueeRow = ({ items, reverse = false, speed = 20 }: { items: any[], reve
 
 export function SkillsCarousel() {
   return (
-    <div className="w-full flex flex-col gap-3 py-2 relative overflow-hidden">
+    <div className="w-full flex flex-col gap-3 py-2 relative overflow-hidden" style={{ contain: 'layout' }}>
       <MarqueeRow items={row1} speed={60} reverse={false} />
       <MarqueeRow items={row2} speed={60} reverse={true} />
       <MarqueeRow items={row3} speed={60} reverse={false} />

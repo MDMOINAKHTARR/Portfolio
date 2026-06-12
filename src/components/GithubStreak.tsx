@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { ExternalLink, Trophy, Flame, Calendar, RefreshCw, Layers, Sparkles, AlertCircle } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
@@ -15,9 +15,9 @@ export function GithubStreak() {
   const { theme } = useTheme();
   const [hoveredDay, setHoveredDay] = useState<ContributionDay | null>(null);
   const [selectedLevelFilter, setSelectedLevelFilter] = useState<number | null>(null);
-  
-  // Custom click ripple coordinates to activate visual wave ripples across the heatmap
-  const [rippleOrigin, setRippleOrigin] = useState<{ row: number; col: number; time: number } | null>(null);
+  // Track clicked cell index for CSS ripple (no per-frame JS cost)
+  const [clickedIdx, setClickedIdx] = useState<number | null>(null);
+  const clickTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
   // Real API state
   const [usernameInput, setUsernameInput] = useState(() => {
@@ -142,76 +142,32 @@ export function GithubStreak() {
   }, [data]);
   const rows = 7;
 
-  // Determine elegant emerald / green palette with concrete solid colors (non-transparent)
-  const getBoxStyle = (day: ContributionDay) => {
-    const isFiltered = selectedLevelFilter !== null && day.level !== selectedLevelFilter;
-    
-    // Evaluate if this box is experiencing the beautiful ripple wave animation
-    let rippleIntensity = 0;
-    if (rippleOrigin) {
-      const dist = Math.sqrt(Math.pow(day.row - rippleOrigin.row, 2) + Math.pow(day.col - rippleOrigin.col, 2));
-      const elapsedTime = (Date.now() - rippleOrigin.time) / 1000;
-      const waveFront = elapsedTime * 4.5; // propagation speed
-      
-      if (Math.abs(dist - waveFront) < 1.2 && elapsedTime < 1.5) {
-        rippleIntensity = Math.max(0, 1 - Math.abs(dist - waveFront));
-      }
-    }
-
-    let baseBg = '';
-    let glow = 'none';
-
+  // Memoized color lookup — no per-frame recalculation
+  const getBoxStyle = useCallback((day: ContributionDay): React.CSSProperties => {
     const isDark = theme === 'noir';
+    const isFiltered = selectedLevelFilter !== null && day.level !== selectedLevelFilter;
 
+    let backgroundColor: string;
     switch (day.level) {
-      case 0:
-        baseBg = isDark ? '#1b2323' : '#ebebeb';
-        break;
-      case 1:
-        baseBg = isDark ? '#064e3b' : '#c1f3d8';
-        break;
-      case 2:
-        baseBg = isDark ? '#0f766e' : '#88e4b3';
-        break;
-      case 3:
-        baseBg = '#10b981';
-        break;
-      case 4:
-        baseBg = '#047857';
-        break;
+      case 1: backgroundColor = isDark ? '#064e3b' : '#c1f3d8'; break;
+      case 2: backgroundColor = isDark ? '#0f766e' : '#88e4b3'; break;
+      case 3: backgroundColor = '#10b981'; break;
+      case 4: backgroundColor = '#047857'; break;
+      default: backgroundColor = isDark ? '#1b2323' : '#ebebeb';
     }
 
-    const style: React.CSSProperties = {
-      backgroundColor: baseBg,
-      filter: glow !== 'none' ? `drop-shadow(${glow})` : undefined,
+    return {
+      backgroundColor,
+      opacity: isFiltered ? 0.15 : undefined,
     };
-
-    if (rippleIntensity > 0) {
-      style.backgroundColor = '#10b981';
-      style.transform = `scale(${1 + rippleIntensity * 0.25}) rotate(${rippleIntensity * 10}deg)`;
-      style.boxShadow = `0 0 8px rgba(16, 185, 129, ${rippleIntensity * 0.7})`;
-      style.zIndex = 10;
-    }
-
-    if (isFiltered) {
-      style.opacity = 0.15;
-    }
-
-    return style;
-  };
+  }, [theme, selectedLevelFilter]);
 
   const months = ['Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May'];
   
   const handleCellClick = (day: ContributionDay) => {
-    setRippleOrigin({
-      row: day.row,
-      col: day.col,
-      time: Date.now()
-    });
-    
-    setTimeout(() => {
-      setRippleOrigin(null);
-    }, 1500);
+    setClickedIdx(day.idx);
+    clearTimeout(clickTimerRef.current);
+    clickTimerRef.current = setTimeout(() => setClickedIdx(null), 600);
   };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -332,7 +288,9 @@ export function GithubStreak() {
                           onMouseEnter={() => setHoveredDay(day)}
                           onMouseLeave={() => setHoveredDay(null)}
                           style={getBoxStyle(day)}
-                          className={`w-[10px] h-[10px] sm:w-[12px] sm:h-[12px] rounded-[1px] cursor-pointer transition-all duration-200 hover:scale-[1.3] border border-ink/10`}
+                          className={`w-[10px] h-[10px] sm:w-[12px] sm:h-[12px] rounded-[1px] cursor-pointer transition-colors duration-150 hover:scale-[1.3] border border-ink/10 ${
+                            clickedIdx === day.idx ? 'ring-2 ring-emerald-400 ring-offset-0 scale-125' : ''
+                          }`}
                         />
                       );
                     })}
