@@ -1,0 +1,6 @@
+{
+  "name": "TOP SECRET: Portfolio",
+  "description": "Architects portfolio stylized as a classified CIA document.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
