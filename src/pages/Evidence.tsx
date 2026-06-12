@@ -58,7 +58,7 @@ export function Evidence() {
               <div className="border border-ink/20 bg-ink/5 p-4 sm:p-6 relative flex flex-col h-full">
                 <Typewriter delay={1.5} className="opacity-50 mb-2 block font-bold">[CLEARED: QUALIFIER]</Typewriter>
                 <Typewriter delay={1.6} className="text-lg font-bold">PARANOX 2.0 NATIONAL INNOVATION HACKATHON (NOV 2025)</Typewriter>
-                <Typewriter delay={1.8} className="block mt-2 mb-4">Qualified in the Top 200 Teams.</Typewriter>
+                <Typewriter delay={1.8} className="block mt-2 mb-4">Qualified in the Top 40 Teams.</Typewriter>
                 
                 <div className="mt-auto border-t border-ink/10 pt-6">
                   <button onClick={() => setActivePdf("/_Moin Akhtar__Certificate.pdf")} className="flex items-center justify-center gap-2 w-full text-[10px] sm:text-xs font-mono font-bold tracking-widest bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600 border border-zinc-300 dark:border-zinc-600 h-12 p-2.5 rounded shadow-sm transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] group">
