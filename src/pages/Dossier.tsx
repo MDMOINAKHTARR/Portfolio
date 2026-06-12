@@ -823,7 +823,7 @@ export function Dossier() {
               <Typewriter delay={2.1} className="font-bold opacity-60 tracking-wider">STATUS:</Typewriter>
               <div className="space-y-2 text-sm sm:text-base">
                 <Typewriter delay={2.2}>
-                  <span className="opacity-50 inline-block w-28 text-xs sm:text-sm">LOCATION:</span> <strong className="uppercase">NEW DELHI - 110086, INDIA</strong>
+                  <span className="opacity-50 inline-block w-28 text-xs sm:text-sm">LOCATION:</span> <strong className="uppercase">NEW DELHI, INDIA</strong>
                 </Typewriter>
                 <Typewriter delay={2.4}>
                   <span className="opacity-50 inline-block w-28 text-xs sm:text-sm">VERIFICATION:</span> ACTIVE / DEPLOYABLE
