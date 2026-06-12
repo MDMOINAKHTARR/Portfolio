@@ -149,7 +149,7 @@ export function Dossier() {
                  <div className="opacity-60 font-bold tracking-widest text-[8px] mb-0.5">LEADERSHIP:</div>
                  <div className="bg-hl-pink-bg border border-hl-pink-border px-2 py-1 rounded inline-block shadow-sm w-full">
                    <div className="font-bold tracking-wider leading-tight text-[9px] uppercase">
-                     CORE MEMBER (EVENT HEAD) -<br/>CLUSTER DATA SCIENCE CLUB
+                     CORE MEMBER -<br/>CLUSTER DATA SCIENCE CLUB
                    </div>
                  </div>
                </div>
