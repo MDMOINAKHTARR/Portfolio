@@ -51,61 +51,23 @@ async function startServer() {
   app.get("/api/github-contributions", async (req, res) => {
     try {
       const username = (req.query.username as string) || "MDMOINAKHTARR";
-      const url = `https://github.com/users/${username}/contributions`;
-      
-      const response = await fetch(url);
+
+      // Use public GitHub contributions JSON API (no auth required)
+      const url = `https://github-contributions-api.jogruber.de/v4/${encodeURIComponent(username)}?y=last`;
+
+      const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
+
       if (!response.ok) {
-        return res.status(response.status).json({ success: false, error: `GitHub returned status ${response.status}` });
-      }
-      const html = await response.text();
-      
-      // Find all ContributionCalendar-day td tags
-      const tdRegex = /<td[^>]+class="[^"]*ContributionCalendar-day[^"]*"[^>]*>/g;
-      const matches = html.match(tdRegex) || [];
-      const days: any[] = [];
-      
-      for (const tag of matches) {
-        const idMatch = tag.match(/id="([^"]+)"/);
-        const dateMatch = tag.match(/data-date="([^"]+)"/);
-        const levelMatch = tag.match(/data-level="([^"]+)"/);
-        
-        if (idMatch && dateMatch && levelMatch) {
-          days.push({
-            id: idMatch[1],
-            date: dateMatch[1],
-            level: parseInt(levelMatch[1], 10),
-            count: 0
-          });
-        }
-      }
-      
-      // Parse tool-tips
-      const tooltipRegex = /<tool-tip[^>]*for="([^"]+)"[^>]*>([\s\S]*?)<\/tool-tip>/gi;
-      const tooltipMap = new Map<string, string>();
-      let tMatch;
-      while ((tMatch = tooltipRegex.exec(html)) !== null) {
-        tooltipMap.set(tMatch[1], tMatch[2].trim());
+        return res.status(response.status).json({ success: false, error: `Contributions API returned status ${response.status}` });
       }
 
-      // Enhance days with counts
-      for (const d of days) {
-        const text = tooltipMap.get(d.id);
-        if (text) {
-          if (text.startsWith("No ")) {
-            d.count = 0;
-          } else {
-            const numMatch = text.match(/^([\d,]+)/);
-            if (numMatch) {
-              d.count = parseInt(numMatch[1].replace(/,/g, ''), 10);
-            }
-          }
-        }
-      }
+      const json: any = await response.json();
 
-      // Sort chronologically
-      days.sort((a, b) => a.date.localeCompare(b.date));
+      // API returns { contributions: [ { date, count, level }, ... ] }
+      const rawDays: { date: string; count: number; level: number }[] = json.contributions || [];
+      rawDays.sort((a, b) => a.date.localeCompare(b.date));
 
-      res.json({ success: true, username, days });
+      res.json({ success: true, username, days: rawDays });
     } catch (error: any) {
       console.error("Error in /api/github-contributions:", error);
       res.status(500).json({ success: false, error: error.message || "Failed to fetch GitHub contributions" });
