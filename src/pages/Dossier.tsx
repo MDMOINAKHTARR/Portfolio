@@ -792,7 +792,7 @@ export function Dossier() {
 
             <div className="grid grid-cols-[100px_1fr] sm:grid-cols-[140px_1fr] items-baseline gap-2">
               <Typewriter delay={0.95} className="font-bold opacity-60 tracking-wider text-sm sm:text-base">LEADERSHIP:</Typewriter>
-              <Typewriter delay={0.98}><Highlight style="squiggly" color="yellow" className="uppercase font-bold text-base sm:text-lg pl-1">Core Member (Event Head) - Cluster Data Science Club</Highlight></Typewriter>
+              <Typewriter delay={0.98}><Highlight style="squiggly" color="yellow" className="uppercase font-bold text-base sm:text-lg pl-1">Core Member  - Cluster Data Science Club</Highlight></Typewriter>
             </div>
 
             <div className="grid grid-cols-[100px_1fr] sm:grid-cols-[140px_1fr] items-baseline gap-2">
