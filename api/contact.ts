@@ -1,3 +1,4 @@
+// v2 - force fresh serverless build
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 function escapeHTML(str: string): string {
