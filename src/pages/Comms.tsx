@@ -14,6 +14,7 @@ export function Comms() {
   const [transmitted, setTransmitted] = useState(false);
   const [payload, setPayload] = useState('');
   const [name, setName] = useState('');
+  const [formError, setFormError] = useState<string | null>(null);
   const originalPayloadRef = useRef('');
 
   useEffect(() => {
@@ -35,6 +36,7 @@ export function Comms() {
 
   const handleTransmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
     originalPayloadRef.current = payload;
     setIsTransmitting(true);
     
@@ -47,8 +49,12 @@ export function Comms() {
         body: JSON.stringify({ name, message: payload })
       });
 
+      // Try to read actual error message from API
+      let data: any = {};
+      try { data = await response.json(); } catch {}
+
       if (!response.ok) {
-        throw new Error("Transmission failed");
+        throw new Error(data?.error || `Server error (${response.status})`);
       }
 
       setIsTransmitting(false);
@@ -56,11 +62,10 @@ export function Comms() {
       
       setPayload(''); // Clear for next time
       setName('');
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
       setIsTransmitting(false);
-      // Wait for a tick so UI updates, then alert or restore payload
-      alert("Transmission failed. Please check network connection.");
+      setFormError(err?.message || "Transmission failed. Please check network connection.");
     }
   };
 
@@ -178,7 +183,13 @@ export function Comms() {
                     </div>
                   </div>
 
-                  <div className="flex justify-end mt-2 pt-2 relative z-20">
+                  <div className="flex justify-end mt-2 pt-2 relative z-20 flex-col gap-2">
+                      {formError && (
+                        <div className="w-full flex items-start gap-2 bg-red-900/10 border border-red-700/40 text-red-700 text-xs font-bold font-mono tracking-wider px-3 py-2 rounded-sm">
+                          <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                          <span className="uppercase">{formError}</span>
+                        </div>
+                      )}
                       <button 
                         disabled={isTransmitting}
                         className={`px-8 py-3 border-[3px] border-ink font-bold tracking-widest text-sm transition-all w-full sm:w-auto relative group overflow-hidden cursor-pointer ${isTransmitting ? 'bg-ink text-paper animate-pulse' : 'bg-transparent text-ink hover:bg-ink hover:text-paper shadow-[4px_4px_0_rgba(0,0,0,0.5)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[2px_2px_0_rgba(0,0,0,0.5)] active:translate-y-[4px] active:translate-x-[4px] active:shadow-none bg-paper'}`}
