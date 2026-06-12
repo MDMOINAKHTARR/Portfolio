@@ -357,7 +357,7 @@ export function Dossier() {
                         PARANOX 2.0 NATIONAL HACKATHON
                       </span>
                       <span className="text-[10px] bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded font-bold font-mono text-emerald-800 dark:text-emerald-400 uppercase leading-none">
-                        Top 200 Finalist
+                        Top 40 Finalist
                       </span>
                     </div>
                     <div className="text-[10px] font-mono opacity-60 font-bold whitespace-nowrap sm:self-center">
