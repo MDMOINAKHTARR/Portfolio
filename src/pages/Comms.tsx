@@ -54,8 +54,7 @@ export function Comms() {
       try { data = await response.json(); } catch {}
 
       if (!response.ok) {
-        const debugInfo = data?.debug ? ` [debug: ${JSON.stringify(data.debug)}]` : '';
-        throw new Error((data?.error || `Server error (${response.status})`) + debugInfo);
+        throw new Error(data?.error || `Server error (${response.status})`);
       }
 
       setIsTransmitting(false);

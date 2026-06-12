@@ -15,16 +15,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const chatId = process.env.TELEGRAM_CHAT_ID;
 
   if (!botToken || !chatId) {
-    return res.status(500).json({ 
-      success: false, 
-      error: 'Telegram credentials not configured.',
-      debug: {
-        hasBotToken: !!botToken,
-        hasChatId: !!chatId,
-        telegramKeys: Object.keys(process.env).filter(k => k.startsWith('TELEGRAM')),
-        nodeEnv: process.env.NODE_ENV,
-      }
-    });
+    return res.status(500).json({ success: false, error: 'Telegram credentials not configured.' });
   }
 
   if (!name || !message) {
