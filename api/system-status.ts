@@ -1,54 +1,44 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { Redis } from '@upstash/redis';
 
-// CountAPI - free, persistent, zero-setup counter service
-// Namespace: moinn-portfolio | Keys: total-visits, unique-visitors
-const NAMESPACE = 'moinn-portfolio-v2';
-const TOTAL_KEY = 'total-visits';
-const UNIQUE_KEY = 'unique-visitors';
-
-async function getCount(key: string): Promise<number> {
-  try {
-    const res = await fetch(`https://api.countapi.xyz/get/${NAMESPACE}/${key}`);
-    const data: any = await res.json();
-    return data.value ?? 0;
-  } catch {
-    return 0;
-  }
-}
-
-async function hitCount(key: string): Promise<number> {
-  try {
-    const res = await fetch(`https://api.countapi.xyz/hit/${NAMESPACE}/${key}`);
-    const data: any = await res.json();
-    return data.value ?? 0;
-  } catch {
-    return 0;
-  }
-}
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+});
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Allow cross-origin from own domain
   res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Cache-Control', 'no-store');
 
-  const isPing = req.method === 'POST';
+  try {
+    if (req.method === 'POST') {
+      const { isNewVisitor } = req.body ?? {};
 
-  if (isPing) {
-    const { isNewVisitor } = req.body ?? {};
+      // Increment total visits atomically
+      const totalVisits = await redis.incr('totalVisits');
 
-    // Always increment total visits
+      let uniqueVisitors: number;
+      if (isNewVisitor) {
+        uniqueVisitors = await redis.incr('uniqueVisitors');
+      } else {
+        uniqueVisitors = (await redis.get<number>('uniqueVisitors')) ?? 0;
+      }
+
+      return res.json({ success: true, totalVisits, uniqueVisitors });
+    }
+
+    // GET — fetch current counts
     const [totalVisits, uniqueVisitors] = await Promise.all([
-      hitCount(TOTAL_KEY),
-      isNewVisitor ? hitCount(UNIQUE_KEY) : getCount(UNIQUE_KEY),
+      redis.get<number>('totalVisits'),
+      redis.get<number>('uniqueVisitors'),
     ]);
 
-    return res.json({ success: true, totalVisits, uniqueVisitors });
+    return res.json({
+      totalVisits: totalVisits ?? 0,
+      uniqueVisitors: uniqueVisitors ?? 0,
+    });
+  } catch (err: any) {
+    console.error('Redis error:', err);
+    return res.json({ totalVisits: 0, uniqueVisitors: 0 });
   }
-
-  // GET — just fetch current counts
-  const [totalVisits, uniqueVisitors] = await Promise.all([
-    getCount(TOTAL_KEY),
-    getCount(UNIQUE_KEY),
-  ]);
-
-  return res.json({ totalVisits, uniqueVisitors });
 }
