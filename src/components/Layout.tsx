@@ -385,7 +385,7 @@ export function Layout() {
           { path: '/operations', label: 'PROJECTS', icon: Briefcase },
           { path: '/evidence', label: 'AWARDS', icon: Award },
           { path: '/comms', label: 'CONTACT', icon: Mail },
-          { path: 'https://github.com/moinakhtar', label: 'GITHUB', icon: Github, isExternal: true },
+          { path: 'https://github.com/MDMOINAKHTARR', label: 'GITHUB', icon: Github, isExternal: true },
           { path: '/CV.pdf', label: 'CV', icon: FileText, isExternal: true },
           { action: toggleTheme, label: theme === 'noir' ? 'NOIR' : 'COLOR', icon: theme === 'noir' ? Moon : Sun, isAction: true }
          ].map(tab => {
