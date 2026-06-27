@@ -3,7 +3,7 @@ import { Github, Linkedin, Twitter, Code2, FileText, Link as LinkIcon } from 'lu
 import { audioEngine } from '../lib/audio';
 
 const SOCIAL_LINKS = [
-  { id: 'resume', label: 'DOSSIER[CV]', stamp: 'REF', icon: FileText, url: '/CV.pdf' },
+  { id: 'resume', label: 'DOSSIER[CV]', stamp: 'REF', icon: FileText, url: '/MdMoinAkhtar.pdf' },
   { id: 'linkedin', label: 'LINKEDIN', stamp: 'NET', icon: Linkedin, url: 'https://www.linkedin.com/in/mdmoinakhtar/' },
   { id: 'github', label: 'GITHUB', stamp: 'GIT', icon: Github, url: 'https://github.com/MDMOINAKHTARR' },
   { id: 'leetcode', label: 'LEETCODE', stamp: 'LTC', icon: Code2, url: 'https://leetcode.com/u/__moinn_/' },
