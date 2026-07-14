@@ -27,7 +27,7 @@ export function Evidence() {
             {/* Deploy 1 */}
             <div className="border border-ink/20 bg-ink/5 p-4 sm:p-6 relative">
               <Typewriter delay={0.7} className="opacity-50 text-stamp font-bold mb-2 block">[WINNER: $5,800 IN CREDITS]</Typewriter>
-              <Typewriter delay={0.9} className="text-lg font-bold">GROWTHX BUILDATHON</Typewriter>
+              <Typewriter delay={0.9} className="text-lg font-bold">HERMES X GROWTHX BUILDATHON</Typewriter>
               <Typewriter delay={1.1} className="block mt-2 mb-4">
                 Won after building <Highlight style="circle" color="blue">LazyClip.buzz</Highlight> in just 8 hours—a Telegram workflow that turns YouTube links into ready-to-post short clips. Reached <Highlight style="marker" color="yellow">100+ signups in one day</Highlight> with every demo clip generated live.
               </Typewriter>
@@ -173,7 +173,7 @@ export function Evidence() {
           >
             <button 
               onClick={() => setShowPubDetails(false)}
-              className="absolute top-4 right-4 p-1 hover:bg-ink/10 rounded transition-colors opacity-60 hover:opacity-100"
+              className="absolute top-4 right-4 rounded p-1 opacity-60 transition-colors hover:bg-red-700 hover:text-white hover:opacity-100"
             >
               <X className="w-6 h-6" />
             </button>
@@ -228,7 +228,7 @@ export function Evidence() {
           <div className="relative w-full max-w-5xl h-[85vh] bg-paper border border-ink/30 shadow-2xl flex flex-col z-10 animate-in fade-in zoom-in duration-200" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center bg-ink text-paper p-3 shrink-0">
                <span className="font-mono text-xs uppercase tracking-widest font-bold">SECURE VIEWER // [ENCRYPTED DATA]</span>
-               <button onClick={() => setActivePdf(null)} className="hover:bg-paper/20 p-1 transition-colors">
+               <button onClick={() => setActivePdf(null)} className="p-1 transition-colors hover:bg-red-700 hover:text-white">
                  <X className="w-5 h-5" />
                </button>
             </div>

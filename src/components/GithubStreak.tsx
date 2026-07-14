@@ -212,7 +212,7 @@ export function GithubStreak() {
             />
             <button 
               type="submit"
-              className="text-[9px] font-bold tracking-widest font-mono px-2 py-0.5 border border-ink hover:bg-ink hover:text-paper transition-colors ml-0.5 select-none"
+              className="ml-0.5 select-none border border-ink bg-ink px-2 py-0.5 font-mono text-[9px] font-bold tracking-widest text-paper transition-colors hover:bg-red-800 hover:text-white"
             >
               SYNC
             </button>
@@ -224,7 +224,7 @@ export function GithubStreak() {
               setActiveUsername("");
               setTimeout(() => setActiveUsername(current), 50);
             }}
-            className="p-1 border border-ink/20 hover:border-ink hover:bg-ink/5 transition-all active:scale-95 text-ink"
+            className="border border-amber-500 bg-amber-200 p-1 text-zinc-950 transition-all hover:bg-amber-300 active:scale-95 dark:border-amber-600 dark:bg-amber-700 dark:text-white dark:hover:bg-amber-600"
             title="Reload Data Matrix"
           >
             <RefreshCw className="w-3 h-3" />
@@ -249,7 +249,7 @@ export function GithubStreak() {
             </span>
             <button 
               onClick={() => setActiveUsername('MDMOINAKHTARR')}
-              className="text-[9px] underline opacity-80 hover:opacity-100 font-bold font-mono tracking-widest uppercase mt-1"
+              className="mt-1 border border-red-800/40 bg-red-800/10 px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-widest text-red-900 transition-colors hover:bg-red-800 hover:text-white dark:text-red-400"
             >
               Reset to @MDMOINAKHTARR
             </button>
@@ -362,7 +362,7 @@ export function GithubStreak() {
             {selectedLevelFilter !== null && (
               <button 
                 onClick={() => setSelectedLevelFilter(null)}
-                className="text-[9px] underline text-red-700 font-bold pl-1 active:scale-95 animate-pulse tracking-widest uppercase"
+                className="border border-red-800/40 bg-red-800/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-red-800 transition-colors hover:bg-red-800 hover:text-white active:scale-95"
               >
                 Reset
               </button>

@@ -103,8 +103,8 @@ export function Capabilities() {
                     CERTIFIED: DATA SCIENCE FOUNDATIONS (2024)
                   </Highlight>
                 </Typewriter>
-                <span className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-mono tracking-widest font-bold text-zinc-800 dark:text-zinc-200 bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600 border border-zinc-300 dark:border-zinc-600 rounded shadow-sm group-hover:scale-[1.02] transition-all w-fit">
-                  <ExternalLink className="w-3 h-3 text-sky-600 dark:text-sky-400" /> VIEW CERTIFICATE
+                <span className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-mono tracking-widest font-bold text-zinc-950 bg-amber-200 hover:bg-amber-300 dark:bg-amber-700 dark:hover:bg-amber-600 dark:text-white border border-amber-500 dark:border-amber-600 rounded shadow-sm group-hover:scale-[1.02] transition-all w-fit">
+                  <ExternalLink className="w-3 h-3" /> VIEW CERTIFICATE
                 </span>
               </div>
           </div>
@@ -120,8 +120,8 @@ export function Capabilities() {
                     CERTIFIED: THE ULTIMATE JOB READY DATA SCIENCE COURSE
                   </Highlight>
                 </Typewriter>
-                <span className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-mono tracking-widest font-bold text-zinc-800 dark:text-zinc-200 bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600 border border-zinc-300 dark:border-zinc-600 rounded shadow-sm group-hover:scale-[1.02] transition-all w-fit">
-                  <ExternalLink className="w-3 h-3 text-sky-600 dark:text-sky-400" /> VIEW CERTIFICATE
+                <span className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-mono tracking-widest font-bold text-zinc-950 bg-amber-200 hover:bg-amber-300 dark:bg-amber-700 dark:hover:bg-amber-600 dark:text-white border border-amber-500 dark:border-amber-600 rounded shadow-sm group-hover:scale-[1.02] transition-all w-fit">
+                  <ExternalLink className="w-3 h-3" /> VIEW CERTIFICATE
                 </span>
               </div>
           </div>
@@ -133,7 +133,7 @@ export function Capabilities() {
           <div className="relative w-full max-w-4xl max-h-[85vh] bg-paper shadow-2xl flex flex-col z-10 animate-in fade-in zoom-in duration-200" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center bg-ink text-paper p-3 shrink-0">
                <span className="font-mono text-xs uppercase tracking-widest font-bold">SECURE VIEWER // [ENCRYPTED DATA]</span>
-               <button onClick={() => setShowDataScienceCert(false)} className="hover:bg-paper/20 p-1 transition-colors">
+               <button onClick={() => setShowDataScienceCert(false)} className="p-1 transition-colors hover:bg-red-700 hover:text-white">
                  <X className="w-5 h-5" />
                </button>
             </div>
@@ -150,7 +150,7 @@ export function Capabilities() {
           <div className="relative w-full max-w-4xl h-[85vh] bg-paper shadow-2xl flex flex-col z-10 animate-in fade-in zoom-in duration-200" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center bg-ink text-paper p-3 shrink-0">
                <span className="font-mono text-xs uppercase tracking-widest font-bold">SECURE VIEWER // [ENCRYPTED DATA]</span>
-               <button onClick={() => setShowUltimateCert(false)} className="hover:bg-paper/20 p-1 transition-colors">
+               <button onClick={() => setShowUltimateCert(false)} className="p-1 transition-colors hover:bg-red-700 hover:text-white">
                  <X className="w-5 h-5" />
                </button>
             </div>
