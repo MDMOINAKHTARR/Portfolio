@@ -19,6 +19,7 @@ import { RandomCoffeeStains } from './RandomCoffeeStains';
 import { BackgroundElements } from './BackgroundElements';
 import { ThemeToggle } from './ThemeToggle';
 import { AudioToggle } from './AudioToggle';
+import { MusicPlayer } from './MusicPlayer';
 import { audioEngine } from '../lib/audio';
 import { FileDrawer } from './FileDrawer';
 import { SocialSidebar } from './SocialSidebar';
@@ -200,6 +201,7 @@ export function Layout() {
       </div>
       
       <AudioToggle />
+      <MusicPlayer />
       <FileDrawer />
       <SocialSidebar />
 
@@ -436,4 +438,3 @@ export function Layout() {
     </div>
   );
 }
-

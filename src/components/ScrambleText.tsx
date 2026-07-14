@@ -11,7 +11,7 @@ interface ScrambleTextProps {
   trigger?: boolean;
 }
 
-export function ScrambleText({ text, className = "", delay = 0, duration = 1000, trigger = true }: ScrambleTextProps) {
+export const ScrambleText = React.memo(function ScrambleText({ text, className = "", delay = 0, duration = 1000, trigger = true }: ScrambleTextProps) {
   const [displayText, setDisplayText] = useState(text.replace(/[a-zA-Z0-9]/g, () => CHARS[Math.floor(Math.random() * CHARS.length)]));
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "0px 0px -50px 0px" });
@@ -22,9 +22,19 @@ export function ScrambleText({ text, className = "", delay = 0, duration = 1000,
     let timeout: ReturnType<typeof setTimeout>;
     let startTime: number;
     let animationFrame: number;
+    let lastFrame = 0;
 
     const animate = (timestamp: number) => {
       if (!startTime) startTime = timestamp;
+
+      // 30 FPS is visually fluid for a text scramble and leaves the main
+      // thread free to respond immediately to card interactions.
+      if (timestamp - lastFrame < 1000 / 30) {
+        animationFrame = requestAnimationFrame(animate);
+        return;
+      }
+      lastFrame = timestamp;
+
       const progress = timestamp - startTime;
       const progressRatio = Math.min(progress / duration, 1);
       
@@ -35,9 +45,6 @@ export function ScrambleText({ text, className = "", delay = 0, duration = 1000,
           nextStr += char;
           continue;
         }
-        
-        // Reveal char based on progress
-        const revealThreshold = (i / text.length) * 0.5 + 0.5 * progressRatio; // mix of pos and time
         
         if (progressRatio > (i / text.length) * 0.8) {
            if (Math.random() > 0.8 || progressRatio === 1) {
@@ -74,4 +81,4 @@ export function ScrambleText({ text, className = "", delay = 0, duration = 1000,
       {displayText}
     </span>
   );
-}
+});

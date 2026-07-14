@@ -70,7 +70,7 @@ export function Comms() {
   };
 
   return (
-    <PageTransition className="px-4 py-8 sm:px-12 sm:py-16 md:px-20 md:py-24 flex-1 flex flex-col max-w-7xl mx-auto w-full">
+    <PageTransition className="px-4 pt-4 pb-8 sm:px-12 sm:pt-8 sm:pb-16 md:px-20 md:pt-12 md:pb-24 flex-1 flex flex-col max-w-7xl mx-auto w-full">
       {/* Header section */}
       <div className="mb-2 lg:mb-10 w-full flex flex-col gap-2">
         <div className="flex items-center justify-between border-b-[3px] border-ink/20 pb-2">
