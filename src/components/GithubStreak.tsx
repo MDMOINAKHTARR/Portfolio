@@ -178,7 +178,7 @@ export function GithubStreak() {
   };
 
   return (
-    <div className="h-full border-2 border-ink border-dashed p-4 sm:p-5 bg-paper text-ink rounded-[2px] shadow-[inset_0_0_10px_rgba(0,0,0,0.05)] relative select-none flex flex-col gap-3 font-typewriter">
+    <div data-prevent-page-swipe className="h-full border-2 border-ink border-dashed p-4 sm:p-5 bg-paper text-ink rounded-[2px] shadow-[inset_0_0_10px_rgba(0,0,0,0.05)] relative select-none flex flex-col gap-3 font-typewriter">
       
       {/* Primary Header Segment: Ultra Compact & Solid Layout */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b-2 border-ink/30 pb-2 relative z-10">

@@ -98,11 +98,19 @@ export function Layout() {
   const minSwipeDistance = 50;
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.closest('[data-prevent-page-swipe]')) {
+      setTouchStart(null);
+      setTouchEnd(null);
+      return;
+    }
+
     setTouchEnd(null);
     setTouchStart({ x: e.targetTouches[0].clientX, y: e.targetTouches[0].clientY });
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
+    if (!touchStart) return;
     setTouchEnd({ x: e.targetTouches[0].clientX, y: e.targetTouches[0].clientY });
   };
 
