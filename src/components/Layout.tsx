@@ -1,4 +1,4 @@
-import { QrCode, Folder, Lock, Grid, User, BarChart, Shield, Sun, Moon, Terminal, Briefcase, Award, Mail, Volume2, VolumeX, Github, Twitter, Linkedin, FileText, Code } from 'lucide-react';
+import { QrCode, Folder, Lock, Grid, User, BarChart, Shield, Sun, Moon, Terminal, Briefcase, Award, Mail, Volume2, VolumeX, Twitter, Linkedin, FileText, Code } from 'lucide-react';
 import { Outlet, useLocation, Link, useOutlet, useNavigate } from 'react-router-dom';
 
 const XIcon = (props: React.ComponentProps<'svg'>) => (
@@ -389,15 +389,14 @@ export function Layout() {
       </div>
 
       {/* Floating Sticky Mobile Bottom Navigation */}
-      <div className="flex sm:hidden fixed bottom-[max(16px,env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 w-[96%] max-w-[400px] bg-paper/95 backdrop-blur-xl z-[100] justify-around items-center text-ink/60 font-mono text-[10px] py-1.5 px-2 shadow-[0_8px_30px_rgba(100,20,20,0.15)] border border-red-900/15 rounded-full transition-colors overflow-x-auto hide-scrollbar">
+      <div className="flex sm:hidden fixed bottom-[max(16px,env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 w-[96%] max-w-[400px] bg-paper/95 backdrop-blur-xl z-[100] justify-around items-center text-ink/60 font-mono text-[10px] py-1.5 px-2 shadow-[0_8px_30px_rgba(100,20,20,0.15)] border border-red-900/15 rounded-full transition-colors overflow-visible">
         {[
           { path: '/', label: 'ABOUT', icon: User },
           { path: '/operations', label: 'PROJECTS', icon: Briefcase },
           { path: '/evidence', label: 'AWARDS', icon: Award },
           { path: '/comms', label: 'CONTACT', icon: Mail },
-          { path: 'https://github.com/MDMOINAKHTARR', label: 'GITHUB', icon: Github, isExternal: true },
           { path: '/MdMoinAkhtar.pdf', label: 'CV', icon: FileText, isExternal: true },
-          { action: toggleTheme, label: theme === 'noir' ? 'NOIR' : 'COLOR', icon: theme === 'noir' ? Moon : Sun, isAction: true }
+          { action: toggleTheme, label: theme === 'noir' ? 'COLOR' : 'NOIR', icon: theme === 'noir' ? Sun : Moon, isAction: true }
          ].map(tab => {
            let targetPath = tab.path;
            const active = location.pathname === tab.path && !tab.isExternal && !tab.isAction;
@@ -413,7 +412,7 @@ export function Layout() {
 
            if (tab.isAction) {
              return (
-               <button key={tab.label} onClick={tab.action} className="relative flex flex-col items-center justify-center flex-1 min-w-[36px] py-2 rounded-full transition-all duration-300 hover:text-ink hover:bg-ink/5">
+               <button key={tab.label} type="button" onClick={tab.action} className="relative flex min-w-[36px] flex-1 flex-col items-center justify-center rounded-full py-2 transition-all duration-300 hover:bg-ink/5 hover:text-ink active:scale-90" aria-label={`Switch to ${tab.label.toLowerCase()} theme`}>
                  {innerContent}
                </button>
              );
@@ -433,6 +432,7 @@ export function Layout() {
              </Link>
            );
         })}
+        <MusicPlayer mobileNav />
       </div>
 
       {/* Sticky Bottom Desktop Footer / Last Accessed string on Mobile inside body instead */}

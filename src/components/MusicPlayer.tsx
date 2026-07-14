@@ -18,7 +18,7 @@ const readStoredNumber = (key: string, fallback: number) => {
   return Number.isFinite(storedValue) ? storedValue : fallback;
 };
 
-export function MusicPlayer() {
+export function MusicPlayer({ mobileNav = false }: { mobileNav?: boolean }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [trackIndex, setTrackIndex] = useState(() => {
@@ -79,9 +79,21 @@ export function MusicPlayer() {
   };
 
   const progress = duration ? (currentTime / duration) * 100 : 0;
+  const containerClassName = mobileNav
+    ? 'pointer-events-none relative flex min-w-[36px] flex-1 items-center justify-center font-mono print:hidden'
+    : 'pointer-events-none fixed bottom-10 left-6 z-[96] hidden w-[280px] font-mono print:hidden sm:block';
+  const collapsedClassName = mobileNav
+    ? 'pointer-events-auto relative flex h-10 w-full touch-manipulation flex-col items-center justify-center rounded-full text-ink/60 transition-all hover:bg-ink/5 hover:text-ink active:scale-90'
+    : 'pointer-events-auto relative flex h-[52px] w-[68px] items-center justify-center border border-folder-dark/60 bg-zinc-950 text-[#f2d28b] shadow-[3px_5px_14px_rgba(0,0,0,0.4)] transition-all hover:-translate-y-0.5 hover:border-red-500/60 hover:text-white active:translate-y-0';
+  const expandedClassName = mobileNav
+    ? 'pointer-events-auto absolute bottom-[calc(100%+12px)] right-0 z-[110] max-h-[min(68dvh,500px)] w-[min(92vw,320px)] touch-manipulation overscroll-contain overflow-y-auto border-2 border-folder-dark/60 bg-paper text-ink shadow-[5px_7px_22px_rgba(0,0,0,0.5)]'
+    : 'pointer-events-auto relative max-h-[52vh] overflow-y-auto border-2 border-folder-dark/60 bg-paper text-ink shadow-[5px_7px_18px_rgba(0,0,0,0.46)]';
 
   return (
-    <div className="pointer-events-none fixed bottom-[82px] left-6 z-[96] w-[calc(100%-1.5rem)] max-w-[280px] font-mono print:hidden sm:bottom-10 sm:left-6 sm:w-[280px]">
+    <div
+      data-prevent-page-swipe
+      className={containerClassName}
+    >
       <AnimatePresence mode="wait" initial={false}>
         {!isExpanded ? (
           <motion.button
@@ -91,19 +103,26 @@ export function MusicPlayer() {
             exit={{ opacity: 0, scale: 0.9 }}
             transition={{ duration: 0.18 }}
             type="button"
-            onMouseEnter={() => setIsExpanded(true)}
+            onMouseEnter={mobileNav ? undefined : () => setIsExpanded(true)}
             onFocus={() => setIsExpanded(true)}
             onClick={() => setIsExpanded(true)}
-            className="pointer-events-auto relative flex h-[52px] w-[68px] items-center justify-center border border-folder-dark/60 bg-zinc-950 text-[#f2d28b] shadow-[3px_5px_14px_rgba(0,0,0,0.4)] transition-all hover:-translate-y-0.5 hover:border-red-500/60 hover:text-white active:translate-y-0"
+            className={collapsedClassName}
             aria-label="Open Case File Radio"
             title="Case File Radio"
           >
-            {isPlaying ? (
+            {mobileNav ? (
+              <>
+                <Disc3 className={`h-4 w-4 transition-colors ${isPlaying ? 'case-radio-reel text-red-700' : ''}`} />
+                <span className={`overflow-hidden text-[7px] font-bold leading-none transition-all ${isPlaying ? 'mt-0.5 max-h-3 text-red-800 opacity-100' : 'max-h-0 opacity-0'}`}>
+                  PLAYING
+                </span>
+              </>
+            ) : isPlaying ? (
               <Disc3 className="case-radio-reel h-8 w-8 text-red-400" />
             ) : (
               <MiniCassette isPlaying={false} />
             )}
-            <span className={`absolute right-1 top-1 h-1.5 w-1.5 rounded-full ${isPlaying ? 'animate-pulse bg-emerald-400' : 'bg-zinc-500'}`} />
+            {!mobileNav && <span className={`absolute right-1 top-1 h-1.5 w-1.5 rounded-full ${isPlaying ? 'animate-pulse bg-emerald-400' : 'bg-zinc-500'}`} />}
           </motion.button>
         ) : (
           <motion.aside
@@ -112,8 +131,8 @@ export function MusicPlayer() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.98 }}
             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            onMouseLeave={() => setIsExpanded(false)}
-            className="pointer-events-auto relative max-h-[52vh] overflow-y-auto border-2 border-folder-dark/60 bg-paper text-ink shadow-[5px_7px_18px_rgba(0,0,0,0.46)]"
+            onMouseLeave={mobileNav ? undefined : () => setIsExpanded(false)}
+            className={expandedClassName}
             aria-label="Case File Radio music player"
           >
             <div className="absolute left-1/2 top-0 h-4 w-24 -translate-x-1/2 -translate-y-1/2 rotate-[-2deg] bg-tape opacity-90" />
