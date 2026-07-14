@@ -48,7 +48,7 @@ export const MUSIC_TRACKS: MusicTrack[] = [
 class MusicEngine {
   private audio: HTMLAudioElement | null = null;
   private trackIndex = 0;
-  private volume = 0.35;
+  private volume = 0.5;
   private listeners = new Set<(snapshot: PlaybackSnapshot) => void>();
 
   public subscribe(listener: (snapshot: PlaybackSnapshot) => void) {

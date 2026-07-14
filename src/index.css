@@ -449,7 +449,6 @@ html {
 /* Make actual images grayscale in Noir mode, but skip highlights */
 html.theme-noir img {
   filter: grayscale(100%) contrast(120%);
-  transform: translateZ(0); /* promote to own layer so filter doesn't repaint siblings */
 }
 
 html.theme-noir .bg-red-600,

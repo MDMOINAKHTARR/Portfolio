@@ -14,8 +14,25 @@ import { MUSIC_TRACKS, musicEngine } from '../lib/music';
 
 const readStoredNumber = (key: string, fallback: number) => {
   if (typeof window === 'undefined') return fallback;
-  const storedValue = Number(window.localStorage.getItem(key));
+  const rawValue = window.localStorage.getItem(key);
+  if (rawValue === null) return fallback;
+  const storedValue = Number(rawValue);
   return Number.isFinite(storedValue) ? storedValue : fallback;
+};
+
+const DEFAULT_VOLUME = 0.5;
+const VOLUME_DEFAULT_VERSION = '2';
+
+const readStoredVolume = () => {
+  if (typeof window === 'undefined') return DEFAULT_VOLUME;
+  const storedVolume = readStoredNumber('case-radio-volume', DEFAULT_VOLUME);
+  const hasCurrentDefault = window.localStorage.getItem('case-radio-volume-default-version') === VOLUME_DEFAULT_VERSION;
+
+  if (!hasCurrentDefault && (storedVolume === 0 || storedVolume === 0.35)) {
+    return DEFAULT_VOLUME;
+  }
+
+  return Math.min(1, Math.max(0, storedVolume));
 };
 
 export function MusicPlayer({ mobileNav = false }: { mobileNav?: boolean }) {
@@ -25,10 +42,7 @@ export function MusicPlayer({ mobileNav = false }: { mobileNav?: boolean }) {
     const storedIndex = readStoredNumber('case-radio-track', 0);
     return Math.min(MUSIC_TRACKS.length - 1, Math.max(0, storedIndex));
   });
-  const [volume, setVolume] = useState(() => {
-    const storedVolume = readStoredNumber('case-radio-volume', 0.35);
-    return Math.min(1, Math.max(0, storedVolume));
-  });
+  const [volume, setVolume] = useState(readStoredVolume);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
 
@@ -47,6 +61,7 @@ export function MusicPlayer({ mobileNav = false }: { mobileNav?: boolean }) {
   useEffect(() => {
     musicEngine.setVolume(volume);
     window.localStorage.setItem('case-radio-volume', String(volume));
+    window.localStorage.setItem('case-radio-volume-default-version', VOLUME_DEFAULT_VERSION);
   }, [volume]);
 
   useEffect(() => {
@@ -86,8 +101,8 @@ export function MusicPlayer({ mobileNav = false }: { mobileNav?: boolean }) {
     ? 'pointer-events-auto relative flex h-10 w-full touch-manipulation flex-col items-center justify-center rounded-full text-ink/60 transition-all hover:bg-ink/5 hover:text-ink active:scale-90'
     : 'pointer-events-auto relative flex h-[52px] w-[68px] items-center justify-center border border-folder-dark/60 bg-zinc-950 text-[#f2d28b] shadow-[3px_5px_14px_rgba(0,0,0,0.4)] transition-all hover:-translate-y-0.5 hover:border-red-500/60 hover:text-white active:translate-y-0';
   const expandedClassName = mobileNav
-    ? 'pointer-events-auto absolute bottom-[calc(100%+12px)] right-0 z-[110] max-h-[min(68dvh,500px)] w-[min(92vw,320px)] touch-manipulation overscroll-contain overflow-y-auto border-2 border-folder-dark/60 bg-paper text-ink shadow-[5px_7px_22px_rgba(0,0,0,0.5)]'
-    : 'pointer-events-auto relative max-h-[52vh] overflow-y-auto border-2 border-folder-dark/60 bg-paper text-ink shadow-[5px_7px_18px_rgba(0,0,0,0.46)]';
+    ? 'pointer-events-auto absolute bottom-[calc(100%+12px)] right-0 z-[110] w-[min(92vw,320px)] touch-manipulation overflow-hidden border-2 border-folder-dark/60 bg-paper text-ink shadow-[5px_7px_22px_rgba(0,0,0,0.5)]'
+    : 'pointer-events-auto relative overflow-hidden border-2 border-folder-dark/60 bg-paper text-ink shadow-[5px_7px_18px_rgba(0,0,0,0.46)]';
 
   return (
     <div
@@ -152,8 +167,8 @@ export function MusicPlayer({ mobileNav = false }: { mobileNav?: boolean }) {
               </button>
             </div>
 
-            <div className="p-2.5">
-              <div className="mb-2.5 flex items-center gap-2.5 border-b border-ink/15 pb-2.5">
+            <div className="p-2">
+              <div className="mb-2 flex items-center gap-2 border-b border-ink/15 pb-2">
                 {trackIndex <= 1 ? (
                   <TrackArtwork trackNumber={trackIndex + 1} />
                 ) : (
@@ -171,7 +186,24 @@ export function MusicPlayer({ mobileNav = false }: { mobileNav?: boolean }) {
                 </div>
               </div>
 
-              <div className="mb-2.5 space-y-1">
+              <label className="mb-2 flex items-center gap-2 border-b border-ink/15 pb-2 text-[8px] font-bold tracking-widest opacity-75">
+                <Volume2 className="h-4 w-4 shrink-0" />
+                <span className="shrink-0">MUSIC LEVEL</span>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={volume}
+                  onChange={(event) => setVolume(Number(event.target.value))}
+                  className="case-radio-range w-full cursor-pointer"
+                  style={{ '--radio-progress': `${volume * 100}%` } as CSSProperties}
+                  aria-label="Music volume"
+                />
+                <span className="w-7 text-right">{Math.round(volume * 100)}</span>
+              </label>
+
+              <div className="mb-2 grid grid-cols-2 gap-1">
                 {MUSIC_TRACKS.map((track, index) => {
                   const isActive = index === trackIndex;
                   return (
@@ -235,22 +267,6 @@ export function MusicPlayer({ mobileNav = false }: { mobileNav?: boolean }) {
                 </button>
               </div>
 
-              <label className="mt-2 flex items-center gap-2 text-[8px] font-bold tracking-widest opacity-75">
-                <Volume2 className="h-4 w-4 shrink-0" />
-                <span className="shrink-0">MUSIC LEVEL</span>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.01"
-                  value={volume}
-                  onChange={(event) => setVolume(Number(event.target.value))}
-                  className="case-radio-range w-full cursor-pointer"
-                  style={{ '--radio-progress': `${volume * 100}%` } as CSSProperties}
-                  aria-label="Music volume"
-                />
-                <span className="w-7 text-right">{Math.round(volume * 100)}</span>
-              </label>
             </div>
           </motion.aside>
         )}

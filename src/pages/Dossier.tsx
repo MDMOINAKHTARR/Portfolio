@@ -15,11 +15,15 @@ import { OperationCard } from '../components/OperationCard';
 import { SkillsCarousel } from '../components/SkillsCarousel';
 import { ContactPill } from '../components/ContactPill';
 
+const SPIDER_NOIR_GIF = 'https://media1.tenor.com/m/T4YtiVsOLu4AAAAC/spider-noir-nicolas-cage.gif';
+
 export function Dossier() {
   const { theme } = useTheme();
   const [time, setTime] = useState('');
   const [showGif, setShowGif] = useState(false);
   const [gifFading, setGifFading] = useState(false);
+  const [gifReady, setGifReady] = useState(false);
+  const [isMobileViewport, setIsMobileViewport] = useState(() => window.matchMedia('(max-width: 639px)').matches);
   const [showQuoteGif, setShowQuoteGif] = useState(false);
   const [showUltimateCert, setShowUltimateCert] = useState(false);
   const [showDataScienceCert, setShowDataScienceCert] = useState(false);
@@ -35,18 +39,40 @@ export function Dossier() {
   }, []);
 
   useEffect(() => {
-    if (theme === 'noir') {
+    const mobileQuery = window.matchMedia('(max-width: 639px)');
+    const handleViewportChange = (event: MediaQueryListEvent) => setIsMobileViewport(event.matches);
+    const preloadedGif = new Image();
+    let cancelled = false;
+    const markGifReady = () => {
+      if (!cancelled) setGifReady(true);
+    };
+
+    mobileQuery.addEventListener('change', handleViewportChange);
+    preloadedGif.decoding = 'async';
+    preloadedGif.src = SPIDER_NOIR_GIF;
+    if (preloadedGif.complete) markGifReady();
+    else preloadedGif.addEventListener('load', markGifReady, { once: true });
+
+    return () => {
+      cancelled = true;
+      mobileQuery.removeEventListener('change', handleViewportChange);
+      preloadedGif.removeEventListener('load', markGifReady);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (theme === 'noir' && gifReady) {
       setShowGif(true);
       setGifFading(false);
       
       const fadeTimer = setTimeout(() => {
         setGifFading(true);
-      }, 2500); // Start fading out
+      }, 2200);
 
       const removeTimer = setTimeout(() => {
         setShowGif(false);
         setGifFading(false);
-      }, 3500); // Remove completely
+      }, 2800);
       
       return () => {
         clearTimeout(fadeTimer);
@@ -56,7 +82,7 @@ export function Dossier() {
       setShowGif(false);
       setGifFading(false);
     }
-  }, [theme]);
+  }, [theme, gifReady]);
 
   return (
     <PageTransition className="px-5 py-6 sm:px-20 sm:py-24 relative overflow-hidden h-full">
@@ -82,17 +108,7 @@ export function Dossier() {
                  />
                  
                  {/* Cinematic Spider-Noir Overlay */}
-                 {showGif && (
-                   <div className={`absolute inset-0 z-15 pointer-events-none transition-opacity duration-1000 ${gifFading ? 'opacity-0' : 'opacity-100'}`}>
-                     <div style={{ animation: 'flash 1s ease-out forwards' }} className="absolute inset-0 bg-white z-30"></div>
-                     <div className="absolute inset-0 bg-ink/40 z-20 mix-blend-overlay"></div>
-                     <img 
-                       src="https://media1.tenor.com/m/T4YtiVsOLu4AAAAC/spider-noir-nicolas-cage.gif" 
-                       alt="Spider Noir" 
-                       className="absolute inset-0 w-full h-full object-cover z-10 !grayscale-0 !contrast-100 mix-blend-lighten opacity-95" 
-                     />
-                   </div>
-                 )}
+                 {showGif && isMobileViewport && <SpiderNoirThemeOverlay fading={gifFading} />}
                  
                  <div className="absolute inset-0 bg-ink/5 mix-blend-overlay z-20 pointer-events-none"></div>
 
@@ -664,31 +680,14 @@ export function Dossier() {
                  <img 
                    src="https://plain-apac-prod-public.komododecks.com/202606/08/5mOlGvq8iv6ZK4A5Lumo/image.jpg" 
                    alt="Subject 8092-AX" 
-                   className="w-full h-full object-cover relative z-10 transition-all duration-700 ease-out transform-gpu will-change-transform grayscale-0 contrast-100 group-hover/image:scale-[1.05] group-hover/image:grayscale group-hover/image:contrast-125"
+                   className="w-full h-full object-cover relative z-10 transition-transform duration-500 ease-out transform-gpu will-change-transform grayscale-0 contrast-100 group-hover/image:scale-[1.05] group-hover/image:grayscale group-hover/image:contrast-125"
                    onError={(e) => {
                      (e.target as HTMLImageElement).style.display = 'none';
                    }}
                  />
                  
                  {/* Cinematic Spider-Noir Overlay */}
-                 {showGif && (
-                   <div className={`absolute inset-0 z-15 pointer-events-none transition-opacity duration-1000 ${gifFading ? 'opacity-0' : 'opacity-100'}`}>
-                     {/* Camera Flash Effect */}
-                     <div style={{ animation: 'flash 1s ease-out forwards' }} className="absolute inset-0 bg-white z-30"></div>
-                     
-                     {/* Static/Noise overlay for blending (optional extra Noir effect) */}
-                     <div className="absolute inset-0 bg-ink/40 z-20 mix-blend-overlay"></div>
-                     
-                     <img 
-                       src="https://media1.tenor.com/m/T4YtiVsOLu4AAAAC/spider-noir-nicolas-cage.gif" 
-                       alt="Spider Noir" 
-                       className="absolute inset-0 w-full h-full object-cover z-10 !grayscale-0 !contrast-100 mix-blend-lighten opacity-95" 
-                     />
-                   </div>
-                 )}
-                 
-                 {/* Preload the GIF hidden so it's instantly ready when toggled */}
-                 <img src="https://media1.tenor.com/m/T4YtiVsOLu4AAAAC/spider-noir-nicolas-cage.gif" alt="preload" className="hidden" />
+                 {showGif && !isMobileViewport && <SpiderNoirThemeOverlay fading={gifFading} />}
 
                  {/* Surveillance UI Overlay */}
                  <div className="absolute inset-0 z-20 pointer-events-none p-1 flex flex-col justify-between opacity-80 group-hover/image:opacity-100 transition-opacity duration-700 ease-out">
@@ -871,5 +870,31 @@ export function Dossier() {
         document.body
       )}
     </PageTransition>
+  );
+}
+
+function SpiderNoirThemeOverlay({ fading }: { fading: boolean }) {
+  return (
+    <div
+      className={`pointer-events-none absolute inset-0 z-15 overflow-hidden transition-opacity duration-500 ease-out ${fading ? 'opacity-0' : 'opacity-100'}`}
+      style={{ contain: 'paint', transform: 'translateZ(0)', willChange: 'opacity' }}
+      aria-hidden="true"
+    >
+      <div
+        className="absolute inset-0 z-30 bg-white"
+        style={{ animation: 'flash 450ms ease-out forwards', willChange: 'opacity' }}
+      />
+      <div className="absolute inset-0 z-20 bg-ink/20" />
+      <img
+        src={SPIDER_NOIR_GIF}
+        alt=""
+        loading="eager"
+        decoding="async"
+        fetchPriority="high"
+        draggable={false}
+        className="absolute inset-0 z-10 h-full w-full object-cover opacity-95"
+        style={{ backfaceVisibility: 'hidden', filter: 'none', transform: 'translateZ(0)' }}
+      />
+    </div>
   );
 }
