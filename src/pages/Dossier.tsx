@@ -2,23 +2,27 @@ import { Highlight } from '../components/Highlight';
 import { TopSecretStamp } from '../components/Stamps';
 import { Typewriter } from '../components/Typewriter';
 import { PageTransition } from '../components/PageTransition';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, lazy, Suspense, type SyntheticEvent } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Fingerprint, Search, MapPin, Activity, X, ExternalLink, Github, Award, Briefcase, BookOpen, Trophy } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { AnalyticsWidget } from '../components/AnalyticsWidget';
 import { GithubStreak } from '../components/GithubStreak';
 import { createPortal } from 'react-dom';
-import { PdfViewer } from '../components/PdfViewer';
 import { OperationCard } from '../components/OperationCard';
 
 import { SkillsCarousel } from '../components/SkillsCarousel';
 import { ContactPill } from '../components/ContactPill';
+import type { MusicVisual } from '../lib/music';
 
 const SPIDER_NOIR_GIF = 'https://media1.tenor.com/m/T4YtiVsOLu4AAAAC/spider-noir-nicolas-cage.gif';
+const PdfViewer = lazy(() => import('../components/PdfViewer').then((module) => ({ default: module.PdfViewer })));
 
 export function Dossier() {
-  const { theme } = useTheme();
+  const { theme, musicTheme, activeMusicTrack } = useTheme();
+  const songVisual = activeMusicTrack?.visual;
+  const portraitThemeClass = musicTheme ? `song-portrait--${musicTheme}` : '';
+  const [isPortraitRevealed, setIsPortraitRevealed] = useState(true);
   const [time, setTime] = useState('');
   const [showGif, setShowGif] = useState(false);
   const [gifFading, setGifFading] = useState(false);
@@ -27,6 +31,11 @@ export function Dossier() {
   const [showQuoteGif, setShowQuoteGif] = useState(false);
   const [showUltimateCert, setShowUltimateCert] = useState(false);
   const [showDataScienceCert, setShowDataScienceCert] = useState(false);
+  const revealPortrait = useCallback(() => setIsPortraitRevealed(true), []);
+
+  useEffect(() => {
+    setIsPortraitRevealed(!songVisual);
+  }, [songVisual]);
 
   useEffect(() => {
     const updateTime = () => {
@@ -97,18 +106,21 @@ export function Dossier() {
            
            {/* Mobile Photo */}
            <div className="w-[120px] shrink-0 transform -rotate-2 relative mt-4">
-             <div className="bg-polaroid p-1.5 pb-6 shadow-[2px_4px_10px_rgba(0,0,0,0.3)] border border-gray-300 relative">
+             <div className="song-photo-frame bg-polaroid p-1.5 pb-6 shadow-[2px_4px_10px_rgba(0,0,0,0.3)] border border-gray-300 relative">
                <div className="absolute -top-3 left-1/2 ml-1 w-1.5 h-6 border-[1.5px] border-slate-400 rounded-full bg-transparent z-30"></div>
                
                <div className="w-full h-[130px] bg-zinc-800 border border-zinc-700 relative overflow-hidden">
-                 <img 
-                   src="https://plain-apac-prod-public.komododecks.com/202606/08/5mOlGvq8iv6ZK4A5Lumo/image.jpg" 
-                   alt="Subject" 
-                   className="w-full h-full object-cover relative z-10"
+                 <SubjectPortrait
+                   alt="Subject"
+                   className={`song-portrait w-full h-full object-cover relative z-10 transition-[filter,opacity,transform] duration-[420ms] ${isPortraitRevealed ? 'opacity-100 scale-100' : 'opacity-20 scale-[1.015]'} ${portraitThemeClass}`}
                  />
+
+                 {musicTheme && <div className={`song-portrait-tint song-portrait-tint--${musicTheme}`} aria-hidden="true" />}
                  
-                 {/* Cinematic Spider-Noir Overlay */}
-                 {showGif && isMobileViewport && <SpiderNoirThemeOverlay fading={gifFading} />}
+                 {/* Song visuals take over the portrait while music is playing. */}
+                 {songVisual && isMobileViewport
+                   ? <SongThemeOverlay key={songVisual.src} visual={songVisual} onRevealPortrait={revealPortrait} />
+                   : showGif && isMobileViewport && <SpiderNoirThemeOverlay fading={gifFading} />}
                  
                  <div className="absolute inset-0 bg-ink/5 mix-blend-overlay z-20 pointer-events-none"></div>
 
@@ -243,7 +255,7 @@ export function Dossier() {
               </div>
 
               <div 
-                className="p-4 bg-amber-900/5 border border-amber-900/10 shadow-sm flex items-start gap-3 w-full cursor-pointer hover:bg-amber-900/15 dark:bg-amber-500/5 dark:border-amber-500/10 dark:hover:bg-amber-500/10 transition-colors group"
+                className="dossier-record dossier-record--certificate group flex w-full cursor-pointer items-start gap-3 p-4"
                 onClick={() => setShowDataScienceCert(true)}
               >
                   <Typewriter delay={0.1} className="opacity-50 font-bold font-mono tracking-widest mt-1 shrink-0">[!]</Typewriter>
@@ -253,14 +265,14 @@ export function Dossier() {
                         CERTIFIED: DATA SCIENCE FOUNDATIONS (2024)
                       </Highlight>
                     </Typewriter>
-                    <span className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-mono tracking-widest font-bold text-zinc-800 dark:text-zinc-200 bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600 border border-zinc-300 dark:border-zinc-600 rounded shadow-sm group-hover:scale-[1.02] transition-all w-fit">
-                      <ExternalLink className="w-3 h-3 text-sky-600 dark:text-sky-400" /> VIEW CERTIFICATE
+                    <span className="evidence-action evidence-action--certificate mt-2.5 inline-flex w-full items-center justify-center gap-1.5 sm:w-fit">
+                      <ExternalLink className="h-3.5 w-3.5" /> VIEW CERTIFICATE
                     </span>
                   </div>
               </div>
 
               <div 
-                className="mt-4 p-4 bg-amber-900/5 border border-amber-900/10 shadow-sm flex items-start gap-3 w-full cursor-pointer hover:bg-amber-900/15 dark:bg-amber-500/5 dark:border-amber-500/10 dark:hover:bg-amber-500/10 transition-colors group"
+                className="dossier-record dossier-record--certificate group mt-4 flex w-full cursor-pointer items-start gap-3 p-4"
                 onClick={() => setShowUltimateCert(true)}
               >
                   <Typewriter delay={0.2} className="opacity-50 font-bold font-mono tracking-widest mt-1 shrink-0">[!]</Typewriter>
@@ -270,8 +282,8 @@ export function Dossier() {
                         CERTIFIED: THE ULTIMATE JOB READY DATA SCIENCE COURSE
                       </Highlight>
                     </Typewriter>
-                    <span className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-mono tracking-widest font-bold text-zinc-800 dark:text-zinc-200 bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600 border border-zinc-300 dark:border-zinc-600 rounded shadow-sm group-hover:scale-[1.02] transition-all w-fit">
-                      <ExternalLink className="w-3 h-3 text-sky-600 dark:text-sky-400" /> VIEW CERTIFICATE
+                    <span className="evidence-action evidence-action--certificate mt-2.5 inline-flex w-full items-center justify-center gap-1.5 sm:w-fit">
+                      <ExternalLink className="h-3.5 w-3.5" /> VIEW CERTIFICATE
                     </span>
                   </div>
               </div>
@@ -288,7 +300,7 @@ export function Dossier() {
             
             <div className="space-y-6">
               <div 
-                className="p-4 bg-blue-950/5 border border-blue-950/10 dark:bg-blue-500/5 dark:border-blue-500/10 shadow-sm flex flex-col gap-3 w-full"
+                className="dossier-record dossier-record--research flex w-full flex-col gap-3 p-4"
               >
                   <div className="flex items-start gap-3 w-full">
                     <Typewriter delay={0.3} className="opacity-50 font-bold font-mono tracking-widest mt-1 shrink-0">[!]</Typewriter>
@@ -305,14 +317,14 @@ export function Dossier() {
                   </div>
                   
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2 pt-3 border-t border-blue-950/10 dark:border-blue-500/10">
-                    <a href="https://ieeexplore.ieee.org/document/11441054" target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 text-[10px] sm:text-xs font-mono font-bold tracking-widest bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-zinc-800 dark:text-zinc-200 border border-zinc-300 dark:border-zinc-600 p-2.5 rounded shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]">
-                      <ExternalLink className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" /> IEEE XPLORE PAPER
+                    <a href="https://ieeexplore.ieee.org/document/11441054" target="_blank" rel="noreferrer" className="evidence-action evidence-action--ieee flex items-center justify-center gap-2">
+                      <ExternalLink className="h-3.5 w-3.5" /> IEEE XPLORE PAPER
                     </a>
-                    <a href="https://x.com/___moinn_/status/2038219385077375293?s=20" target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 text-[10px] sm:text-xs font-mono font-bold tracking-widest bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-zinc-800 dark:text-zinc-200 border border-zinc-300 dark:border-zinc-600 p-2.5 rounded shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]">
-                      <ExternalLink className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" /> VIEW X POST
+                    <a href="https://x.com/___moinn_/status/2038219385077375293?s=20" target="_blank" rel="noreferrer" className="evidence-action evidence-action--x flex items-center justify-center gap-2">
+                      <ExternalLink className="h-3.5 w-3.5" /> VIEW X POST
                     </a>
-                    <a href="https://www.linkedin.com/posts/mdmoinakhtar_ai-machinelearning-generativeai-share-7444005556559794176-z_Ot/?utm_source=share&utm_medium=member_desktop&rcm=ACoAAErQS70BROmbAnLMOHVZZb-iJMzWSNGt-lA" target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 text-[10px] sm:text-xs font-mono font-bold tracking-widest bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-zinc-800 dark:text-zinc-200 border border-zinc-300 dark:border-zinc-600 p-2.5 rounded shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]">
-                      <ExternalLink className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" /> LINKEDIN POST
+                    <a href="https://www.linkedin.com/posts/mdmoinakhtar_ai-machinelearning-generativeai-share-7444005556559794176-z_Ot/?utm_source=share&utm_medium=member_desktop&rcm=ACoAAErQS70BROmbAnLMOHVZZb-iJMzWSNGt-lA" target="_blank" rel="noreferrer" className="evidence-action evidence-action--linkedin flex items-center justify-center gap-2">
+                      <ExternalLink className="h-3.5 w-3.5" /> LINKEDIN POST
                     </a>
                   </div>
               </div>
@@ -328,7 +340,26 @@ export function Dossier() {
             </div>
             
             <div className="space-y-4">
-              <div className="p-4 bg-emerald-900/5 border border-emerald-900/10 dark:bg-emerald-500/5 dark:border-emerald-500/10 shadow-sm flex flex-row items-start gap-4 transition-all hover:bg-emerald-900/10 dark:hover:bg-emerald-500/10">
+              <div className="dossier-record dossier-record--grand-win flex flex-row items-start gap-4 p-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-amber-700/30 bg-amber-300/45 shadow-sm select-none">
+                  <Trophy className="h-6 w-6 text-amber-800" strokeWidth={1.8} />
+                </div>
+                <div className="flex flex-1 flex-col gap-2">
+                  <div className="flex w-full flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="h-2 w-2 shrink-0 rounded-full bg-amber-600" />
+                      <span className="font-mono text-xs font-black tracking-wide text-ink sm:text-sm">HERMES X GROWTHX BUILDATHON</span>
+                      <span className="rounded border border-amber-700/30 bg-amber-300/50 px-1.5 py-0.5 font-mono text-[10px] font-black uppercase leading-none text-amber-900">Winner · $5,800 Credits</span>
+                    </div>
+                    <div className="whitespace-nowrap font-mono text-[10px] font-bold opacity-60 sm:self-center">2026</div>
+                  </div>
+                  <p className="font-mono text-[12px] font-bold leading-relaxed text-ink/80">
+                    Built <Highlight style="marker" color="yellow">LazyClip.buzz</Highlight> in 8 hours, generated every demo live, and reached 100+ signups in one day.
+                  </p>
+                </div>
+              </div>
+
+              <div className="dossier-record dossier-record--winner flex flex-row items-start gap-4 p-4">
                 <div className="w-12 h-12 bg-white rounded-lg border border-emerald-900/20 flex items-center justify-center p-1 shrink-0 shadow-sm overflow-hidden select-none">
                   <svg className="w-10 h-10 text-emerald-800 dark:text-emerald-500" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <circle cx="50" cy="50" r="44" stroke="currentColor" strokeWidth="2" />
@@ -361,7 +392,7 @@ export function Dossier() {
                 </div>
               </div>
 
-              <div className="p-4 bg-emerald-900/5 border border-emerald-900/10 dark:bg-emerald-500/5 dark:border-emerald-500/10 shadow-sm flex flex-row items-start gap-4 transition-all hover:bg-emerald-900/10 dark:hover:bg-emerald-500/10">
+              <div className="dossier-record dossier-record--finalist flex flex-row items-start gap-4 p-4">
                 <div className="w-12 h-12 bg-emerald-900/10 rounded-lg border border-emerald-900/20 flex items-center justify-center shrink-0 shadow-sm select-none">
                   <Trophy className="w-6 h-6 text-emerald-800/80 dark:text-emerald-500" strokeWidth={1.5} />
                 </div>
@@ -386,7 +417,7 @@ export function Dossier() {
                 </div>
               </div>
 
-              <div className="p-4 bg-emerald-900/5 border border-emerald-900/10 dark:bg-emerald-500/5 dark:border-emerald-500/10 shadow-sm flex flex-row items-start gap-4 transition-all hover:bg-emerald-900/10 dark:hover:bg-emerald-500/10">
+              <div className="dossier-record dossier-record--participation flex flex-row items-start gap-4 p-4">
                 <div className="w-12 h-12 bg-emerald-900/10 rounded-lg border border-emerald-900/20 flex items-center justify-center shrink-0 shadow-sm select-none">
                   <Activity className="w-6 h-6 text-emerald-800/80 dark:text-emerald-500" strokeWidth={1.5} />
                 </div>
@@ -433,9 +464,46 @@ export function Dossier() {
               </h2>
             </div>
             <div className="space-y-6">
-              <OperationCard 
-                id="OP-081"
+              <OperationCard
+                id="OP-001"
                 delay={0.1}
+                title="LAZYCLIP.BUZZ"
+                tech="Open Source, Video Editing, Natural Language, Captions, Voice-over"
+                status="ACTIVE"
+                statusColor="text-emerald-800"
+                imageUrl="/lazyclip.buzz mock.png"
+                githubUrl="https://github.com/JAYATIAHUJA/LAZYCLIP.BUZZ"
+                liveUrl="https://lazyclip.buzz"
+                xUrl="https://x.com/___moinn_/status/2076235594209042859?s=20"
+                defaultOpen={true}
+                desc={
+                  <>
+                    An open-source video editor that turns prompts, uploads, or YouTube segments into captioned vertical videos with optional voice-over.
+                  </>
+                }
+              />
+
+              <OperationCard
+                id="OP-317"
+                delay={0.2}
+                title="RELAY VAULT"
+                tech="Monad Testnet, Smart Contracts, AI Agents, Escrow"
+                status="ACTIVE"
+                statusColor="text-emerald-800"
+                imageUrl="/RelayVault landing page.png"
+                githubUrl="https://github.com/MDMOINAKHTARR/Relay_Vault"
+                youtubeUrl="https://youtu.be/IpkW9Zmbb7s?si=qtM8zDWlvqMVsKKQ"
+                defaultOpen={true}
+                desc={
+                  <>
+                    An on-chain marketplace where AI agents negotiate, exchange value, and complete protected workflows through smart-contract escrow.
+                  </>
+                }
+              />
+
+              <OperationCard
+                id="OP-081"
+                delay={0.3}
                 title="UPSTART - STARTUP BLUEPRINT ENGINE"
                 tech="Next.js, Node.js, SQLite, Google Gen AI"
                 status="DEPLOYED"
@@ -448,41 +516,6 @@ export function Dossier() {
                 desc={
                   <>
                     An AI generation platform transforming concepts into validated plans and roadmaps using <Highlight style="circle" color="red">Google Generative AI</Highlight>.
-                  </>
-                }
-              />
-
-              <OperationCard 
-                id="OP-044"
-                delay={0.2}
-                title="EMOTION-BASED MOVIE RECOMMENDER"
-                tech="Python, DeepFace, OpenCV, MySQL"
-                status="SUCCESS"
-                statusColor="text-emerald-800"
-                imageUrl="https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&q=80&w=1000"
-                githubUrl="https://github.com/MDMOINAKHTARR"
-                defaultOpen={true}
-                desc={
-                  <>
-                    Real-time movie recommendations matching webcam facial responses using <Highlight style="circle" color="green">DeepFace</Highlight> OpenCV analysis.
-                  </>
-                }
-              />
-              
-              <OperationCard 
-                id="OP-012"
-                delay={0.3}
-                title="DEVCATION - HACKATHON ENVIRONMENT"
-                tech="Next.js 15, Matter.js, React"
-                status="VERIFIED"
-                statusColor="text-emerald-800"
-                imageUrl="/devacation-mockup.jpg"
-                githubUrl="https://github.com/MDMOINAKHTARR"
-                liveUrl="#"
-                defaultOpen={true}
-                desc={
-                  <>
-                    High-engagement physics engine portfolio site using <Highlight style="marker" color="yellow">Matter.js</Highlight> which secured 1st Place at PromptWars (IGDTUW 2026).
                   </>
                 }
               />
@@ -506,14 +539,49 @@ export function Dossier() {
                 }
               />
 
+              <OperationCard
+                id="OP-044"
+                delay={0.5}
+                title="EMOTION-BASED MOVIE RECOMMENDER"
+                tech="Python, DeepFace, OpenCV, MySQL"
+                status="SUCCESS"
+                statusColor="text-emerald-800"
+                imageUrl="https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&q=80&w=1000"
+                githubUrl="https://github.com/MDMOINAKHTARR"
+                defaultOpen={true}
+                desc={
+                  <>
+                    Real-time movie recommendations matching webcam facial responses using <Highlight style="circle" color="green">DeepFace</Highlight> OpenCV analysis.
+                  </>
+                }
+              />
+
+              <OperationCard 
+                id="OP-012"
+                delay={0.6}
+                title="DEVCATION - HACKATHON ENVIRONMENT"
+                tech="Next.js 15, Matter.js, React"
+                status="VERIFIED"
+                statusColor="text-emerald-800"
+                imageUrl="/devacation-mockup.jpg"
+                githubUrl="https://github.com/MDMOINAKHTARR"
+                liveUrl="#"
+                defaultOpen={true}
+                desc={
+                  <>
+                    High-engagement physics engine portfolio site using <Highlight style="marker" color="yellow">Matter.js</Highlight> which secured 1st Place at PromptWars (IGDTUW 2026).
+                  </>
+                }
+              />
+
               <OperationCard 
                 id="OP-256"
-                delay={0.5}
+                delay={0.7}
                 title="CASSENDRA"
                 tech="React, Data Analysis, Next.js, Tailwind"
                 status="VERIFIED"
                 statusColor="text-emerald-800"
-                imageUrl="https://images.unsplash.com/photo-1555949963-aa79dcee57d5?auto=format&fit=crop&q=80&w=1000"
+                imageUrl="/cassendra-dashboard.png"
                 githubUrl="https://github.com/MDMOINAKHTARR"
                 liveUrl="#"
                 defaultOpen={true}
@@ -674,20 +742,23 @@ export function Dossier() {
             <div className="absolute -top-4 left-1/2 ml-1 w-2 h-8 border-[1.5px] border-slate-400 rounded-full bg-transparent z-30"></div>
             
             {/* Photo Container */}
-            <div className="w-[250px] h-[280px] sm:w-[290px] sm:h-[340px] lg:w-[350px] lg:h-[420px] bg-polaroid p-2 pb-6 sm:p-3 sm:pb-10 lg:p-4 lg:pb-12 shadow-[2px_4px_10px_rgba(0,0,0,0.3)] border border-gray-300 transition-all transform-gpu will-change-transform group-hover/photo:rotate-0 group-hover/photo:scale-[1.02] duration-700 ease-out relative z-20">
+            <div className="song-photo-frame w-[250px] h-[280px] sm:w-[290px] sm:h-[340px] lg:w-[350px] lg:h-[420px] bg-polaroid p-2 pb-6 sm:p-3 sm:pb-10 lg:p-4 lg:pb-12 shadow-[2px_4px_10px_rgba(0,0,0,0.3)] border border-gray-300 transition-all transform-gpu will-change-transform group-hover/photo:rotate-0 group-hover/photo:scale-[1.02] duration-700 ease-out relative z-20">
               
               <div className="w-full h-full bg-zinc-800 overflow-hidden relative border border-zinc-700 group/image">
-                 <img 
-                   src="https://plain-apac-prod-public.komododecks.com/202606/08/5mOlGvq8iv6ZK4A5Lumo/image.jpg" 
-                   alt="Subject 8092-AX" 
-                   className="w-full h-full object-cover relative z-10 transition-transform duration-500 ease-out transform-gpu will-change-transform grayscale-0 contrast-100 group-hover/image:scale-[1.05] group-hover/image:grayscale group-hover/image:contrast-125"
-                   onError={(e) => {
-                     (e.target as HTMLImageElement).style.display = 'none';
+                 <SubjectPortrait
+                   alt="Subject 8092-AX"
+                   className={`song-portrait w-full h-full object-cover relative z-10 transition-[transform,filter,opacity] duration-[420ms] ease-out transform-gpu will-change-transform grayscale-0 contrast-100 group-hover/image:scale-[1.05] group-hover/image:grayscale group-hover/image:contrast-125 ${isPortraitRevealed ? 'opacity-100' : 'opacity-20 scale-[1.015]'} ${portraitThemeClass}`}
+                   onError={(event) => {
+                     event.currentTarget.style.display = 'none';
                    }}
                  />
+
+                 {musicTheme && <div className={`song-portrait-tint song-portrait-tint--${musicTheme}`} aria-hidden="true" />}
                  
-                 {/* Cinematic Spider-Noir Overlay */}
-                 {showGif && !isMobileViewport && <SpiderNoirThemeOverlay fading={gifFading} />}
+                 {/* Song visuals take over the portrait while music is playing. */}
+                 {songVisual && !isMobileViewport
+                   ? <SongThemeOverlay key={songVisual.src} visual={songVisual} onRevealPortrait={revealPortrait} />
+                   : showGif && !isMobileViewport && <SpiderNoirThemeOverlay fading={gifFading} />}
 
                  {/* Surveillance UI Overlay */}
                  <div className="absolute inset-0 z-20 pointer-events-none p-1 flex flex-col justify-between opacity-80 group-hover/image:opacity-100 transition-opacity duration-700 ease-out">
@@ -835,7 +906,7 @@ export function Dossier() {
           </div>
         </div>
       </div>
-      
+
       {showDataScienceCert && typeof document !== 'undefined' && createPortal(
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 pb-20 sm:pb-6 bg-ink/80 backdrop-blur-sm" onClick={() => setShowDataScienceCert(false)}>
           <div className="relative w-full max-w-4xl max-h-[85vh] bg-paper shadow-2xl flex flex-col z-10 animate-in fade-in zoom-in duration-200" onClick={(e) => e.stopPropagation()}>
@@ -863,13 +934,41 @@ export function Dossier() {
                </button>
             </div>
             <div className="flex-1 w-full bg-zinc-200 relative overflow-hidden flex items-center justify-center">
-               <PdfViewer url="/The_Ultimate_Job_Ready_Data_Science_Course_Certificate.pdf" />
+               <Suspense fallback={<SecureViewerFallback />}>
+                 <PdfViewer url="/The_Ultimate_Job_Ready_Data_Science_Course_Certificate.pdf" />
+               </Suspense>
             </div>
           </div>
         </div>,
         document.body
       )}
     </PageTransition>
+  );
+}
+
+function SubjectPortrait({
+  alt,
+  className,
+  onError,
+}: {
+  alt: string;
+  className: string;
+  onError?: (event: SyntheticEvent<HTMLImageElement>) => void;
+}) {
+  return (
+    <picture className="contents">
+      <source srcSet="/portrait.avif" type="image/avif" />
+      <source srcSet="/portrait.webp" type="image/webp" />
+      <img src="/portrait.jpg" alt={alt} className={className} loading="eager" decoding="async" onError={onError} />
+    </picture>
+  );
+}
+
+function SecureViewerFallback() {
+  return (
+    <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-zinc-200 p-8 font-mono text-zinc-700">
+      <span className="text-[10px] font-black tracking-[0.22em] opacity-60">Loading viewer…</span>
+    </div>
   );
 }
 
@@ -895,6 +994,99 @@ function SpiderNoirThemeOverlay({ fading }: { fading: boolean }) {
         className="absolute inset-0 z-10 h-full w-full object-cover opacity-95"
         style={{ backfaceVisibility: 'hidden', filter: 'none', transform: 'translateZ(0)' }}
       />
+    </div>
+  );
+}
+
+function SongThemeOverlay({ visual, onRevealPortrait }: { visual: MusicVisual; onRevealPortrait: () => void }) {
+  const [isVisible, setIsVisible] = useState(true);
+  const [isFading, setIsFading] = useState(false);
+  const [completedLoops, setCompletedLoops] = useState(0);
+  const playCount = visual.playCount ?? 1;
+  const mediaClassName = 'song-theme-media absolute inset-0 z-10 h-full w-full object-cover opacity-100';
+  const mediaStyle = {
+    backfaceVisibility: 'hidden' as const,
+    objectPosition: visual.objectPosition ?? 'center',
+    transform: 'translateZ(0)',
+  };
+
+  useEffect(() => {
+    if (visual.type !== 'image') return;
+
+    const totalDuration = (visual.cycleDurationMs ?? 3000) * playCount;
+    const fadeTimer = window.setTimeout(() => {
+      setIsFading(true);
+      onRevealPortrait();
+    }, Math.max(0, totalDuration - 420));
+    const hideTimer = window.setTimeout(() => setIsVisible(false), totalDuration);
+
+    return () => {
+      window.clearTimeout(fadeTimer);
+      window.clearTimeout(hideTimer);
+    };
+  }, [onRevealPortrait, playCount, visual.cycleDurationMs, visual.type]);
+
+  if (!isVisible) return null;
+
+  const handleVideoEnded = (video: HTMLVideoElement) => {
+    const nextLoop = completedLoops + 1;
+    if (nextLoop >= playCount) {
+      onRevealPortrait();
+      setIsVisible(false);
+      return;
+    }
+
+    setCompletedLoops(nextLoop);
+    video.currentTime = 0;
+    void video.play();
+  };
+
+  return (
+    <div
+      className={`song-theme-overlay ${visual.type === 'image' ? 'song-theme-overlay--gif' : ''} pointer-events-none absolute inset-0 z-[15] overflow-hidden transition-opacity duration-[400ms] ease-out ${isFading ? 'opacity-0' : 'opacity-100'}`}
+      style={{ contain: 'paint', transform: 'translateZ(0)' }}
+      aria-hidden="true"
+    >
+      <div
+        className="song-theme-flash absolute inset-0 z-30 bg-white"
+        style={{ animation: 'flash 350ms ease-out forwards', willChange: 'opacity' }}
+      />
+      <div className="song-theme-frame-transition absolute inset-0 z-30" />
+      <div className="absolute inset-0 z-20 bg-ink/10 mix-blend-overlay" />
+      {visual.type === 'video' ? (
+        <video
+          src={visual.src}
+          className={mediaClassName}
+          style={mediaStyle}
+          autoPlay
+          muted
+          playsInline
+          preload="auto"
+          disablePictureInPicture
+          onTimeUpdate={(event) => {
+            const video = event.currentTarget;
+            if (completedLoops === playCount - 1 && video.duration - video.currentTime <= 0.4) {
+              setIsFading(true);
+              onRevealPortrait();
+            }
+          }}
+          onEnded={(event) => handleVideoEnded(event.currentTarget)}
+          onError={() => {
+            onRevealPortrait();
+            setIsVisible(false);
+          }}
+        />
+      ) : (
+        <img
+          src={visual.src}
+          alt=""
+          className={mediaClassName}
+          style={mediaStyle}
+          loading="eager"
+          decoding="async"
+          draggable={false}
+        />
+      )}
     </div>
   );
 }
