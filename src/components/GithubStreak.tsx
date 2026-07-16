@@ -37,15 +37,16 @@ export function GithubStreak() {
     setError(null);
 
     fetch(`/api/github-contributions?username=${encodeURIComponent(activeUsername)}`)
-      .then(res => {
+      .then(async res => {
         const contentType = res.headers.get('content-type');
         if (!contentType || !contentType.includes('application/json')) {
           throw new Error('Incorrect response format from server (expected JSON)');
         }
+        const payload = await res.json();
         if (!res.ok) {
-          throw new Error(`Profile not found or API exceeded rate limit`);
+          throw new Error(payload.error || `GitHub request failed with status ${res.status}`);
         }
-        return res.json();
+        return payload;
       })
       .then(payload => {
         if (!isMounted) return;
@@ -125,8 +126,8 @@ export function GithubStreak() {
       .catch(err => {
         if (!isMounted) return;
         console.error("Failed to load GitHub streak data:", err);
-        const errorMessage = err.message === 'Failed to fetch' 
-          ? 'Network Error / Dev Server Restarting' 
+        const errorMessage = err.message === 'Failed to fetch'
+          ? 'Network error while contacting GitHub'
           : (err.message || "Failed to fetch streak data");
         setError(errorMessage);
         setIsLoading(false);

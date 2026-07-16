@@ -1,25 +1,17 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { getGitHubContributions } from '../lib/github-contributions';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const username = (req.query.username as string) || 'MDMOINAKHTARR';
 
   try {
-    const url = `https://github-contributions-api.jogruber.de/v4/${encodeURIComponent(username)}?y=last`;
-    const response = await fetch(url, { headers: { Accept: 'application/json' } });
-
-    if (!response.ok) {
-      return res.status(response.status).json({
-        success: false,
-        error: `Contributions API returned status ${response.status}`,
-      });
-    }
-
-    const json: any = await response.json();
-    const rawDays: { date: string; count: number; level: number }[] = json.contributions || [];
-    rawDays.sort((a, b) => a.date.localeCompare(b.date));
-
-    return res.json({ success: true, username, days: rawDays });
-  } catch (error: any) {
-    return res.status(500).json({ success: false, error: error.message || 'Failed to fetch contributions' });
+    const days = await getGitHubContributions(username);
+    res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=86400');
+    return res.json({ success: true, username, days });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to fetch contributions';
+    const status = message === 'GitHub profile not found' ? 404 : message === 'Invalid GitHub username' ? 400 : 502;
+    console.error('GitHub contribution calendar error:', error);
+    return res.status(status).json({ success: false, error: message });
   }
 }
