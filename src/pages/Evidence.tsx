@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Highlight } from '../components/Highlight';
-import { TopSecretStamp, ClassifiedStamp } from '../components/Stamps';
+import { ClassifiedStamp } from '../components/Stamps';
 import { Typewriter } from '../components/Typewriter';
 import { PageTransition } from '../components/PageTransition';
-import { X, ExternalLink } from 'lucide-react';
+import { Award, BookOpen, ExternalLink, Medal, Sparkles, Trophy, X } from 'lucide-react';
 import { PdfViewer } from '../components/PdfViewer';
 
 export function Evidence() {
@@ -12,91 +12,150 @@ export function Evidence() {
   const [activePdf, setActivePdf] = useState<string | null>(null);
 
   return (
-    <PageTransition className="px-6 pt-6 pb-12 sm:px-20 sm:pt-12 sm:pb-24 relative overflow-hidden">
-      <TopSecretStamp text="ATTACHMENT B: FIELD EVIDENCE & RECORDS" />
+    <PageTransition className="awards-page relative overflow-hidden px-4 pb-10 pt-4 sm:px-20 sm:pb-24 sm:pt-6">
+      <section className="awards-desktop-summary mt-2 hidden sm:grid" aria-label="Awards overview">
+        <div className="awards-desktop-intro">
+          <span className="awards-desktop-kicker"><Sparkles className="h-4 w-4" /> Selected achievements</span>
+          <h1>Awards, wins & published work</h1>
+          <p>A concise record of competitive builds, verified results, and research contributions.</p>
+        </div>
+        <div className="awards-desktop-metric awards-desktop-metric--gold">
+          <Trophy className="h-6 w-6" />
+          <span><strong>02</strong> First-place wins</span>
+        </div>
+        <div className="awards-desktop-metric awards-desktop-metric--green">
+          <Medal className="h-6 w-6" />
+          <span><strong>04</strong> Competition records</span>
+        </div>
+        <div className="awards-desktop-metric awards-desktop-metric--blue">
+          <BookOpen className="h-6 w-6" />
+          <span><strong>01</strong> IEEE paper</span>
+        </div>
+      </section>
 
-      <div className="space-y-16 relative z-10 mt-8">
+      <section className="awards-mobile-hero mt-5 sm:hidden" aria-labelledby="mobile-awards-title">
+        <div className="awards-mobile-eyebrow">
+          <span><Sparkles className="h-3.5 w-3.5" /> Portfolio highlights</span>
+          <span>2025—2026</span>
+        </div>
+        <h1 id="mobile-awards-title">Awards & Research</h1>
+        <p>Competition results, certificates, and published work—organized for a quick review.</p>
+        <div className="awards-mobile-stats" aria-label="Achievement summary">
+          <span><strong>02</strong> Wins</span>
+          <span><strong>04</strong> Events</span>
+          <span><strong>01</strong> Paper</span>
+        </div>
+      </section>
+
+      <div className="relative z-10 mt-7 space-y-9 sm:mt-8 sm:space-y-16">
         
         {/* Section 1: Hackathons */}
-        <div className="mb-8">
-          <Typewriter delay={0.5} className="text-xl font-bold uppercase tracking-widest border-b border-ink/30 pb-2 mb-6 block">
-            [01] Tracked Field Deployments (Hackathons)
+        <div className="mb-6 sm:mb-8">
+          <Typewriter delay={0.5} className="award-section-heading mb-4 block border-b border-ink/30 pb-2 text-base font-black uppercase leading-snug tracking-[0.08em] sm:mb-6 sm:text-xl sm:tracking-widest">
+            <span className="hidden sm:inline">[01] Tracked Field Deployments (Hackathons)</span>
+            <span className="flex items-center justify-between gap-3 sm:hidden"><span className="flex items-center gap-2"><Trophy className="h-4 w-4" /> Hackathon wins</span><span className="award-section-count">04</span></span>
           </Typewriter>
           
-          <div className="space-y-8">
+          <div className="award-stack space-y-6 sm:space-y-8">
             {/* Deploy 1 */}
-            <div className="border border-ink/20 bg-ink/5 p-4 sm:p-6 relative">
-              <Typewriter delay={0.7} className="opacity-50 text-stamp font-bold mb-2 block">[WINNER: $5,800 IN CREDITS]</Typewriter>
-              <Typewriter delay={0.9} className="text-lg font-bold">HERMES X GROWTHX BUILDATHON</Typewriter>
-              <Typewriter delay={1.1} className="block mt-2 mb-4">
-                Won after building <Highlight style="circle" color="blue">LazyClip.buzz</Highlight> in just 8 hours—a Telegram workflow that turns YouTube links into ready-to-post short clips. Reached <Highlight style="marker" color="yellow">100+ signups in one day</Highlight> with every demo clip generated live.
-              </Typewriter>
-              <Typewriter delay={1.2} className="block text-sm opacity-80 mb-2">
-                Sponsored by <Highlight style="underline" color="red">OpenCode</Highlight>, with <Highlight style="circle" color="green">Hermes by Nous Research</Highlight> at the core and <Highlight style="marker" color="yellow">Agent Orchestrator</Highlight> running multiple AI agents in parallel.
-              </Typewriter>
-              <Typewriter delay={1.3} className="block text-sm opacity-75 mb-4">
-                Supported with credits and tooling from <Highlight style="underline" color="blue">OpenAI</Highlight>, <Highlight style="marker" color="yellow">ElevenLabs</Highlight>, <Highlight style="underline" color="green">Linkup</Highlight>, <Highlight style="circle" color="red">Dodo Payments</Highlight>, <Highlight style="marker" color="pink">Wispr Flow</Highlight>, and <Highlight style="underline" color="blue">Cloudflare</Highlight>.
+            <div className="award-card award-card--featured award-card--grand-win relative border border-ink/20 p-3 sm:p-6">
+              <span className="award-mobile-seal sm:hidden"><Trophy className="h-4 w-4" /> Grand win</span>
+              <Typewriter delay={0.7} className="award-kicker mb-2 block font-black text-stamp">[BUILDATHON WINNER]</Typewriter>
+              <Typewriter delay={0.9} className="award-card-title text-base font-black leading-snug sm:text-lg">HERMES X GROWTHX BUILDATHON</Typewriter>
+              <div className="award-prize-highlight" aria-label="$5,800 in winner credits">
+                <strong>$5,800</strong>
+                <span>Winner credits</span>
+              </div>
+              <Typewriter delay={1.1} className="mb-3 mt-2 block text-sm leading-relaxed sm:mb-4 sm:text-base">
+                Built <Highlight style="circle" color="blue">LazyClip.buzz</Highlight> in 8 hours, won the Buildathon, and reached <Highlight style="marker" color="yellow">100+ signups on day one</Highlight>.
               </Typewriter>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6 border-t border-ink/10 pt-6">
-                <div className="bg-polaroid p-3 pb-8 shadow-[2px_4px_10px_rgba(0,0,0,0.3)] border border-gray-300 transform -rotate-2 hover:rotate-0 hover:scale-105 transition duration-500 mx-auto max-w-sm w-full">
-                  <div className="w-full aspect-[4/3] bg-zinc-800 overflow-hidden border border-zinc-700">
+              <div className="award-sponsor-block" aria-label="Technology partners">
+                <span className="award-sponsor-label">Powered & supported by</span>
+                <div className="award-sponsor-list">
+                  <span className="award-sponsor award-sponsor--opencode">OpenCode</span>
+                  <span className="award-sponsor award-sponsor--openai">OpenAI</span>
+                  <span className="award-sponsor award-sponsor--elevenlabs">ElevenLabs</span>
+                  <span className="award-sponsor award-sponsor--linkup">Linkup</span>
+                  <span className="award-sponsor award-sponsor--dodo">Dodo Payments</span>
+                  <span className="award-sponsor award-sponsor--wispr">Wispr Flow</span>
+                  <span className="award-sponsor award-sponsor--cloudflare">Cloudflare</span>
+                </div>
+              </div>
+
+              <div className="award-impact-row sm:hidden" aria-label="Buildathon impact">
+                <span><strong>8 hrs</strong> to build</span>
+                <span><strong>100+</strong> signups</span>
+                <span><strong>$5.8k</strong> credits</span>
+              </div>
+
+              <div className="award-evidence-grid mt-4 grid grid-cols-2 gap-2 border-t border-ink/10 pt-4 sm:mt-6 sm:grid-cols-2 sm:gap-6 sm:pt-6">
+                <div className="award-photo mx-auto w-full max-w-sm -rotate-1 transform border border-gray-300 bg-polaroid p-2 pb-4 shadow-[2px_4px_10px_rgba(0,0,0,0.3)] transition duration-500 hover:rotate-0 sm:-rotate-2 sm:p-3 sm:pb-8 sm:hover:scale-105">
+                  <div className="aspect-video w-full overflow-hidden border border-zinc-700 bg-zinc-800 sm:aspect-[4/3]">
                     <img src="/hermeswin1.jpeg" alt="GrowthX Buildathon win" loading="lazy" decoding="async" className="w-full h-full object-cover opacity-90 hover:opacity-100 transition duration-500" />
                   </div>
                 </div>
-                <div className="bg-polaroid p-3 pb-8 shadow-[2px_4px_10px_rgba(0,0,0,0.3)] border border-gray-300 transform rotate-2 hover:rotate-0 hover:scale-105 transition duration-500 mx-auto max-w-sm w-full">
-                  <div className="w-full aspect-[4/3] bg-zinc-800 overflow-hidden border border-zinc-700">
+                <div className="award-photo mx-auto w-full max-w-sm rotate-1 transform border border-gray-300 bg-polaroid p-2 pb-4 shadow-[2px_4px_10px_rgba(0,0,0,0.3)] transition duration-500 hover:rotate-0 sm:rotate-2 sm:p-3 sm:pb-8 sm:hover:scale-105">
+                  <div className="aspect-video w-full overflow-hidden border border-zinc-700 bg-zinc-800 sm:aspect-[4/3]">
                     <img src="/hermeswin2-optimized.jpg" alt="LazyClip.buzz team at GrowthX Buildathon" loading="lazy" decoding="async" className="w-full h-full object-cover opacity-90 hover:opacity-100 transition duration-500" />
                   </div>
                 </div>
 
-                <a href="https://lnkd.in/g-hDZPUq" target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 text-[10px] sm:text-xs font-mono font-bold tracking-widest bg-zinc-950 hover:bg-zinc-800 text-white border border-zinc-700 h-12 p-2.5 rounded shadow-sm transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] group mt-2">
+                <a href="https://lnkd.in/g-hDZPUq" target="_blank" rel="noreferrer" className="evidence-action evidence-action--x group mt-1 flex items-center justify-center gap-2 sm:mt-2">
                   <span className="text-xs text-white font-mono font-bold flex items-center gap-2"><ExternalLink className="w-4 h-4 text-white" /> VIEW X POST</span>
                 </a>
-                <a href="https://www.linkedin.com/posts/mdmoinakhtar_we-won-the-growthx-buildathon-%F0%9D%9F%B1%F0%9D%9F%B4%F0%9D%9F%AC%F0%9D%9F%AC-ugcPost-7482699137520513025-Rubs/?utm_source=share&amp;utm_medium=member_desktop&amp;rcm=ACoAAErQS70BROmbAnLMOHVZZb-iJMzWSNGt-lA" target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 text-[10px] sm:text-xs font-mono font-bold tracking-widest bg-[#0A66C2] hover:bg-[#084f96] text-white border border-[#084f96] h-12 p-2.5 rounded shadow-sm transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] group mt-2">
+                <a href="https://www.linkedin.com/posts/mdmoinakhtar_we-won-the-growthx-buildathon-%F0%9D%9F%B1%F0%9D%9F%B4%F0%9D%9F%AC%F0%9D%9F%AC-ugcPost-7482699137520513025-Rubs/?utm_source=share&amp;utm_medium=member_desktop&amp;rcm=ACoAAErQS70BROmbAnLMOHVZZb-iJMzWSNGt-lA" target="_blank" rel="noreferrer" className="evidence-action evidence-action--linkedin group mt-1 flex items-center justify-center gap-2 sm:mt-2">
                   <span className="text-xs text-white font-mono font-bold flex items-center gap-2"><ExternalLink className="w-4 h-4 text-white" /> VIEW LINKEDIN POST</span>
                 </a>
               </div>
             </div>
 
             {/* Deploy 2 */}
-            <div className="border border-ink/20 bg-ink/5 p-4 sm:p-6 relative">
-              <Typewriter delay={0.8} className="opacity-50 text-stamp font-bold mb-2 block">[SUCCESS: 1ST PLACE]</Typewriter>
-              <Typewriter delay={1.0} className="text-lg font-bold">PROMPTWARS | INNERVE 2026 (MAR 2026)</Typewriter>
-              <Typewriter delay={1.2} className="block mt-2 mb-4">Secured 1st Place at IGDTUW. Built <Highlight style="circle" color="red">Devcation platform</Highlight>.</Typewriter>
+            <div className="award-card award-card--featured award-card--winner relative border border-ink/20 p-3 sm:p-6">
+              <span className="award-mobile-seal sm:hidden"><Medal className="h-4 w-4" /> 1st place</span>
+              <Typewriter delay={0.8} className="award-kicker mb-2 block font-black text-stamp">[SUCCESS: 1ST PLACE]</Typewriter>
+              <Typewriter delay={1.0} className="award-card-title text-base font-black leading-snug sm:text-lg">PROMPTWARS | INNERVE 2026 (MAR 2026)</Typewriter>
+              <Typewriter delay={1.2} className="mb-3 mt-2 block text-sm leading-relaxed sm:mb-4 sm:text-base">Secured 1st Place at IGDTUW. Built <Highlight style="circle" color="red">Devcation platform</Highlight>.</Typewriter>
+
+              <div className="award-impact-row sm:hidden" aria-label="PromptWars result">
+                <span><strong>#1</strong> placement</span>
+                <span><strong>IGDTUW</strong> host</span>
+                <span><strong>2026</strong> season</span>
+              </div>
 
               {/* Photo Evidence Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6 border-t border-ink/10 pt-6">
-                <div className="bg-polaroid p-3 pb-8 shadow-[2px_4px_10px_rgba(0,0,0,0.3)] border border-gray-300 transform -rotate-2 hover:rotate-0 hover:scale-105 transition duration-500 mx-auto max-w-sm w-full">
-                  <div className="w-full aspect-[4/3] bg-zinc-800 overflow-hidden border border-zinc-700">
+              <div className="award-evidence-grid mt-4 grid grid-cols-2 gap-2 border-t border-ink/10 pt-4 sm:mt-6 sm:grid-cols-2 sm:gap-6 sm:pt-6">
+                <div className="award-photo mx-auto w-full max-w-sm -rotate-1 transform border border-gray-300 bg-polaroid p-2 pb-4 shadow-[2px_4px_10px_rgba(0,0,0,0.3)] transition duration-500 hover:rotate-0 sm:-rotate-2 sm:p-3 sm:pb-8 sm:hover:scale-105">
+                  <div className="aspect-video w-full overflow-hidden border border-zinc-700 bg-zinc-800 sm:aspect-[4/3]">
                     <img src="https://plain-apac-prod-public.komododecks.com/202606/08/UetCU2yFfO1yPU1VnGh7/image.jpg" alt="Hackathon Win 1" className="w-full h-full object-cover opacity-90 hover:opacity-100 transition duration-500" />
                   </div>
                 </div>
-                <div className="bg-polaroid p-3 pb-8 shadow-[2px_4px_10px_rgba(0,0,0,0.3)] border border-gray-300 transform rotate-2 hover:rotate-0 hover:scale-105 transition duration-500 mx-auto max-w-sm w-full">
-                  <div className="w-full aspect-[4/3] bg-zinc-800 overflow-hidden border border-zinc-700">
+                <div className="award-photo mx-auto w-full max-w-sm rotate-1 transform border border-gray-300 bg-polaroid p-2 pb-4 shadow-[2px_4px_10px_rgba(0,0,0,0.3)] transition duration-500 hover:rotate-0 sm:rotate-2 sm:p-3 sm:pb-8 sm:hover:scale-105">
+                  <div className="aspect-video w-full overflow-hidden border border-zinc-700 bg-zinc-800 sm:aspect-[4/3]">
                     <img src="https://plain-apac-prod-public.komododecks.com/202606/08/2zKDmOhXST56aBGDOvqi/image.jpg" alt="Hackathon Win 2" className="w-full h-full object-cover opacity-90 hover:opacity-100 transition duration-500" />
                   </div>
                 </div>
                 
-                <a href="https://x.com/___moinn_/status/2034662071808508329?s=20" target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 text-[10px] sm:text-xs font-mono font-bold tracking-widest bg-zinc-950 hover:bg-zinc-800 text-white border border-zinc-700 h-12 p-2.5 rounded shadow-sm transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] group mt-2">
+                <a href="https://x.com/___moinn_/status/2034662071808508329?s=20" target="_blank" rel="noreferrer" className="evidence-action evidence-action--x group mt-1 flex items-center justify-center gap-2 sm:mt-2">
                    <span className="text-xs text-white font-mono font-bold flex items-center gap-2"><ExternalLink className="w-4 h-4 text-white"/> VIEW X POST</span>
                 </a>
-                <a href="https://www.linkedin.com/posts/mdmoinakhtar_promptengineering-promptwars-innerve2026-ugcPost-7440279761559576576-iRby/?utm_source=share&utm_medium=member_desktop&rcm=ACoAAErQS70BROmbAnLMOHVZZb-iJMzWSNGt-lA" target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 text-[10px] sm:text-xs font-mono font-bold tracking-widest bg-[#0A66C2] hover:bg-[#084f96] text-white border border-[#084f96] h-12 p-2.5 rounded shadow-sm transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] group mt-2">
+                <a href="https://www.linkedin.com/posts/mdmoinakhtar_promptengineering-promptwars-innerve2026-ugcPost-7440279761559576576-iRby/?utm_source=share&utm_medium=member_desktop&rcm=ACoAAErQS70BROmbAnLMOHVZZb-iJMzWSNGt-lA" target="_blank" rel="noreferrer" className="evidence-action evidence-action--linkedin group mt-1 flex items-center justify-center gap-2 sm:mt-2">
                    <span className="text-xs text-white font-mono font-bold flex items-center gap-2"><ExternalLink className="w-4 h-4 text-white"/> VIEW LINKEDIN POST</span>
                 </a>
               </div>
             </div>
 
             {/* Deploy 3 & 4 Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-8">
               {/* Deploy 3 */}
-              <div className="border border-ink/20 bg-ink/5 p-4 sm:p-6 relative flex flex-col h-full">
-                <Typewriter delay={1.5} className="opacity-50 mb-2 block font-bold">[CLEARED: QUALIFIER]</Typewriter>
-                <Typewriter delay={1.6} className="text-lg font-bold">PARANOX 2.0 NATIONAL INNOVATION HACKATHON (NOV 2025)</Typewriter>
-                <Typewriter delay={1.8} className="block mt-2 mb-4">Qualified in the Top 40 Teams.</Typewriter>
+              <div className="award-card award-card--finalist relative flex h-full flex-col border border-ink/20 p-3 sm:p-6">
+                <span className="award-mobile-seal sm:hidden"><Award className="h-4 w-4" /> Finalist</span>
+                <Typewriter delay={1.5} className="award-kicker mb-2 block font-black text-stamp">[CLEARED: QUALIFIER]</Typewriter>
+                <Typewriter delay={1.6} className="award-card-title text-base font-black leading-snug sm:text-lg">PARANOX 2.0 NATIONAL INNOVATION HACKATHON (NOV 2025)</Typewriter>
+                <Typewriter delay={1.8} className="mb-4 mt-2 block text-sm leading-relaxed sm:text-base">Qualified in the Top 40 Teams.</Typewriter>
                 
-                <div className="mt-auto border-t border-ink/10 pt-6">
-                  <button onClick={() => setActivePdf("/_Moin Akhtar__Certificate.pdf")} className="flex items-center justify-center gap-2 w-full text-[10px] sm:text-xs font-mono font-bold tracking-widest bg-amber-200 hover:bg-amber-300 text-zinc-950 border border-amber-500 dark:bg-amber-700 dark:hover:bg-amber-600 dark:text-white dark:border-amber-600 h-12 p-2.5 rounded shadow-sm transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] group">
+                <div className="mt-auto border-t border-ink/10 pt-4 sm:pt-6">
+                  <button onClick={() => setActivePdf("/_Moin Akhtar__Certificate.pdf")} className="evidence-action evidence-action--certificate group flex w-full items-center justify-center gap-2">
                     <ExternalLink className="w-4 h-4" />
                     <span>VIEW CERTIFICATE</span>
                   </button>
@@ -104,13 +163,14 @@ export function Evidence() {
               </div>
 
               {/* Deploy 4 */}
-              <div className="border border-ink/20 bg-ink/5 p-4 sm:p-6 relative flex flex-col h-full">
-                <Typewriter delay={1.9} className="opacity-50 mb-2 block font-bold text-stamp">[CERTIFICATE OF PARTICIPATION]</Typewriter>
-                <Typewriter delay={2.0} className="text-lg font-bold">ALGOSQUEST 2025</Typewriter>
-                <Typewriter delay={2.1} className="block mt-2 mb-4">Competed with <Highlight style="marker" color="yellow">Team Kaizenn</Highlight>. Recognised for active participation, exceptional tech knowledge, innovation and engagement.</Typewriter>
+              <div className="award-card award-card--participation relative flex h-full flex-col border border-ink/20 p-3 sm:p-6">
+                <span className="award-mobile-seal sm:hidden"><Award className="h-4 w-4" /> Participant</span>
+                <Typewriter delay={1.9} className="award-kicker mb-2 block font-black text-stamp">[CERTIFICATE OF PARTICIPATION]</Typewriter>
+                <Typewriter delay={2.0} className="award-card-title text-base font-black leading-snug sm:text-lg">ALGOSQUEST 2025</Typewriter>
+                <Typewriter delay={2.1} className="mb-4 mt-2 block text-sm leading-relaxed sm:text-base">Competed with <Highlight style="marker" color="yellow">Team Kaizenn</Highlight>. Recognised for active participation, exceptional tech knowledge, innovation and engagement.</Typewriter>
                 
-                <div className="mt-auto border-t border-ink/10 pt-6">
-                  <button onClick={() => setActivePdf("/Team Kaizenn.pdf")} className="flex items-center justify-center gap-2 w-full text-[10px] sm:text-xs font-mono font-bold tracking-widest bg-amber-200 hover:bg-amber-300 text-zinc-950 border border-amber-500 dark:bg-amber-700 dark:hover:bg-amber-600 dark:text-white dark:border-amber-600 h-12 p-2.5 rounded shadow-sm transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] group">
+                <div className="mt-auto border-t border-ink/10 pt-4 sm:pt-6">
+                  <button onClick={() => setActivePdf("/Team Kaizenn.pdf")} className="evidence-action evidence-action--certificate group flex w-full items-center justify-center gap-2">
                     <ExternalLink className="w-4 h-4" />
                     <span>VIEW CERTIFICATE</span>
                   </button>
@@ -122,36 +182,61 @@ export function Evidence() {
         </div>
         
         {/* Section 2: Research */}
-        <div>
-          <Typewriter delay={2.0} className="text-xl font-bold uppercase tracking-widest border-b border-ink/30 pb-2 mb-6 block">
-            [02] Research & Publications
+        <div className="award-research-section">
+          <Typewriter delay={2.0} className="award-section-heading mb-4 block border-b border-ink/30 pb-2 text-base font-black uppercase leading-snug tracking-[0.08em] sm:mb-6 sm:text-xl sm:tracking-widest">
+            <span className="hidden sm:inline">[02] Research & Publications</span>
+            <span className="flex items-center justify-between gap-3 sm:hidden"><span className="flex items-center gap-2"><BookOpen className="h-4 w-4" /> Research</span><span className="award-section-count">01</span></span>
           </Typewriter>
           
-          <div className="border border-ink/20 bg-ink/5 p-4 sm:p-6 relative mb-12 cursor-pointer hover:bg-ink/10 transition-colors group" onClick={() => setShowPubDetails(true)}>
+          <div
+            className="award-card award-card--research group relative mb-8 cursor-pointer border border-ink/20 p-3 transition-colors sm:mb-12 sm:p-6"
+            onClick={() => setShowPubDetails(true)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                setShowPubDetails(true);
+              }
+            }}
+            role="button"
+            tabIndex={0}
+            aria-label="View research paper extract"
+          >
+             <span className="award-mobile-seal sm:hidden"><BookOpen className="h-4 w-4" /> Published</span>
              <div className="absolute top-0 right-0 p-2 opacity-30 text-xs font-bold">JAN 2026</div>
              
-             <Typewriter delay={2.2} className="block font-bold text-lg group-hover:text-amber-900 transition-colors pr-16 leading-snug">
-               A SENTENCE-LEVEL RISK ESTIMATOR FOR IDENTIFYING HALLUCINATIONS IN GENERATIVE AI 
-               <span className="inline-block px-1 border border-ink/30 ml-2 rounded text-[10px] bg-white pointer-events-none align-middle mb-1">VIEW EXTRACT</span>
+             <Typewriter delay={2.2} className="block pr-14 text-base font-black leading-snug transition-colors group-hover:text-amber-900 sm:pr-16 sm:text-lg">
+               <span className="sm:hidden">SENTENCE-LEVEL HALLUCINATION RISK ESTIMATOR</span>
+               <span className="hidden sm:inline">A SENTENCE-LEVEL RISK ESTIMATOR FOR IDENTIFYING HALLUCINATIONS IN GENERATIVE AI</span>
+               <span className="research-extract-chip mb-1 ml-2 inline-block rounded border border-ink/30 bg-white px-1 text-[10px] align-middle pointer-events-none">VIEW EXTRACT</span>
              </Typewriter>
              
-             <Typewriter delay={2.4} className="block italic opacity-80 mt-2">
+             <Typewriter delay={2.4} className="mt-2 block text-sm italic leading-relaxed opacity-80 sm:text-base">
                International Conference on AI-Driven Smart Systems and Ubiquitous Computing (ICAUC), 2026
              </Typewriter>
              
-             <Typewriter delay={2.6} className="block text-sm mt-4 opacity-80 max-w-2xl">
+             <Typewriter delay={2.6} className="mt-4 hidden max-w-2xl text-sm opacity-80 sm:block">
                Proposed a framework detecting AI hallucinations combining semantic similarity (BERT), QA-based factuality checks, and NLI entailment.
              </Typewriter>
 
+             <div className="research-desktop-brief hidden sm:grid" aria-label="Publication summary">
+               <span><strong>IEEE Xplore</strong> Published</span>
+               <span><strong>ICAUC 2026</strong> Conference</span>
+               <span><strong>BERT · QA · NLI</strong> Method stack</span>
+             </div>
+
+             <div className="research-methods sm:hidden" aria-label="Research methods">
+               <span>BERT</span><span>NLI</span><span>Factuality</span>
+             </div>
+
              {/* Evidence Area */}
-             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 border-t border-ink/10 pt-6" onClick={(e) => e.stopPropagation()}>
-               <a href="https://ieeexplore.ieee.org/document/11441054" target="_blank" rel="noreferrer" className="border border-[#004f7c] bg-[#00629B] hover:bg-[#004f7c] text-white h-16 sm:h-auto flex flex-col items-center justify-center p-2.5 text-center shadow-sm transition-all rounded duration-300 hover:scale-[1.02] active:scale-[0.98] group">
+             <div className="mt-4 grid grid-cols-1 gap-2 border-t border-ink/10 pt-4 sm:mt-6 sm:grid-cols-3 sm:gap-4 sm:pt-6" onClick={(e) => e.stopPropagation()}>
+               <a href="https://ieeexplore.ieee.org/document/11441054" target="_blank" rel="noreferrer" className="evidence-action evidence-action--ieee group flex items-center justify-center text-center">
                    <span className="text-xs text-white font-mono font-bold flex items-center gap-2"><ExternalLink className="w-4 h-4 text-white"/> IEEE XPLORE PAPER</span>
                </a>
-               <a href="https://x.com/___moinn_/status/2038219385077375293?s=20" target="_blank" rel="noreferrer" className="border border-zinc-700 bg-zinc-950 hover:bg-zinc-800 text-white h-16 sm:h-auto flex flex-col items-center justify-center p-2.5 text-center shadow-sm transition-all rounded duration-300 hover:scale-[1.02] active:scale-[0.98] group">
+               <a href="https://x.com/___moinn_/status/2038219385077375293?s=20" target="_blank" rel="noreferrer" className="evidence-action evidence-action--x group flex items-center justify-center text-center">
                    <span className="text-xs text-white font-mono font-bold flex items-center gap-2"><ExternalLink className="w-4 h-4 text-white"/> VIEW X POST</span>
                </a>
-               <a href="https://www.linkedin.com/posts/mdmoinakhtar_ai-machinelearning-generativeai-share-7444005556559794176-z_Ot/?utm_source=share&utm_medium=member_desktop&rcm=ACoAAErQS70BROmbAnLMOHVZZb-iJMzWSNGt-lA" target="_blank" rel="noreferrer" className="border border-[#084f96] bg-[#0A66C2] hover:bg-[#084f96] text-white h-16 sm:h-auto flex flex-col items-center justify-center p-2.5 text-center shadow-sm transition-all rounded duration-300 hover:scale-[1.02] active:scale-[0.98] group">
+               <a href="https://www.linkedin.com/posts/mdmoinakhtar_ai-machinelearning-generativeai-share-7444005556559794176-z_Ot/?utm_source=share&utm_medium=member_desktop&rcm=ACoAAErQS70BROmbAnLMOHVZZb-iJMzWSNGt-lA" target="_blank" rel="noreferrer" className="evidence-action evidence-action--linkedin group flex items-center justify-center text-center">
                    <span className="text-xs text-white font-mono font-bold flex items-center gap-2"><ExternalLink className="w-4 h-4 text-white"/> VIEW LINKEDIN POST</span>
                </a>
              </div>
