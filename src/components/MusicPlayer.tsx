@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   ChevronDown,
@@ -36,6 +36,7 @@ const readStoredVolume = () => {
 };
 
 export function MusicPlayer({ mobileNav = false }: { mobileNav?: boolean }) {
+  const expandedPlayerRef = useRef<HTMLElement>(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [trackIndex, setTrackIndex] = useState(() => {
@@ -67,6 +68,29 @@ export function MusicPlayer({ mobileNav = false }: { mobileNav?: boolean }) {
   useEffect(() => {
     window.localStorage.setItem('case-radio-track', String(trackIndex));
   }, [trackIndex]);
+
+  useEffect(() => {
+    if (!isExpanded || !mobileNav) return;
+
+    const closeOnOutsidePress = (event: PointerEvent) => {
+      const target = event.target;
+      if (target instanceof Node && !expandedPlayerRef.current?.contains(target)) {
+        setIsExpanded(false);
+      }
+    };
+
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsExpanded(false);
+    };
+
+    document.addEventListener('pointerdown', closeOnOutsidePress);
+    document.addEventListener('keydown', closeOnEscape);
+
+    return () => {
+      document.removeEventListener('pointerdown', closeOnOutsidePress);
+      document.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [isExpanded, mobileNav]);
 
   useEffect(() => () => musicEngine.destroy(), []);
 
@@ -141,6 +165,7 @@ export function MusicPlayer({ mobileNav = false }: { mobileNav?: boolean }) {
           </motion.button>
         ) : (
           <motion.aside
+            ref={expandedPlayerRef}
             key="expanded"
             initial={{ opacity: 0, y: 12, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -169,11 +194,7 @@ export function MusicPlayer({ mobileNav = false }: { mobileNav?: boolean }) {
 
             <div className="p-2">
               <div className="mb-2 flex items-center gap-2 border-b border-ink/15 pb-2">
-                {trackIndex <= 1 ? (
-                  <TrackArtwork trackNumber={trackIndex + 1} />
-                ) : (
-                  <Cassette isPlaying={isPlaying} trackNumber={trackIndex + 1} />
-                )}
+                <Cassette isPlaying={isPlaying} trackNumber={trackIndex + 1} />
 
                 <div className="min-w-0 flex-1">
                   <div className="mb-1 text-[8px] font-bold tracking-[0.2em] text-stamp">NOW TRANSMITTING</div>
@@ -297,23 +318,6 @@ function Cassette({ isPlaying, trackNumber }: { isPlaying: boolean; trackNumber:
       </div>
       <div className="mx-auto mt-1 h-1.5 w-10 border-x-[6px] border-b-2 border-x-transparent border-b-zinc-900/70" />
       <span className="absolute bottom-0.5 right-1.5 text-[5px] font-black tracking-widest text-red-800">CLASSIFIED</span>
-    </div>
-  );
-}
-
-function TrackArtwork({ trackNumber }: { trackNumber: number }) {
-  return (
-    <div className="relative h-[54px] w-[68px] shrink-0 rotate-[-1deg] overflow-hidden border-2 border-zinc-950 bg-zinc-900 shadow-[2px_2px_0_rgba(0,0,0,0.2)]">
-      <img
-        src="/amidreaming logo.jpg"
-        alt="Am I Dreaming artwork"
-        loading="eager"
-        decoding="async"
-        className="h-full w-full object-cover"
-      />
-      <span className="absolute bottom-0 left-0 bg-zinc-950/85 px-1 py-0.5 text-[5px] font-black tracking-widest text-white">
-        TAPE {String(trackNumber).padStart(2, '0')}
-      </span>
     </div>
   );
 }
