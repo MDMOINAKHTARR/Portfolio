@@ -190,11 +190,11 @@ export function Layout() {
            </div>
          </div>
          <div className="relative z-10 flex flex-col items-end gap-1 text-[8px] tracking-widest font-bold shrink-0">
-           <div className="flex gap-2">
+           <div className="flex gap-1">
              <button onClick={toggleAudio} className="flex items-center gap-1.5 px-2 py-1 bg-ink/10 border border-ink/20 rounded-sm outline-none transition-colors hover:bg-ink/20 active:scale-95 text-ink/70">
                {!isMuted ? <Volume2 className="w-3 h-3" /> : <VolumeX className="w-3 h-3" />}
              </button>
-             <button onClick={toggleTheme} className="flex items-center gap-1.5 px-2 py-1 bg-ink/10 border border-ink/20 rounded-sm outline-none transition-colors hover:bg-ink/20 active:scale-95">
+             <button onClick={toggleTheme} className="flex items-center gap-1 whitespace-nowrap px-1.5 py-1 bg-ink/10 border border-ink/20 rounded-sm outline-none transition-colors hover:bg-ink/20 active:scale-95" aria-label={`Switch theme to ${theme === 'noir' ? 'color' : 'noir'}`}>
                <span className="text-ink/70 mt-0.5">THEME:</span>
                <span className={`font-black uppercase mt-0.5 ${theme === 'noir' ? 'text-ink/90' : 'text-red-700'}`}>
                  {theme === 'noir' ? 'COLOR' : 'NOIR'}
@@ -401,12 +401,26 @@ export function Layout() {
            let targetPath = tab.path;
            const active = location.pathname === tab.path && !tab.isExternal && !tab.isAction;
            const Icon = tab.icon;
+           const activeIndicatorClass = tab.label === 'AWARDS'
+             ? 'bg-amber-400/25 border-amber-600/35'
+             : tab.label === 'PROJECTS'
+               ? 'bg-red-600/10 border-red-500/25'
+               : tab.label === 'CONTACT'
+                 ? 'bg-cyan-500/15 border-cyan-700/25'
+                 : 'bg-blue-500/15 border-blue-700/25';
+           const activeTextClass = tab.label === 'AWARDS'
+             ? 'text-amber-800'
+             : tab.label === 'PROJECTS'
+               ? 'text-red-700'
+               : tab.label === 'CONTACT'
+                 ? 'text-cyan-800'
+                 : 'text-blue-800';
 
            const innerContent = (
              <>
-               {active && <motion.div layoutId="dock-indicator" className="absolute inset-0 bg-red-600/10 border border-red-500/20 rounded-full z-0"></motion.div>}
-               <Icon className={`w-4 h-4 sm:w-5 sm:h-5 relative z-10 transition-transform duration-300 ${active ? '-translate-y-0.5 text-red-700' : ''}`} strokeWidth={active ? 2.5 : 2} />
-               <span className={`text-[7px] sm:text-[8px] leading-none uppercase font-bold relative z-10 overflow-hidden transition-all duration-300 ${active ? 'max-h-4 opacity-100 mt-0.5 text-red-800' : 'max-h-0 opacity-0'}`}>{tab.label}</span>
+               {active && <motion.div layoutId="dock-indicator" className={`absolute inset-0 z-0 rounded-full border ${activeIndicatorClass}`}></motion.div>}
+               <Icon className={`relative z-10 h-4 w-4 transition-transform duration-300 sm:h-5 sm:w-5 ${active ? `-translate-y-0.5 ${activeTextClass}` : ''}`} strokeWidth={active ? 2.5 : 2} />
+               <span className={`relative z-10 overflow-hidden text-[7px] font-bold uppercase leading-none transition-all duration-300 sm:text-[8px] ${active ? `mt-0.5 max-h-4 opacity-100 ${activeTextClass}` : 'max-h-0 opacity-0'}`}>{tab.label}</span>
              </>
            );
 

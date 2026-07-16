@@ -17,7 +17,7 @@ export function GithubStreak() {
   const [selectedLevelFilter, setSelectedLevelFilter] = useState<number | null>(null);
   // Track clicked cell index for CSS ripple (no per-frame JS cost)
   const [clickedIdx, setClickedIdx] = useState<number | null>(null);
-  const clickTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const clickTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   // Real API state
   const [usernameInput, setUsernameInput] = useState(() => {
