@@ -1,9 +1,29 @@
+export type MusicTheme = 'am-i-dreaming' | 'sunflower' | 'quicksilver' | 'starman';
+
+export const MUSIC_THEME_ARTWORK: Record<MusicTheme, string> = {
+  'am-i-dreaming': '/theme-am-i-dreaming-art.jpg',
+  sunflower: '/theme-sunflower-art.jpg',
+  quicksilver: '/theme-quicksilver-art.jpg',
+  starman: '/theme-starman-art-v2.jpg',
+};
+
+export interface MusicVisual {
+  src: string;
+  type: 'image' | 'video';
+  alt: string;
+  objectPosition?: string;
+  playCount?: 1 | 2;
+  cycleDurationMs?: number;
+}
+
 export interface MusicTrack {
   id: string;
   title: string;
   artist: string;
   codename: string;
   src: string;
+  theme?: MusicTheme;
+  visual?: MusicVisual;
 }
 
 export interface PlaybackSnapshot {
@@ -21,6 +41,14 @@ export const MUSIC_TRACKS: MusicTrack[] = [
     artist: 'Metro Boomin, A$AP Rocky & Roisee',
     codename: 'TAPE 01 // SPIDER-VERSE',
     src: '/Metro_Boomin_-_Am_I_Dreaming_Metro_Boomin_A_AP_Rocky_Roisee_(mp3.pm).mp3',
+    theme: 'am-i-dreaming',
+    visual: {
+      src: '/am i dreaming gif.gif',
+      type: 'image',
+      alt: 'Spider-Verse animation for Am I Dreaming',
+      playCount: 1,
+      cycleDurationMs: 2640,
+    },
   },
   {
     id: 'sunflower',
@@ -28,13 +56,20 @@ export const MUSIC_TRACKS: MusicTrack[] = [
     artist: 'Post Malone & Swae Lee',
     codename: 'TAPE 02 // SUNFLOWER',
     src: '/Post_Malone_Swae_Lee_-_Sunflower_Spider-Man_Into_The_Spider-Verse_(mp3.pm).mp3',
+    theme: 'sunflower',
+    visual: {
+      src: '/sunflower gif.mp4',
+      type: 'video',
+      alt: 'Spider-Verse animation for Sunflower',
+      playCount: 1,
+    },
   },
   {
-    id: 'the-less-i-know-the-better',
-    title: 'The Less I Know the Better',
+    id: 'let-it-happen',
+    title: 'Let It Happen',
     artist: 'Tame Impala',
     codename: 'TAPE 03 // CURRENTS',
-    src: "/Tame_Impala_The_Smiths_-_The_Less_I_Know_the_Better_But_It_s_There_is_a_Light_That_Never_Goes_Out_(mp3.pm).mp3",
+    src: '/let it happen song.mpeg',
   },
   {
     id: 'sweet-dreams',
@@ -42,6 +77,27 @@ export const MUSIC_TRACKS: MusicTrack[] = [
     artist: 'Eurythmics, Annie Lennox & Dave Stewart',
     codename: 'TAPE 04 // SWEET DREAMS',
     src: '/Z_Lala_-_Sweet_Dreams_Are_Made_Of_This_(mp3.pm).mp3',
+    theme: 'quicksilver',
+    visual: {
+      src: '/quicksilver gif.mp4',
+      type: 'video',
+      alt: 'Quicksilver animation for Sweet Dreams',
+      playCount: 1,
+    },
+  },
+  {
+    id: 'starman',
+    title: 'Starman',
+    artist: 'David Bowie',
+    codename: 'TAPE 05 // SUPERMAN',
+    src: '/starman song.mpeg',
+    theme: 'starman',
+    visual: {
+      src: '/starman gif.mp4',
+      type: 'video',
+      alt: 'Superman animation for Starman',
+      playCount: 2,
+    },
   },
 ];
 
