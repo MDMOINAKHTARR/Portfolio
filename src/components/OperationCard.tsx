@@ -1,8 +1,7 @@
-import { Highlight } from './Highlight';
 import { Typewriter } from './Typewriter';
 import { ScrambleText } from './ScrambleText';
-import { Lock, Unlock, Github, ExternalLink, PlayCircle, Cpu, Database, Settings } from 'lucide-react';
-import React, { useState } from 'react';
+import { Lock, Unlock, Github, ExternalLink, PlayCircle, Cpu, Database, Settings, ChevronDown } from 'lucide-react';
+import React, { useId, useState } from 'react';
 import { 
   SiPython, SiReact, SiMysql, SiExpress, SiNodedotjs, SiNextdotjs, 
   SiTailwindcss, SiTypescript, SiGooglegemini, SiSqlite, SiOpencv
@@ -57,6 +56,14 @@ interface OperationDetailsProps {
   liveUrl?: string;
   youtubeUrl?: string;
   xUrl?: string;
+  caseEvidence?: CaseEvidence;
+}
+
+export interface CaseEvidence {
+  problem: string;
+  investigation: string;
+  solution: string;
+  result: string;
 }
 
 const OperationDetails = React.memo(function OperationDetails({
@@ -71,60 +78,107 @@ const OperationDetails = React.memo(function OperationDetails({
   liveUrl,
   youtubeUrl,
   xUrl,
+  caseEvidence,
 }: OperationDetailsProps) {
   const techList = tech.split(',').map((item) => item.trim()).filter(Boolean);
 
   return (
-    <div className={`grid grid-cols-1 ${imageUrl ? 'sm:grid-cols-2' : ''} gap-4 sm:gap-6 mt-4 pb-2`}>
-      <div className="order-2 sm:order-1">
-        <div className="grid grid-cols-[80px_1fr] text-xs font-bold font-mono opacity-80 mb-4 border-b border-ink/10 pb-4 gap-y-3 mt-2">
-          <span className="block text-ink/60 self-center">TECH:</span>
-          <span className="block">
-            <span className="flex flex-wrap gap-2">
-              {techList.map((item) => {
-                const Icon = getTechIcon(item);
-                const color = getTechColor(item);
-
-                return (
-                  <span
-                    key={item}
-                    className="flex items-center gap-1.5 px-2.5 py-1 bg-paper border border-ink/15 rounded-full shadow-sm text-ink whitespace-nowrap"
-                  >
-                    <Icon className="w-3.5 h-3.5 shrink-0" style={{ color }} />
-                    <span className="font-mono text-[10px] sm:text-xs font-bold leading-none">{item}</span>
-                  </span>
-                );
-              })}
-            </span>
+    <div className="operation-dossier-grid block">
+      <div className="min-w-0">
+        <div className="mb-5 hidden items-center justify-between gap-3 border-b border-ink/15 pb-3 font-mono sm:flex">
+          <div>
+            <span className="block text-[9px] font-black tracking-[0.18em] opacity-50">CASE CLASSIFICATION</span>
+            <span className="mt-1 block text-[11px] font-black tracking-[0.12em]">PRODUCT INVESTIGATION // {id}</span>
+          </div>
+          <span className={`inline-flex items-center gap-2 border border-current/25 px-2.5 py-1 text-[9px] font-black tracking-[0.14em] ${statusColor}`}>
+            <span className="h-1.5 w-1.5 rounded-full bg-current" /> {status}
           </span>
-
-          <span className="block text-ink/60 self-center">STATUS:</span>
-          <span className={`block ${statusColor} self-center tracking-widest font-bold`}>{status}</span>
         </div>
 
-        <div className="text-sm leading-relaxed block font-typewriter">{desc}</div>
+        {caseEvidence && (
+          <ol className="evidence-board relative mb-5 grid gap-3 md:grid-cols-3">
+            {([
+              ['01', 'CHALLENGE', caseEvidence.problem, 'problem'],
+              ['02', 'BUILD', caseEvidence.solution, 'solution'],
+              ['03', 'OUTCOME', caseEvidence.result, 'result'],
+            ] as const).map(([number, label, detail, tone]) => (
+              <li key={label} className={`evidence-note evidence-note--${tone} relative z-10 min-h-[104px] border border-ink/15 p-3 pt-4 shadow-[2px_3px_8px_rgba(0,0,0,0.12)]`}>
+                <span className="evidence-note-tape absolute -top-2 left-1/2 h-4 w-16 -translate-x-1/2 rotate-[-2deg] bg-tape/90" aria-hidden="true" />
+                <span className="flex items-center justify-between gap-3 border-b border-ink/10 pb-1.5">
+                  <span className="font-mono text-[10px] font-black tracking-[0.13em] text-stamp">{label}</span>
+                  <span className="font-stamp text-sm font-black opacity-25">{number}</span>
+                </span>
+                <span className="mt-2 block font-typewriter text-xs font-bold leading-relaxed opacity-85">{detail}</span>
+              </li>
+            ))}
+          </ol>
+        )}
 
-        <div className="mt-6 flex flex-wrap gap-4">
+        {imageUrl && (
+          <aside className="operation-exhibit mx-auto mb-5 w-full max-w-2xl bg-polaroid p-2 pb-3 shadow-[4px_6px_16px_rgba(0,0,0,0.18)]">
+            <div className="mx-auto -mt-4 mb-1 h-6 w-20 rotate-[-3deg] bg-tape opacity-90" />
+            <div className="relative aspect-video w-full overflow-hidden bg-ink/10 object-cover">
+              <img
+                src={imageUrl}
+                alt={title}
+                loading="eager"
+                decoding="async"
+                fetchPriority="low"
+                className="h-full w-full object-cover object-center"
+                onError={(event) => {
+                  event.currentTarget.style.display = 'none';
+                }}
+              />
+              <div className="pointer-events-none absolute inset-0 bg-ink/5 mix-blend-overlay" />
+            </div>
+            <div className="mt-2 flex items-center justify-between gap-2 font-mono text-[9px] font-bold uppercase tracking-widest text-ink/60">
+              <span>PROJECT IMAGE</span><span className="hidden sm:inline">{id}</span>
+            </div>
+          </aside>
+        )}
+
+        <div className="operation-field-summary border-l-[3px] border-stamp/45 bg-ink/[0.035] px-3 py-2.5 text-sm leading-relaxed font-typewriter">
+          <span className="mb-1 block text-[9px] font-black tracking-[0.18em] opacity-50">INVESTIGATOR'S NOTE</span>
+          {desc}
+        </div>
+
+        <div className="mt-4 border-t border-ink/10 pt-3">
+          <span className="mb-2 block font-mono text-[9px] font-black tracking-[0.18em] opacity-50">TOOLS RECOVERED</span>
+          <div className="flex flex-wrap gap-2">
+            {techList.map((item, index) => {
+              const Icon = getTechIcon(item);
+              const color = getTechColor(item);
+              return (
+                <span key={item} className={`operation-tool operation-tool--${index % 4} flex items-center gap-1.5 border px-2.5 py-1.5 text-ink shadow-sm whitespace-nowrap`}>
+                  <Icon className="h-3.5 w-3.5 shrink-0" style={{ color }} />
+                  <span className="font-mono text-[11px] font-black leading-none">{item}</span>
+                </span>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="mt-5 grid grid-cols-1 gap-2 sm:flex sm:flex-wrap">
           {githubUrl && (
-            <a href={githubUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-xs font-bold font-mono border border-ink/30 px-3 py-1.5 hover:bg-ink hover:text-doc transition-colors">
+            <a href={githubUrl} target="_blank" rel="noreferrer" className="operation-action operation-action--source flex min-h-11 items-center justify-center gap-2 border px-3 py-2 text-[11px] font-black font-mono transition-[transform,box-shadow,background-color] sm:justify-start sm:text-[10px]">
               <Github className="w-3.5 h-3.5" />
               SOURCE CODE
             </a>
           )}
           {liveUrl && (
-            <a href={liveUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-xs font-bold font-mono border border-ink/30 px-3 py-1.5 hover:bg-ink hover:text-doc transition-colors text-emerald-800 border-emerald-800/30 hover:border-ink">
+            <a href={liveUrl} target="_blank" rel="noreferrer" className="operation-action operation-action--live flex min-h-11 items-center justify-center gap-2 border px-3 py-2 text-[11px] font-black font-mono transition-[transform,box-shadow,background-color] sm:justify-start sm:text-[10px]">
               <ExternalLink className="w-3.5 h-3.5" />
               LIVE DEPLOYMENT
             </a>
           )}
           {youtubeUrl && (
-            <a href={youtubeUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-xs font-bold font-mono border border-ink/30 px-3 py-1.5 hover:bg-red-600 hover:text-white transition-colors text-red-600 border-red-600/30 hover:border-red-600">
+            <a href={youtubeUrl} target="_blank" rel="noreferrer" className="operation-action operation-action--video flex min-h-11 items-center justify-center gap-2 border px-3 py-2 text-[11px] font-black font-mono transition-[transform,box-shadow,background-color] sm:justify-start sm:text-[10px]">
               <PlayCircle className="w-3.5 h-3.5" />
               WATCH DEMO
             </a>
           )}
           {xUrl && (
-            <a href={xUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-xs font-bold font-mono border border-ink/30 px-3 py-1.5 hover:bg-black hover:text-white transition-colors">
+            <a href={xUrl} target="_blank" rel="noreferrer" className="operation-action operation-action--social flex min-h-11 items-center justify-center gap-2 border px-3 py-2 text-[11px] font-black font-mono transition-[transform,box-shadow,background-color] sm:justify-start sm:text-[10px]">
               <FaXTwitter className="w-3.5 h-3.5" />
               VIEW X POST
             </a>
@@ -132,33 +186,12 @@ const OperationDetails = React.memo(function OperationDetails({
         </div>
       </div>
 
-      {imageUrl && (
-        <div className="order-1 sm:order-2 border-[3px] border-ink/10 p-2 bg-polaroid shadow-sm transform rotate-1 hover:rotate-0 transition-transform duration-500 will-change-transform">
-          <div className="relative w-full overflow-hidden bg-ink/10 aspect-[4/3] sm:aspect-video object-cover">
-            <img
-              src={imageUrl}
-              alt={title}
-              loading="eager"
-              decoding="async"
-              fetchPriority="low"
-              className="w-full h-full object-cover object-center"
-              onError={(event) => {
-                event.currentTarget.style.display = 'none';
-              }}
-            />
-            <div className="absolute inset-0 bg-ink/5 mix-blend-overlay pointer-events-none" />
-          </div>
-          <div className="text-[9px] font-mono font-bold tracking-widest text-ink/60 mt-2 text-center uppercase">
-            SURVEILLANCE IMG // {id}
-          </div>
-        </div>
-      )}
     </div>
   );
 });
 
 export function OperationCard({ 
-  id, 
+  id,
   title, 
   tech, 
   status, 
@@ -170,9 +203,10 @@ export function OperationCard({
   liveUrl,
   youtubeUrl,
   xUrl,
+  caseEvidence,
   defaultOpen = false
 }: { 
-  id: string, 
+  id: string,
   title: string, 
   tech: string, 
   status: string, 
@@ -184,44 +218,73 @@ export function OperationCard({
   liveUrl?: string,
   youtubeUrl?: string,
   xUrl?: string,
+  caseEvidence?: CaseEvidence,
   defaultOpen?: boolean
 }) {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
+  const detailsId = `operation-details-${useId().replace(/:/g, '')}`;
+  const [isOpen, setIsOpen] = useState(() => defaultOpen && typeof window !== 'undefined' && window.matchMedia('(min-width: 640px)').matches);
+  const techPreview = tech.split(',').map((item) => item.trim()).filter(Boolean).slice(0, 3);
 
   return (
-    <div
-      className={`operation-card ${isOpen ? 'is-open' : ''} relative group border border-ink/20 p-4 sm:p-6 bg-op-bg hover:bg-op-bg-hover transition-colors rounded-sm shadow-[inset_0_1px_3px_rgba(0,0,0,0.02)] cursor-pointer`}
-      onClick={() => setIsOpen((open) => !open)}
-    >
-      <Typewriter delay={delay} className="absolute top-0 right-0 p-2 opacity-30 font-mono text-xs font-bold block pointer-events-none">[FILE: {id}]</Typewriter>
-      
-      <div className="animate-in fade-in duration-700">
-        <button
-          type="button"
-          className="operation-card-trigger block w-full cursor-pointer text-left"
-          aria-expanded={isOpen}
-          aria-controls={`operation-details-${id}`}
-        >
-          <div className="operation-card-heading flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              {isOpen ? (
-                <Unlock className="w-4 h-4 text-emerald-700" />
-              ) : (
-                <Lock className="w-4 h-4 text-ink/50" />
-              )}
-              <div className="text-lg sm:text-lg lg:text-xl font-bold tracking-widest block font-stamp">
-                <ScrambleText text={title} delay={0} duration={800} />
-              </div>
-            </div>
-          </div>
-        </button>
-        
-        <div
-          id={`operation-details-${id}`}
-          className={`operation-card-details ${isOpen ? '' : 'hidden'}`}
-          aria-hidden={!isOpen}
-          onClick={(event) => event.stopPropagation()}
-        >
+    <article className={`operation-card operation-folder ${isOpen ? 'is-open' : ''} group relative mt-4 text-ink sm:mt-6`}>
+      <Typewriter delay={delay} className="operation-folder-tab pointer-events-none absolute -top-[25px] left-0 z-10 hidden min-w-[132px] px-4 pb-2 pt-2 font-mono text-[9px] font-black tracking-[0.14em] sm:block">CASE FILE // {id}</Typewriter>
+      <span className="operation-folder-corner absolute right-4 top-0 z-10 h-8 w-8" aria-hidden="true" />
+
+      <button
+        type="button"
+        onClick={() => setIsOpen((open) => !open)}
+        className={`operation-folder-cover relative z-[2] grid w-full cursor-pointer grid-cols-1 items-center gap-3 px-3.5 py-3 text-left sm:gap-4 sm:px-5 sm:py-3.5 ${imageUrl ? 'sm:grid-cols-[124px_minmax(0,1fr)_64px]' : 'sm:grid-cols-[minmax(0,1fr)_64px]'}`}
+        aria-expanded={isOpen}
+        aria-controls={detailsId}
+      >
+        {imageUrl && (
+          <span className="operation-cover-photo relative hidden w-[124px] rotate-[-1deg] border border-ink/20 bg-polaroid p-1 pb-4 shadow-[2px_3px_7px_rgba(0,0,0,0.18)] sm:block" aria-hidden="true">
+            <span className="block h-[76px] overflow-hidden bg-ink/10">
+              <img
+                src={imageUrl}
+                alt=""
+                loading="lazy"
+                decoding="async"
+                className="h-full w-full object-cover object-center"
+              />
+            </span>
+            <span className="absolute bottom-1 left-0 w-full text-center font-mono text-[7px] font-black tracking-[0.15em] text-ink/55">PROJECT PREVIEW</span>
+          </span>
+        )}
+
+        <span className="min-w-0">
+          <span className="operation-title-slip block max-w-2xl border-y border-ink/15 bg-doc/70 px-3 py-1.5 font-stamp text-base font-black tracking-[0.08em] shadow-[2px_3px_0_rgba(17,17,17,0.08)] sm:text-xl">
+            <span className="mb-1 flex items-center justify-between gap-3 font-mono text-[9px] font-black tracking-[0.12em] sm:text-[10px]">
+              <span className="text-stamp">PROJECT</span>
+              <span className={`inline-flex items-center gap-1.5 border border-current/25 px-1.5 py-0.5 text-[8px] tracking-[0.08em] ${statusColor}`}><span className="h-1.5 w-1.5 rounded-full bg-current" />{status}</span>
+            </span>
+            <ScrambleText text={title} delay={0} duration={700} className="block" />
+          </span>
+          <span className="mt-1.5 flex flex-wrap gap-1.5 font-mono text-[11px] font-black tracking-[0.02em] text-ink">
+            {techPreview.map((item) => (
+              <span key={item} className="border border-ink/15 border-b-stamp/45 bg-doc/75 px-1.5 py-0.5 shadow-[1px_1px_0_rgba(17,17,17,0.08)]">
+                {item}
+              </span>
+            ))}
+          </span>
+        </span>
+
+        <span className="operation-string-tie col-span-1 flex items-center justify-between gap-3 border border-stamp/20 bg-doc/55 px-3 py-2 font-mono shadow-[inset_3px_0_0_var(--c-stamp)] sm:flex-col sm:justify-center sm:border-0 sm:border-l sm:border-ink/10 sm:bg-transparent sm:px-0 sm:py-0 sm:pl-5 sm:shadow-none">
+          <span className="operation-string-tie-graphic relative hidden h-9 w-12 items-center justify-between sm:flex" aria-hidden="true">
+            <span className="absolute left-2 right-2 top-1/2 h-px -translate-y-1/2 rotate-[-18deg] bg-stamp/65" />
+            <span className="z-10 h-5 w-5 rounded-full border-2 border-stamp bg-folder shadow-[inset_0_0_0_3px_var(--c-folder-dark)]" />
+            <span className="z-10 h-5 w-5 rounded-full border-2 border-stamp bg-folder shadow-[inset_0_0_0_3px_var(--c-folder-dark)]" />
+          </span>
+          <span className="text-center text-[10px] font-black tracking-[0.08em] text-stamp sm:text-[9px]">{isOpen ? 'CLOSE DETAILS' : 'VIEW DETAILS'}</span>
+          <span className={`flex h-6 w-6 items-center justify-center border border-ink/15 bg-paper/45 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>
+            {isOpen ? <Unlock className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
+          </span>
+          <ChevronDown className={`h-3 w-3 opacity-35 transition-transform duration-200 sm:hidden ${isOpen ? 'rotate-180' : ''}`} />
+        </span>
+      </button>
+
+      <div id={detailsId} className={`operation-card-details relative z-[1] border-t border-ink/15 bg-doc/80 px-3.5 py-5 sm:px-5 sm:py-6 ${isOpen ? '' : 'hidden'}`} aria-hidden={!isOpen}>
+        {isOpen && (
           <OperationDetails
             id={id}
             title={title}
@@ -234,9 +297,10 @@ export function OperationCard({
             liveUrl={liveUrl}
             youtubeUrl={youtubeUrl}
             xUrl={xUrl}
+            caseEvidence={caseEvidence}
           />
-        </div>
+        )}
       </div>
-    </div>
+    </article>
   );
 }
