@@ -28,8 +28,7 @@ function saveAnalytics() {
 
 async function startServer() {
   const app = express();
-  const PORT = Number(process.env.PORT || 3000);
-  const HMR_PORT = Number(process.env.HMR_PORT || 24678);
+  const PORT = 3000;
 
   // Use JSON middleware to parse POST requests
   app.use(express.json());
@@ -150,7 +149,7 @@ async function startServer() {
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
-      server: { middlewareMode: true, hmr: { port: HMR_PORT } },
+      server: { middlewareMode: true },
       appType: "spa",
     });
     app.use(vite.middlewares);

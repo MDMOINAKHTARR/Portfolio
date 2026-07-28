@@ -59,7 +59,7 @@ const preloadThemeArtwork = (theme: MusicTheme, priority: 'high' | 'low') => {
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
     const saved = localStorage.getItem('app-theme-mode');
-    return (saved as Theme) || 'color';
+    return saved === 'noir' ? 'noir' : 'color';
   });
   const [activeMusicTrack, setActiveMusicTrack] = useState<MusicTrack | null>(null);
   const [selectedTrackIndex, setSelectedTrackIndex] = useState(0);

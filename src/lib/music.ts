@@ -66,7 +66,7 @@ export const MUSIC_TRACKS: MusicTrack[] = [
   },
   {
     id: 'let-it-happen',
-    title: 'Let It Happen',
+    title: 'The Less I Know The Better',
     artist: 'Tame Impala',
     codename: 'TAPE 03 // CURRENTS',
     src: '/let it happen song.mpeg',

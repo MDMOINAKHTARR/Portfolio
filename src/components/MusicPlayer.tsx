@@ -232,7 +232,7 @@ export function MusicPlayer({ mobileNav = false }: { mobileNav?: boolean }) {
                       key={track.id}
                       type="button"
                       onClick={() => void playTrack(index)}
-                      className={`group/track flex w-full min-w-0 items-center gap-2 border px-1.5 py-1 text-left transition-all active:scale-[0.99] ${
+                      className={`group/track flex w-full min-w-0 items-center gap-2 border px-1.5 py-1 text-left transition-all active:scale-[0.99] ${index === MUSIC_TRACKS.length - 1 && MUSIC_TRACKS.length % 2 !== 0 ? 'col-span-2' : ''} ${
                         isActive
                           ? 'border-red-700/60 bg-red-700/10 text-red-900 shadow-[inset_3px_0_0_#b91c1c]'
                           : 'border-ink/15 bg-ink/[0.03] hover:border-ink/30 hover:bg-ink/[0.07]'
