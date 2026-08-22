@@ -14,7 +14,9 @@ type Theme = 'color' | 'noir';
 
 interface ThemeContextType {
   theme: Theme;
+  /** Active music theme ID (e.g. 'am-i-dreaming', 'sunflower', 'quicksilver', 'starman') for current track. */
   musicTheme: MusicTheme | null;
+  /** Current track object (gives components access to track id, visual GIF/video overlay, theme, etc.). */
   activeMusicTrack: MusicTrack | null;
   toggleTheme: () => void;
 }
@@ -24,25 +26,16 @@ const preloadedMusicVisuals = new Map<string, HTMLImageElement | HTMLVideoElemen
 const preloadedThemeArtwork = new Map<MusicTheme, HTMLImageElement>();
 
 const preloadMusicVisual = (visual: MusicVisual, priority: 'high' | 'low') => {
+  if (visual.type !== 'image') return;
   const source = encodeURI(visual.src);
   if (preloadedMusicVisuals.has(source)) return;
 
-  if (visual.type === 'image') {
-    const image = new Image();
-    image.decoding = 'async';
-    image.fetchPriority = priority;
-    preloadedMusicVisuals.set(source, image);
-    image.src = source;
-    void image.decode().catch(() => undefined);
-    return;
-  }
-
-  const video = document.createElement('video');
-  video.preload = 'auto';
-  video.muted = true;
-  video.src = source;
-  preloadedMusicVisuals.set(source, video);
-  video.load();
+  const image = new Image();
+  image.decoding = 'async';
+  image.fetchPriority = priority;
+  preloadedMusicVisuals.set(source, image);
+  image.src = source;
+  void image.decode().catch(() => undefined);
 };
 
 const preloadThemeArtwork = (theme: MusicTheme, priority: 'high' | 'low') => {
@@ -61,11 +54,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const saved = localStorage.getItem('app-theme-mode');
     return saved === 'noir' ? 'noir' : 'color';
   });
-  const [activeMusicTrack, setActiveMusicTrack] = useState<MusicTrack | null>(null);
-  const [selectedTrackIndex, setSelectedTrackIndex] = useState(0);
+
+  // Track state sourced directly from musicEngine snapshot
+  const [activeMusicTrack, setActiveMusicTrack] = useState<MusicTrack | null>(
+    () => MUSIC_TRACKS[0] ?? null
+  );
+
   const musicTheme = activeMusicTrack?.theme ?? null;
   const previousMusicTheme = useRef<MusicTheme | null>(null);
 
+  // Persist & apply color/noir toggle.
   useEffect(() => {
     localStorage.setItem('app-theme-mode', theme);
     if (theme === 'noir') {
@@ -75,20 +73,27 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }, [theme]);
 
-  useEffect(() => musicEngine.subscribe((snapshot) => {
-    setSelectedTrackIndex(snapshot.trackIndex);
-    setActiveMusicTrack(snapshot.isPlaying ? MUSIC_TRACKS[snapshot.trackIndex] : null);
-  }), []);
-
+  // Subscribe to musicEngine: updates activeMusicTrack on any track change or selection.
   useEffect(() => {
-    const selectedTrack = MUSIC_TRACKS[selectedTrackIndex];
-    const selectedVisual = selectedTrack.visual;
-    if (selectedVisual) preloadMusicVisual(selectedVisual, 'high');
-    if (selectedTrack.theme) preloadThemeArtwork(selectedTrack.theme, 'high');
+    return musicEngine.subscribe((snapshot) => {
+      const currentTrack = MUSIC_TRACKS[snapshot.trackIndex] ?? null;
+      setActiveMusicTrack(currentTrack);
+    });
+  }, []);
 
-    const upcomingTracks = Array.from({ length: MUSIC_TRACKS.length - 1 }, (_, offset) => (
-      MUSIC_TRACKS[(selectedTrackIndex + offset + 1) % MUSIC_TRACKS.length]
-    ));
+  // Preload assets for current track & peek ahead at upcoming tracks.
+  useEffect(() => {
+    if (!activeMusicTrack) return;
+
+    if (activeMusicTrack.visual) preloadMusicVisual(activeMusicTrack.visual, 'high');
+    if (activeMusicTrack.theme) preloadThemeArtwork(activeMusicTrack.theme, 'high');
+
+    const currentIndex = MUSIC_TRACKS.findIndex((t) => t.id === activeMusicTrack.id);
+    if (currentIndex === -1) return;
+
+    const upcomingTracks = Array.from({ length: MUSIC_TRACKS.length - 1 }, (_, offset) =>
+      MUSIC_TRACKS[(currentIndex + offset + 1) % MUSIC_TRACKS.length]
+    );
     const nextVisual = upcomingTracks.find((track) => track.visual)?.visual;
     const nextTheme = upcomingTracks.find((track) => track.theme)?.theme;
     if (!nextVisual && !nextTheme) return;
@@ -115,8 +120,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       if (idleHandle !== undefined) idleWindow.cancelIdleCallback?.(idleHandle);
       if (fallbackTimer !== undefined) window.clearTimeout(fallbackTimer);
     };
-  }, [selectedTrackIndex]);
+  }, [activeMusicTrack]);
 
+  // Apply / remove music-theme CSS classes on <html>.
+  // Runs whenever musicTheme changes to trigger smooth theme transitions.
   useEffect(() => {
     const root = document.documentElement;
     const musicThemeClasses = [
@@ -124,35 +131,39 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       'music-theme-sunflower',
       'music-theme-quicksilver',
       'music-theme-starman',
-    ];
-    root.classList.remove(...musicThemeClasses);
+    ] as const;
 
+    // Remove old music theme classes and add the active one
+    root.classList.remove(...musicThemeClasses);
     if (musicTheme) {
       root.classList.add(`music-theme-${musicTheme}`);
     }
 
+    // Trigger transition class only when theme actually changes (not on mount)
     let transitionFrame: number | undefined;
     let transitionTimer: number | undefined;
     if (previousMusicTheme.current !== musicTheme && (previousMusicTheme.current || musicTheme)) {
       root.classList.remove('music-theme-transition');
       transitionFrame = window.requestAnimationFrame(() => {
         root.classList.add('music-theme-transition');
-        transitionTimer = window.setTimeout(() => root.classList.remove('music-theme-transition'), 520);
+        transitionTimer = window.setTimeout(
+          () => root.classList.remove('music-theme-transition'),
+          520
+        );
       });
     }
     previousMusicTheme.current = musicTheme;
 
     return () => {
-      if (transitionFrame) window.cancelAnimationFrame(transitionFrame);
-      if (transitionTimer) window.clearTimeout(transitionTimer);
-      root.classList.remove('music-theme-transition', ...musicThemeClasses);
+      if (transitionFrame !== undefined) window.cancelAnimationFrame(transitionFrame);
+      if (transitionTimer !== undefined) window.clearTimeout(transitionTimer);
     };
   }, [musicTheme]);
 
   const toggleTheme = () => {
     audioEngine.init();
     audioEngine.playSwitch();
-    setTheme(t => t === 'color' ? 'noir' : 'color');
+    setTheme((t) => (t === 'color' ? 'noir' : 'color'));
   };
 
   return (

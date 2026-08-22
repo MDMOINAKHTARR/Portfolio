@@ -155,7 +155,7 @@ export function Evidence() {
                 <Typewriter delay={1.8} className="mb-4 mt-2 block text-sm leading-relaxed sm:text-base">Qualified in the Top 40 Teams.</Typewriter>
                 
                 <div className="mt-auto border-t border-ink/10 pt-4 sm:pt-6">
-                  <button onClick={() => setActivePdf("/_Moin Akhtar__Certificate.pdf")} className="evidence-action evidence-action--certificate group flex w-full items-center justify-center gap-2">
+                  <button onClick={() => setActivePdf("/_Moin%20Akhtar__Certificate.pdf")} className="evidence-action evidence-action--certificate group flex w-full items-center justify-center gap-2">
                     <ExternalLink className="w-4 h-4" />
                     <span>VIEW CERTIFICATE</span>
                   </button>
@@ -170,7 +170,7 @@ export function Evidence() {
                 <Typewriter delay={2.1} className="mb-4 mt-2 block text-sm leading-relaxed sm:text-base">Competed with <Highlight style="marker" color="yellow">Team Kaizenn</Highlight>. Recognised for active participation, exceptional tech knowledge, innovation and engagement.</Typewriter>
                 
                 <div className="mt-auto border-t border-ink/10 pt-4 sm:pt-6">
-                  <button onClick={() => setActivePdf("/Team Kaizenn.pdf")} className="evidence-action evidence-action--certificate group flex w-full items-center justify-center gap-2">
+                  <button onClick={() => setActivePdf("/Team%20Kaizenn.pdf")} className="evidence-action evidence-action--certificate group flex w-full items-center justify-center gap-2">
                     <ExternalLink className="w-4 h-4" />
                     <span>VIEW CERTIFICATE</span>
                   </button>

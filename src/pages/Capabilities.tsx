@@ -14,8 +14,10 @@ export function Capabilities() {
   const [showUltimateCert, setShowUltimateCert] = useState(false);
 
   return (
-    <PageTransition className="px-6 py-12 sm:px-20 sm:py-24 relative overflow-hidden">
-      <TopSecretStamp text="SKILLS & CERTIFICATES" />
+    <PageTransition className="px-6 pt-6 pb-12 sm:px-20 sm:pt-10 sm:pb-24 relative overflow-hidden">
+      <div className="mb-6">
+        <TopSecretStamp text="SKILLS & CERTIFICATES" />
+      </div>
 
       {/* Decorative Thumbprint / Watermark */}
       <div className="absolute top-1/2 right-10 transform -translate-y-1/2 opacity-[0.03] pointer-events-none grayscale sepia select-none">
@@ -25,18 +27,7 @@ export function Capabilities() {
       </div>
 
       {/* Classification Header */}
-      <div className="mt-8 mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-end border-b-[3px] border-ink/20 pb-2 gap-2">
-        <Typewriter delay={0.1} className="text-sm sm:text-[11px] md:text-xs tracking-tight font-bold opacity-80">
-           SKILLS & CERTIFICATES
-        </Typewriter>
-        <Typewriter delay={0.3} className="text-sm sm:text-[11px] md:text-xs tracking-tight font-bold opacity-80">
-           PAGE 2/4
-        </Typewriter>
-      </div>
 
-      <Typewriter delay={0.5} className="mb-8 text-sm sm:text-base leading-relaxed border-l-[4px] border-stamp/60 pl-4 py-2 italic opacity-90 max-w-4xl" as="p">
-        "Subject effectively coordinates rapid multi-agent development and implements intelligent data workflows. Demonstrates highly successful engagement in competitive Hackathon operations."
-      </Typewriter>
 
       {/* TECHNICAL SKILLS */}
       <section className="pt-2 z-10 relative">
