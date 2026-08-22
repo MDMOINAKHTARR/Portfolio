@@ -18,12 +18,33 @@ import type { MusicVisual } from '../lib/music';
 const SPIDER_NOIR_GIF = 'https://media1.tenor.com/m/T4YtiVsOLu4AAAAC/spider-noir-nicolas-cage.gif';
 const PdfViewer = lazy(() => import('../components/PdfViewer').then((module) => ({ default: module.PdfViewer })));
 
+function RecTimestamp() {
+  const [time, setTime] = useState('');
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      setTime(now.toISOString().replace('T', ' ').substring(0, 19) + ' UTC');
+    };
+    updateTime();
+    const int = setInterval(updateTime, 1000);
+    return () => clearInterval(int);
+  }, []);
+
+  return (
+    <div className="absolute top-4 right-6 sm:right-16 text-[9px] sm:text-[10px] font-mono tracking-widest text-red-700/80 font-bold flex items-center gap-2">
+      <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse"></span>
+      REC // {time}
+    </div>
+  );
+}
+
 export function Dossier() {
   const { theme, musicTheme, activeMusicTrack } = useTheme();
   const songVisual = activeMusicTrack?.visual;
+  const isCrtTvTrack = activeMusicTrack ? ['bully-maguire', 'raindrops', 'come-and-get-your-love', 'im-amazing'].includes(activeMusicTrack.id) : false;
+
   const portraitThemeClass = musicTheme ? `song-portrait--${musicTheme}` : '';
   const [isPortraitRevealed, setIsPortraitRevealed] = useState(true);
-  const [time, setTime] = useState('');
   const [showGif, setShowGif] = useState(false);
   const [gifFading, setGifFading] = useState(false);
   const [gifReady, setGifReady] = useState(false);
@@ -36,16 +57,6 @@ export function Dossier() {
   useEffect(() => {
     setIsPortraitRevealed(!songVisual);
   }, [songVisual]);
-
-  useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      setTime(now.toISOString().replace('T', ' ').substring(0, 19) + ' UTC');
-    };
-    updateTime();
-    const int = setInterval(updateTime, 1000);
-    return () => clearInterval(int);
-  }, []);
 
   useEffect(() => {
     const mobileQuery = window.matchMedia('(max-width: 639px)');
@@ -112,15 +123,17 @@ export function Dossier() {
                <div className="w-full h-[130px] bg-zinc-800 border border-zinc-700 relative overflow-hidden">
                  <SubjectPortrait
                    alt="Subject"
-                   className={`song-portrait w-full h-full object-cover relative z-10 transition-[filter,opacity,transform] duration-[420ms] ${isPortraitRevealed ? 'opacity-100 scale-100' : 'opacity-20 scale-[1.015]'} ${portraitThemeClass}`}
+                   className="song-portrait w-full h-full object-cover relative z-10 opacity-100"
                  />
 
-                 {musicTheme && <div className={`song-portrait-tint song-portrait-tint--${musicTheme}`} aria-hidden="true" />}
+                 {/* Photo stays normal */}
                  
                  {/* Song visuals take over the portrait while music is playing. */}
-                 {songVisual && isMobileViewport
-                   ? <SongThemeOverlay key={songVisual.src} visual={songVisual} onRevealPortrait={revealPortrait} />
-                   : showGif && isMobileViewport && <SpiderNoirThemeOverlay fading={gifFading} />}
+                  {songVisual && !isCrtTvTrack ? (
+                    <SongThemeOverlay key={songVisual.src} visual={songVisual} onRevealPortrait={revealPortrait} />
+                  ) : (
+                    showGif && isMobileViewport && <SpiderNoirThemeOverlay fading={gifFading} />
+                  )}
                  
                  <div className="absolute inset-0 bg-ink/5 mix-blend-overlay z-20 pointer-events-none"></div>
 
@@ -729,10 +742,7 @@ export function Dossier() {
         </div>
 
         {/* Surveillance Timestamp Overlay */}
-        <div className="absolute top-4 right-6 sm:right-16 text-[9px] sm:text-[10px] font-mono tracking-widest text-red-700/80 font-bold flex items-center gap-2">
-           <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse"></span>
-           REC // {time}
-        </div>
+        <RecTimestamp />
 
         {/* Attached Photo (Clipped to the Dossier) */}
         <div className="absolute top-12 -right-2 sm:right-0 lg:right-6 xl:right-10 z-20 flex flex-col items-center">
@@ -747,18 +757,20 @@ export function Dossier() {
               <div className="w-full h-full bg-zinc-800 overflow-hidden relative border border-zinc-700 group/image">
                  <SubjectPortrait
                    alt="Subject 8092-AX"
-                   className={`song-portrait w-full h-full object-cover relative z-10 transition-[transform,filter,opacity] duration-[420ms] ease-out transform-gpu will-change-transform grayscale-0 contrast-100 group-hover/image:scale-[1.05] group-hover/image:grayscale group-hover/image:contrast-125 ${isPortraitRevealed ? 'opacity-100' : 'opacity-20 scale-[1.015]'} ${portraitThemeClass}`}
+                   className="song-portrait w-full h-full object-cover relative z-10 transition-transform duration-[420ms] ease-out transform-gpu will-change-transform opacity-100 group-hover/image:scale-[1.05]"
                    onError={(event) => {
                      event.currentTarget.style.display = 'none';
                    }}
                  />
 
-                 {musicTheme && <div className={`song-portrait-tint song-portrait-tint--${musicTheme}`} aria-hidden="true" />}
+                 {/* Photo stays normal */}
                  
-                 {/* Song visuals take over the portrait while music is playing. */}
-                 {songVisual && !isMobileViewport
-                   ? <SongThemeOverlay key={songVisual.src} visual={songVisual} onRevealPortrait={revealPortrait} />
-                   : showGif && !isMobileViewport && <SpiderNoirThemeOverlay fading={gifFading} />}
+                 {/* Song visuals take over the portrait for image assets (videos play on the CRT TV). */}
+                  {songVisual && !isCrtTvTrack ? (
+                    <SongThemeOverlay key={songVisual.src} visual={songVisual} onRevealPortrait={revealPortrait} />
+                  ) : (
+                    showGif && !isMobileViewport && <SpiderNoirThemeOverlay fading={gifFading} />
+                  )}
 
                  {/* Surveillance UI Overlay */}
                  <div className="absolute inset-0 z-20 pointer-events-none p-1 flex flex-col justify-between opacity-80 group-hover/image:opacity-100 transition-opacity duration-700 ease-out">

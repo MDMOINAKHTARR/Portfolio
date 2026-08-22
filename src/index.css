@@ -83,6 +83,30 @@
   animation: case-radio-reel 2.4s linear infinite;
 }
 
+@keyframes crt-flicker {
+  0%,100% { opacity: 1; }
+  92% { opacity: 1; }
+  93% { opacity: 0.85; }
+  94% { opacity: 1; }
+  97% { opacity: 0.92; }
+  98% { opacity: 1; }
+}
+
+@keyframes crt-power-on {
+  0% { transform: scaleY(0.02) scaleX(0.6); opacity: 0.4; filter: brightness(3); }
+  20% { transform: scaleY(0.08) scaleX(0.9); opacity: 0.9; }
+  40% { transform: scaleY(1) scaleX(1); opacity: 1; filter: brightness(1.4); }
+  100% { transform: scaleY(1) scaleX(1); opacity: 1; filter: brightness(1); }
+}
+
+.crt-screen-on {
+  animation: crt-power-on 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.crt-flicker {
+  animation: crt-flicker 4s ease-in-out infinite;
+}
+
 .case-radio-range {
   --radio-progress: 0%;
   appearance: none;
@@ -3480,5 +3504,27 @@ html.music-theme-starman .music-theme-texture {
   .music-theme-piece {
     display: none;
     animation: none;
+  }
+}
+
+/* Hardware Compositing & Mobile Performance Optimizations */
+.crt-tv-frame,
+.music-theme-texture,
+.music-theme-motifs,
+.music-theme-motif,
+.dossier-record,
+.song-photo-frame,
+.desk-wood-texture {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+@media (max-width: 768px) {
+  /* Reduce mobile GPU paint overhead */
+  .music-theme-texture::before,
+  .music-theme-texture::after {
+    filter: none !important;
   }
 }

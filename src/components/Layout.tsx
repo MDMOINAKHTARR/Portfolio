@@ -20,6 +20,7 @@ import { BackgroundElements } from './BackgroundElements';
 import { ThemeToggle } from './ThemeToggle';
 import { AudioToggle } from './AudioToggle';
 import { MusicPlayer } from './MusicPlayer';
+import { CrtTvWidget } from './CrtTvWidget';
 import { audioEngine } from '../lib/audio';
 import { FileDrawer } from './FileDrawer';
 import { SocialSidebar } from './SocialSidebar';
@@ -210,6 +211,7 @@ export function Layout() {
       
       <AudioToggle />
       <MusicPlayer />
+      <CrtTvWidget />
       <FileDrawer />
       <SocialSidebar />
 
@@ -449,14 +451,7 @@ export function Layout() {
         <MusicPlayer mobileNav />
       </div>
 
-      {/* Sticky Bottom Desktop Footer / Last Accessed string on Mobile inside body instead */}
-      <div className="hidden sm:flex print:hidden fixed bottom-0 left-0 w-full px-4 py-2 bg-footer-bg border-t border-folder/20 text-folder text-[10px] sm:text-xs font-mono justify-between items-center sm:items-baseline tracking-widest z-50 shadow-[0_-5px_15px_rgba(0,0,0,0.5)] transition-colors">
-        <div className="opacity-70"><span className="text-stamp font-bold mr-2">[AUTH: SECURE]</span> LAST ACCESSED: {timestamp}</div>
-        <div className="hidden sm:block opacity-50 px-4 border-l border-r border-folder/20 min-w-[250px] text-center">
-          {visits > 0 ? `TRAFFIC: ${visits} | UNIQUE: ${uniqueVisits}` : 'CENTRAL INTELLIGENCE REGISTRY'}
-        </div>
-        <div className="opacity-90 font-bold">ACTIVE CASE ID: {caseId}</div>
-      </div>
+
     </div>
   );
 }
