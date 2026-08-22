@@ -22,16 +22,16 @@ export function DistressedHeader() {
         {/* Fold lines with displacement map for an organic, hand-folded look */}
         <g filter="url(#foldMap)" opacity="0.6">
           {/* Vertical fold */}
-          <path d="M 33% 0 L 33% 100%" stroke="black" strokeWidth="1.5" strokeOpacity="0.12" fill="none" />
-          <path d="M 33.2% 0 L 33.2% 100%" stroke="white" strokeWidth="1.5" strokeOpacity="0.3" fill="none" />
+          <line x1="33%" y1="0" x2="33%" y2="100%" stroke="black" strokeWidth="1.5" strokeOpacity="0.12" />
+          <line x1="33.2%" y1="0" x2="33.2%" y2="100%" stroke="white" strokeWidth="1.5" strokeOpacity="0.3" />
           
           {/* Horizontal crease */}
-          <path d="M 0 30% L 100% 30%" stroke="black" strokeWidth="1" strokeOpacity="0.08" fill="none" />
-          <path d="M 0 30.2% L 100% 30.2%" stroke="white" strokeWidth="1" strokeOpacity="0.2" fill="none" />
+          <line x1="0" y1="30%" x2="100%" y2="30%" stroke="black" strokeWidth="1" strokeOpacity="0.08" />
+          <line x1="0" y1="30.2%" x2="100%" y2="30.2%" stroke="white" strokeWidth="1" strokeOpacity="0.2" />
 
           {/* Slight angled fold on the right */}
-          <path d="M 85% 0 L 82% 100%" stroke="black" strokeWidth="1" strokeOpacity="0.06" fill="none" />
-          <path d="M 85.2% 0 L 82.2% 100%" stroke="white" strokeWidth="1" strokeOpacity="0.15" fill="none" />
+          <line x1="85%" y1="0" x2="82%" y2="100%" stroke="black" strokeWidth="1" strokeOpacity="0.06" />
+          <line x1="85.2%" y1="0" x2="82.2%" y2="100%" stroke="white" strokeWidth="1" strokeOpacity="0.15" />
         </g>
       </svg>
       
