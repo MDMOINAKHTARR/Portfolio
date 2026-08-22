@@ -86,10 +86,10 @@ export function MusicPlayer({ mobileNav = false }: { mobileNav?: boolean }) {
           <motion.button key="c" initial={{ opacity:0, scale:0.9 }} animate={{ opacity:1, scale:1 }} exit={{ opacity:0, scale:0.9 }} transition={{ duration:0.18 }}
             type="button" onMouseEnter={mobileNav ? undefined : () => setOpen(true)} onFocus={() => setOpen(true)} onClick={() => setOpen(true)}
             aria-label="Open Awesome Mix Turntable Console"
-            className={mobileNav ? 'pointer-events-auto relative flex h-10 w-full flex-col items-center justify-center rounded-full text-ink/60 transition-all hover:bg-ink/5 hover:text-ink active:scale-90' : 'pointer-events-auto relative'}
+            className={mobileNav ? 'pointer-events-auto relative flex h-full w-full flex-col items-center justify-center gap-0.5 rounded-full text-ink/60 transition-all hover:bg-ink/5 hover:text-ink active:scale-90' : 'pointer-events-auto relative'}
           >
             {mobileNav
-              ? <span className={`text-[8px] font-black tracking-widest ${playing ? 'text-red-700' : 'text-current'}`}>MIX</span>
+              ? <MiniCassette playing={playing} />
               : <AwesomeMixCassette playing={playing} accent={accent} />}
           </motion.button>
         ) : (
@@ -99,17 +99,18 @@ export function MusicPlayer({ mobileNav = false }: { mobileNav?: boolean }) {
             onMouseLeave={mobileNav ? undefined : () => setOpen(false)}
             aria-label="Awesome Mix Classy Turntable Console"
             style={{
-              width: 385,
               background: 'linear-gradient(165deg, rgba(253,251,247,0.98) 0%, rgba(244,238,228,0.99) 100%)',
               border: '1.5px solid rgba(212,175,55,0.35)',
               borderRadius: 20,
               boxShadow: `0 20px 50px rgba(15,23,42,0.16), 0 0 30px ${accent}20`,
               overflow: 'hidden',
               backdropFilter: 'blur(20px)',
-              position: 'relative',
               color: '#0f172a'
             }}
-            className={mobileNav ? 'pointer-events-auto absolute bottom-[calc(100%+12px)] right-0 z-[110] w-[min(94vw,385px)]' : 'pointer-events-auto relative'}
+            className={mobileNav
+              ? 'pointer-events-auto fixed bottom-[76px] left-1/2 -translate-x-1/2 z-[110] w-[92vw] max-w-[385px]'
+              : 'pointer-events-auto relative w-[385px]'
+            }
           >
             {/* Ambient Background Glow Spot */}
             <div style={{
@@ -591,6 +592,63 @@ function ClassyCircleBtn({ onClick, label, children }: { onClick: () => void; la
       className="hover:!text-slate-900 hover:!border-amber-400 transition-all active:scale-90">
       {children}
     </button>
+  );
+}
+
+/* ── Tiny Cassette for mobile nav dock button ── */
+function MiniCassette({ playing }: { playing: boolean }) {
+  return (
+    <>
+      <div style={{
+        width: 28, height: 17, position: 'relative',
+        background: 'linear-gradient(180deg, #2c2c2c 0%, #1a1a1a 100%)',
+        borderRadius: 3, border: '1px solid #080808',
+        boxShadow: '0 2px 6px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.1)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        overflow: 'hidden', flexShrink: 0,
+      }}>
+        {/* Label area */}
+        <div style={{
+          position: 'absolute', top: 1, left: 2, right: 2, height: 9,
+          background: '#f4ecd0', borderRadius: '1px 1px 0 0',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '0 2px', overflow: 'hidden',
+        }}>
+          <span style={{ fontSize: 3.5, fontFamily: 'Caveat, cursive', fontWeight: 700, color: '#1d3557', whiteSpace: 'nowrap', lineHeight: 1 }}>Mix</span>
+        </div>
+        {/* Reel window */}
+        <div style={{
+          position: 'absolute', bottom: 2, left: 2, right: 2, height: 5,
+          background: '#0a0a0a', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 3px',
+        }}>
+          <div style={{
+            width: 5, height: 5, borderRadius: '50%',
+            background: '#f0f0f0', border: '0.5px solid #111',
+            animation: playing ? 'case-radio-reel 2.2s linear infinite' : 'none',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <div style={{ width: 2, height: 2, borderRadius: '50%', background: '#111' }} />
+          </div>
+          <div style={{ flex: 1, height: 1.5, background: '#2b180d', margin: '0 2px', borderRadius: 1 }} />
+          <div style={{
+            width: 4, height: 4, borderRadius: '50%',
+            background: '#f0f0f0', border: '0.5px solid #111',
+            animation: playing ? 'case-radio-reel 2.2s linear infinite reverse' : 'none',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <div style={{ width: 1.5, height: 1.5, borderRadius: '50%', background: '#111' }} />
+          </div>
+        </div>
+        {/* Playing indicator dot */}
+        {playing && (
+          <div style={{
+            position: 'absolute', top: 1.5, right: 1.5, width: 2.5, height: 2.5, borderRadius: '50%',
+            background: '#10b981', boxShadow: '0 0 3px #10b981',
+          }} className="animate-pulse" />
+        )}
+      </div>
+      <span className={`text-[7px] font-black tracking-widest leading-none mt-0.5 ${playing ? 'text-red-700' : 'text-current'}`}>MIX</span>
+    </>
   );
 }
 
