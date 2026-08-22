@@ -99,6 +99,54 @@ export const MUSIC_TRACKS: MusicTrack[] = [
       playCount: 2,
     },
   },
+  {
+    id: 'raindrops',
+    title: "Raindrops Keep Fallin'",
+    artist: 'B.J. Thomas',
+    codename: 'TAPE 06 // SPIDEY-2',
+    src: '/raindrops keep falling on my head.mp3',
+    visual: {
+      src: '/Raindrops Keep Falling on my Head (Spider-Man 2) - JakeStateFarm (1080p, h264).mp4',
+      type: 'video',
+      alt: "Spider-Man 2 Raindrops scene",
+    },
+  },
+  {
+    id: 'bully-maguire',
+    title: 'People Get Up and Drive',
+    artist: 'James Brown',
+    codename: 'TAPE 07 // BULLY MAGUIRE',
+    src: '/bully maguire.mp4',
+    visual: {
+      src: '/bully maguire.mp4',
+      type: 'video',
+      alt: 'Bully Maguire street walk',
+    },
+  },
+  {
+    id: 'come-and-get-your-love',
+    title: 'Come and Get Your Love',
+    artist: 'Redbone',
+    codename: 'TAPE 08 // GUARDIANS',
+    src: '/Come and get your love.mp3',
+    visual: {
+      src: '/Come and get your love (online-video-cutter.com).mp4',
+      type: 'video',
+      alt: 'Guardians of the Galaxy opening scene',
+    },
+  },
+  {
+    id: 'im-amazing',
+    title: "I'm Amazing",
+    artist: 'Spider-Man',
+    codename: 'TAPE 09 // AMAZING',
+    src: '/im-amazing.mp4',
+    visual: {
+      src: '/im-amazing.mp4',
+      type: 'video',
+      alt: "I'm Amazing Spider-Man scene",
+    },
+  },
 ];
 
 class MusicEngine {
@@ -175,6 +223,10 @@ class MusicEngine {
     this.volume = Math.min(1, Math.max(0, volume));
     if (this.audio) this.audio.volume = this.volume;
     this.notify();
+  }
+
+  public getCurrentTime() {
+    return this.audio?.currentTime || 0;
   }
 
   public seek(time: number) {
