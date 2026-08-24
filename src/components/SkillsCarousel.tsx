@@ -3,14 +3,15 @@ import {
   SiPython, SiC, SiHtml5, SiCss, SiJavascript, SiReact, SiMysql,
   SiEclipseide, SiJupyter, SiGit, SiGithub,
   SiExpress, SiNodedotjs, SiSupabase, SiNextdotjs, SiTailwindcss, SiMaterialdesign, SiTypescript,
-  SiFirebase, SiOpenai, SiGooglegemini
+  SiFirebase, SiOpenai, SiGooglegemini, SiLangchain
 } from 'react-icons/si';
 import { FaJava } from 'react-icons/fa';
 import { VscVscode } from 'react-icons/vsc';
-import { MousePointer2 } from 'lucide-react'; 
+import { MousePointer2, Network, Bot } from 'lucide-react'; 
 
 const row1 = [
   { name: 'Python', icon: SiPython, color: '#3776AB' },
+  { name: 'GenAI', icon: Bot, color: '#8E75B2' },
   { name: 'Java', icon: FaJava, color: '#007396' },
   { name: 'C', icon: SiC, color: '#A8B9CC' },
   { name: 'HTML', icon: SiHtml5, color: '#E34F26' },
@@ -24,6 +25,8 @@ const row2 = [
   { name: 'React', icon: SiReact, color: '#61DAFB' },
   { name: 'Next.js', icon: SiNextdotjs, color: 'var(--color-ink)' },
   { name: 'Node.js', icon: SiNodedotjs, color: '#339933' },
+  { name: 'LangChain', icon: SiLangchain, color: '#1C3C3C' },
+  { name: 'LangGraph', icon: Network, color: '#FF6F61' },
   { name: 'Express.js', icon: SiExpress, color: 'var(--color-ink)' },
   { name: 'SQL', icon: SiMysql, color: '#4479A1' },
   { name: 'Supabase', icon: SiSupabase, color: '#3ECF8E' },
