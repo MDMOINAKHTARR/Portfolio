@@ -163,7 +163,9 @@ export function CommandCenter() {
     <>
       {/* Flat side-by-side Launcher Dock */}
       <aside
-        className="field-agent-launcher-dock fixed bottom-4 right-4 z-[380] flex items-center rounded-lg border-2 border-ink bg-paper p-1 shadow-[4px_4px_0_var(--c-ink)] print:hidden sm:right-8"
+        className={`field-agent-launcher-dock fixed bottom-4 right-4 z-[380] flex items-center rounded-lg border-2 border-ink bg-paper p-1 shadow-[4px_4px_0_var(--c-ink)] print:hidden sm:right-8 ${
+          journalOpen ? 'hidden sm:flex' : 'flex'
+        }`}
         aria-label="Field Agent Control Launcher"
       >
         {/* Journal Tab Button */}
@@ -186,13 +188,14 @@ export function CommandCenter() {
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" title="System Active" />
         </button>
 
-        <div className="mx-1 h-4 w-px bg-ink/20" />
+        {/* Divider - Hidden on mobile */}
+        <div className="hidden sm:block mx-1 h-4 w-px bg-ink/20" />
 
-        {/* Keys Guide Tab Button */}
+        {/* Keys Guide Tab Button - Removed on Mobile View */}
         <button
           type="button"
           onClick={() => { setShowShortcuts((open) => !open); setJournalOpen(false); }}
-          className={`group flex items-center gap-1.5 rounded px-2.5 py-1.5 font-mono text-[10px] font-black tracking-wider transition-all focus:outline-none ${
+          className={`hidden sm:flex group items-center gap-1.5 rounded px-2.5 py-1.5 font-mono text-[10px] font-black tracking-wider transition-all focus:outline-none ${
             showShortcuts
               ? 'bg-ink text-paper shadow-sm'
               : 'text-ink/80 hover:bg-ink/10'
