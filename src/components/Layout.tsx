@@ -20,7 +20,7 @@ import { BackgroundElements } from './BackgroundElements';
 import { ThemeToggle } from './ThemeToggle';
 import { AudioToggle } from './AudioToggle';
 import { MusicPlayer } from './MusicPlayer';
-import { CrtTvWidget } from './CrtTvWidget';
+import { CrtTvWidget, VideoPreloader } from './CrtTvWidget';
 import { audioEngine } from '../lib/audio';
 import { FileDrawer } from './FileDrawer';
 import { SocialSidebar } from './SocialSidebar';
@@ -211,6 +211,7 @@ export function Layout() {
       
       <AudioToggle />
       <MusicPlayer />
+      <VideoPreloader />
       <CrtTvWidget />
       <FileDrawer />
       <SocialSidebar />

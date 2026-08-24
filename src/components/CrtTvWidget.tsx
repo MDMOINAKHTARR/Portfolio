@@ -5,6 +5,53 @@ import { MUSIC_TRACKS, musicEngine, type MusicTrack } from '../lib/music';
 
 const CRT_TV_TRACK_IDS = ['bully-maguire', 'raindrops', 'come-and-get-your-love', 'im-amazing'];
 
+// All video src paths used by the CRT TV widget — preloaded silently on mount
+const CRT_TV_VIDEO_SRCS = MUSIC_TRACKS
+  .filter((t) => CRT_TV_TRACK_IDS.includes(t.id) && t.visual?.type === 'video')
+  .map((t) => t.visual!.src);
+
+// Also grab any track whose audio src is a video (e.g. bully-maguire.mp4 doubles as audio+video)
+const CRT_TV_AUDIO_VIDEO_SRCS = MUSIC_TRACKS
+  .filter((t) => CRT_TV_TRACK_IDS.includes(t.id) && t.src.endsWith('.mp4'))
+  .map((t) => t.src);
+
+const ALL_TV_PRELOAD_SRCS = [...new Set([...CRT_TV_VIDEO_SRCS, ...CRT_TV_AUDIO_VIDEO_SRCS])];
+
+/** Silently preloads all CRT TV video files as soon as the app mounts. */
+export function VideoPreloader() {
+  const videoRefs = useRef<HTMLVideoElement[]>([]);
+
+  useEffect(() => {
+    // Create hidden video elements that instruct the browser to download & cache the files
+    videoRefs.current = ALL_TV_PRELOAD_SRCS.map((src) => {
+      const v = document.createElement('video');
+      v.src = src;
+      v.preload = 'auto';
+      v.muted = true;
+      v.style.display = 'none';
+      v.style.position = 'absolute';
+      v.style.pointerEvents = 'none';
+      v.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(v);
+      // Load just enough to fill decode buffers — we don't need to play
+      v.load();
+      return v;
+    });
+
+    return () => {
+      videoRefs.current.forEach((v) => {
+        v.pause();
+        v.removeAttribute('src');
+        v.load();
+        v.remove();
+      });
+      videoRefs.current = [];
+    };
+  }, []);
+
+  return null;
+}
+
 export function CrtTvWidget() {
   const [playing, setPlaying] = useState(false);
   const [show, setShow] = useState(false);
