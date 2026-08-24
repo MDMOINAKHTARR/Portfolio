@@ -191,20 +191,45 @@ function VintageTv({
 
   const videoSrc = track.visual?.src ?? '';
 
-  // Start video on mount or track switch
+  // Start/sync video on mount, track switch, or play state change
   useEffect(() => {
     setEnded(false);
     if (track.id === 'im-amazing') {
       setExpanded(true);
     }
-    vidRef.current?.play().catch(() => {});
-  }, [track.id]);
+    
+    const audioTime = musicEngine.getCurrentTime();
+    
+    const handleSync = () => {
+      if (expanded) {
+        if (vidRef.current) vidRef.current.pause();
+        if (vidBigRef.current) {
+          if (Math.abs(vidBigRef.current.currentTime - audioTime) > 0.3) {
+            vidBigRef.current.currentTime = audioTime;
+          }
+          if (playing) {
+            vidBigRef.current.play().catch(() => {});
+          } else {
+            vidBigRef.current.pause();
+          }
+        }
+      } else {
+        if (vidBigRef.current) vidBigRef.current.pause();
+        if (vidRef.current) {
+          if (Math.abs(vidRef.current.currentTime - audioTime) > 0.3) {
+            vidRef.current.currentTime = audioTime;
+          }
+          if (playing) {
+            vidRef.current.play().catch(() => {});
+          } else {
+            vidRef.current.pause();
+          }
+        }
+      }
+    };
 
-  useEffect(() => {
-    if (expanded) {
-      vidBigRef.current?.play().catch(() => {});
-    }
-  }, [expanded, track.id]);
+    handleSync();
+  }, [track.id, expanded, playing]);
 
   // Periodically check drift between video currentTime and audio engine when TV is playing
   useEffect(() => {
@@ -212,35 +237,17 @@ function VintageTv({
 
     const syncInterval = setInterval(() => {
       const audioTime = musicEngine.getCurrentTime();
-      const syncVideo = (v: HTMLVideoElement | null) => {
-        if (!v || v.readyState < 2) return;
-        // Only adjust if drift exceeds 0.6s to avoid constant video decoding seeks
-        if (Math.abs(v.currentTime - audioTime) > 0.6) {
-          v.currentTime = audioTime;
+      const activeVideo = expanded ? vidBigRef.current : vidRef.current;
+      
+      if (activeVideo && activeVideo.readyState >= 2) {
+        if (Math.abs(activeVideo.currentTime - audioTime) > 0.5) {
+          activeVideo.currentTime = audioTime;
         }
-      };
-      syncVideo(vidRef.current);
-      syncVideo(vidBigRef.current);
+      }
     }, 1000);
 
     return () => clearInterval(syncInterval);
-  }, [playing]);
-
-  // Subscribe to engine state for play/pause sync
-  useEffect(() => {
-    return musicEngine.subscribe((s) => {
-      const currentTrack = MUSIC_TRACKS[s.trackIndex];
-      if (!CRT_TV_TRACK_IDS.includes(currentTrack?.id)) return;
-
-      const syncState = (v: HTMLVideoElement | null) => {
-        if (!v) return;
-        if (s.isPlaying && v.paused) v.play().catch(() => {});
-        if (!s.isPlaying && !v.paused) v.pause();
-      };
-      syncState(vidRef.current);
-      syncState(vidBigRef.current);
-    });
-  }, []);
+  }, [playing, expanded]);
 
   // Close TV on Escape key
   useEffect(() => {
@@ -277,505 +284,512 @@ function VintageTv({
 
   return (
     <div style={{ pointerEvents: 'auto', position: 'relative' }}>
-      <AnimatePresence mode="wait">
-        {!expanded ? (
-          <motion.div
-            key={`tv-${track.id}`}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.85 }}
-            transition={{ duration: 0.35 }}
-            style={{ width: 'min(82vw, 700px)', position: 'relative' }}
-          >
-            {/* ── ANTENNAS ── */}
+      {/* ── SMALL TV MODE ── */}
+      <motion.div
+        key={`tv-${track.id}`}
+        animate={{
+          opacity: expanded ? 0 : 1,
+          scale: expanded ? 0.95 : 1,
+        }}
+        transition={{ duration: 0.3 }}
+        style={{
+          width: 'min(82vw, 700px)',
+          position: expanded ? 'absolute' : 'relative',
+          visibility: expanded ? 'hidden' : 'visible',
+          pointerEvents: expanded ? 'none' : 'auto',
+          top: expanded ? -9999 : 'auto',
+          left: expanded ? -9999 : 'auto',
+        }}
+      >
+        {/* ── ANTENNAS ── */}
+        <div
+          style={{
+            position: 'absolute',
+            top: -60,
+            left: '48%',
+            transform: 'translateX(-50%)',
+            display: 'flex',
+            gap: 16,
+            alignItems: 'flex-end',
+            zIndex: 1,
+          }}
+        >
+          {['-20deg', '-2deg', '20deg'].map((r, i) => (
             <div
+              key={i}
               style={{
-                position: 'absolute',
-                top: -60,
-                left: '48%',
-                transform: 'translateX(-50%)',
                 display: 'flex',
-                gap: 16,
-                alignItems: 'flex-end',
-                zIndex: 1,
+                flexDirection: 'column',
+                alignItems: 'center',
+                transform: `rotate(${r})`,
+                transformOrigin: 'bottom center',
               }}
             >
-              {['-20deg', '-2deg', '20deg'].map((r, i) => (
-                <div
-                  key={i}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    transform: `rotate(${r})`,
-                    transformOrigin: 'bottom center',
-                  }}
-                >
-                  <div
-                    style={{
-                      width: 4,
-                      height: 4,
-                      borderRadius: '50%',
-                      background: 'radial-gradient(circle at 35% 35%,#ddd,#888)',
-                      marginBottom: 1,
-                    }}
-                  />
-                  <div
-                    style={{
-                      width: 2,
-                      height: 56,
-                      background: 'linear-gradient(to top,#777,#ccc)',
-                      borderRadius: 1,
-                    }}
-                  />
-                </div>
-              ))}
               <div
                 style={{
-                  position: 'absolute',
-                  bottom: 0,
-                  left: -8,
-                  right: -8,
-                  height: 6,
-                  background: 'linear-gradient(180deg,#9a6030,#6a4020)',
-                  borderRadius: 3,
+                  width: 4,
+                  height: 4,
+                  borderRadius: '50%',
+                  background: 'radial-gradient(circle at 35% 35%,#ddd,#888)',
+                  marginBottom: 1,
+                }}
+              />
+              <div
+                style={{
+                  width: 2,
+                  height: 56,
+                  background: 'linear-gradient(to top,#777,#ccc)',
+                  borderRadius: 1,
                 }}
               />
             </div>
+          ))}
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: -8,
+              right: -8,
+              height: 6,
+              background: 'linear-gradient(180deg,#9a6030,#6a4020)',
+              borderRadius: 3,
+            }}
+          />
+        </div>
 
-            {/* ── TV BODY ── */}
+        {/* ── TV BODY ── */}
+        <div
+          style={{
+            background: 'linear-gradient(155deg,#b07840,#8a5828,#9a6432,#6a3e18)',
+            borderRadius: 14,
+            border: '2px solid #4a2e10',
+            boxShadow:
+              '0 24px 64px rgba(0,0,0,0.85),inset 0 1px 0 rgba(255,255,255,0.15)',
+            padding: isMobile ? '12px 10px 10px' : '18px 14px 12px 18px',
+            display: 'flex',
+            flexDirection: isMobile ? 'column' : 'row',
+            gap: isMobile ? 8 : 12,
+            position: 'relative',
+          }}
+        >
+          {/* ── SCREEN ── */}
+          <div style={{ flex: 1 }}>
+            {/* Chrome bezel */}
             <div
               style={{
-                background: 'linear-gradient(155deg,#b07840,#8a5828,#9a6432,#6a3e18)',
-                borderRadius: 14,
-                border: '2px solid #4a2e10',
-                boxShadow:
-                  '0 24px 64px rgba(0,0,0,0.85),inset 0 1px 0 rgba(255,255,255,0.15)',
-                padding: isMobile ? '12px 10px 10px' : '18px 14px 12px 18px',
+                background: 'linear-gradient(145deg,#c8c0b0,#807870,#b0a898,#787068)',
+                borderRadius: 10,
+                padding: 5,
+                boxShadow: 'inset 0 3px 8px rgba(0,0,0,0.6)',
+              }}
+            >
+              <div style={{ background: '#080806', borderRadius: 6, padding: 4 }}>
+                {/* CRT screen */}
+                <div
+                  onClick={() => setExpanded(true)}
+                  title="Click to expand to full screen"
+                  style={{
+                    width: '100%',
+                    aspectRatio: '4/3',
+                    background: '#000',
+                    borderRadius: '28px 32px 32px 28px / 20px 26px 26px 20px',
+                    overflow: 'hidden',
+                    position: 'relative',
+                    cursor: 'pointer',
+                    boxShadow: 'inset 0 0 60px rgba(0,0,0,0.9)',
+                  }}
+                >
+                  <video
+                    key={videoSrc}
+                    ref={vidRef}
+                    src={videoSrc}
+                    preload="auto"
+                    muted
+                    playsInline
+                    autoPlay
+                    onEnded={() => setEnded(true)}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                  <CrtFx />
+                  {/* Glass highlight */}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      background:
+                        'radial-gradient(ellipse at 36% 30%,rgba(255,255,255,0.08),transparent 56%)',
+                      pointerEvents: 'none',
+                    }}
+                  />
+                  {/* REC dot */}
+                  {!ended && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: 6,
+                        left: 8,
+                        display: 'flex',
+                        gap: 3,
+                        alignItems: 'center',
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: 5,
+                          height: 5,
+                          borderRadius: '50%',
+                          background: '#ff3b30',
+                          boxShadow: '0 0 5px rgba(255,59,48,0.9)',
+                        }}
+                        className="animate-pulse"
+                      />
+                      <span
+                        style={{
+                          fontSize: 5.5,
+                          fontWeight: 900,
+                          color: 'rgba(255,80,60,0.95)',
+                          fontFamily: 'monospace',
+                          letterSpacing: '0.1em',
+                        }}
+                      >
+                        REC // {track.codename}
+                      </span>
+                    </div>
+                  )}
+                  {ended ? (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        background: 'rgba(0,0,0,0.7)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 6,
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: 8,
+                          color: 'rgba(255,255,255,0.5)',
+                          fontFamily: 'monospace',
+                        }}
+                      >
+                        — END OF TAPE —
+                      </span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          replay();
+                        }}
+                        style={{
+                          padding: '4px 10px',
+                          background: '#cc2200',
+                          border: 'none',
+                          borderRadius: 4,
+                          color: '#fff',
+                          fontSize: 8,
+                          fontFamily: 'monospace',
+                          cursor: 'pointer',
+                          letterSpacing: '0.1em',
+                        }}
+                      >
+                        ↺ REPLAY
+                      </button>
+                    </div>
+                  ) : (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        bottom: 5,
+                        right: 8,
+                        fontSize: 5.5,
+                        color: 'rgba(255,255,255,0.3)',
+                        fontFamily: 'monospace',
+                      }}
+                    >
+                      ⊞ EXPAND
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ── RIGHT CONTROLS (desktop only) ── */}
+          {!isMobile && (
+            <div
+              style={{
+                width: 90,
+                flexShrink: 0,
+                background: 'linear-gradient(180deg, #2d241c 0%, #1e1711 50%, #130f0a 100%)',
+                borderRadius: 8,
+                border: '1.5px solid #3d2f20',
+                padding: '10px 8px 10px',
                 display: 'flex',
-                flexDirection: isMobile ? 'column' : 'row',
-                gap: isMobile ? 8 : 12,
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 8,
+                boxShadow: 'inset 2px 3px 8px rgba(0,0,0,0.95), inset -1px -1px 2px rgba(255,255,255,0.08), 0 0 0 1px #0d0906',
                 position: 'relative',
               }}
             >
-              {/* ── SCREEN ── */}
-              <div style={{ flex: 1 }}>
-                {/* Chrome bezel */}
-                <div
-                  style={{
-                    background: 'linear-gradient(145deg,#c8c0b0,#807870,#b0a898,#787068)',
-                    borderRadius: 10,
-                    padding: 5,
-                    boxShadow: 'inset 0 3px 8px rgba(0,0,0,0.6)',
-                  }}
-                >
-                  <div style={{ background: '#080806', borderRadius: 6, padding: 4 }}>
-                    {/* CRT screen */}
-                    <div
-                      onClick={() => setExpanded(true)}
-                      title="Click to expand to full screen"
-                      style={{
-                        width: '100%',
-                        aspectRatio: '4/3',
-                        background: '#000',
-                        borderRadius: '28px 32px 32px 28px / 20px 26px 26px 20px',
-                        overflow: 'hidden',
-                        position: 'relative',
-                        cursor: 'pointer',
-                        boxShadow: 'inset 0 0 60px rgba(0,0,0,0.9)',
-                      }}
-                    >
-                      <video
-                        key={videoSrc}
-                        ref={vidRef}
-                        src={videoSrc}
-                        preload="auto"
-                        muted
-                        playsInline
-                        autoPlay
-                        onEnded={() => setEnded(true)}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      />
-                      <CrtFx />
-                      {/* Glass highlight */}
-                      <div
-                        style={{
-                          position: 'absolute',
-                          inset: 0,
-                          background:
-                            'radial-gradient(ellipse at 36% 30%,rgba(255,255,255,0.08),transparent 56%)',
-                          pointerEvents: 'none',
-                        }}
-                      />
-                      {/* REC dot */}
-                      {!ended && (
-                        <div
-                          style={{
-                            position: 'absolute',
-                            top: 6,
-                            left: 8,
-                            display: 'flex',
-                            gap: 3,
-                            alignItems: 'center',
-                          }}
-                        >
-                          <div
-                            style={{
-                              width: 5,
-                              height: 5,
-                              borderRadius: '50%',
-                              background: '#ff3b30',
-                              boxShadow: '0 0 5px rgba(255,59,48,0.9)',
-                            }}
-                            className="animate-pulse"
-                          />
-                          <span
-                            style={{
-                              fontSize: 5.5,
-                              fontWeight: 900,
-                              color: 'rgba(255,80,60,0.9)',
-                              fontFamily: 'monospace',
-                              letterSpacing: '0.1em',
-                            }}
-                          >
-                            REC // {track.codename}
-                          </span>
-                        </div>
-                      )}
-                      {ended ? (
-                        <div
-                          style={{
-                            position: 'absolute',
-                            inset: 0,
-                            background: 'rgba(0,0,0,0.7)',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: 6,
-                          }}
-                        >
-                          <span
-                            style={{
-                              fontSize: 8,
-                              color: 'rgba(255,255,255,0.5)',
-                              fontFamily: 'monospace',
-                            }}
-                          >
-                            — END OF TAPE —
-                          </span>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              replay();
-                            }}
-                            style={{
-                              padding: '4px 10px',
-                              background: '#cc2200',
-                              border: 'none',
-                              borderRadius: 4,
-                              color: '#fff',
-                              fontSize: 8,
-                              fontFamily: 'monospace',
-                              cursor: 'pointer',
-                              letterSpacing: '0.1em',
-                            }}
-                          >
-                            ↺ REPLAY
-                          </button>
-                        </div>
-                      ) : (
-                        <div
-                          style={{
-                            position: 'absolute',
-                            bottom: 5,
-                            right: 8,
-                            fontSize: 5.5,
-                            color: 'rgba(255,255,255,0.3)',
-                            fontFamily: 'monospace',
-                          }}
-                        >
-                          ⊞ EXPAND
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
+              {/* Corner Metallic Screws / Rivets */}
+              <div style={{ position: 'absolute', top: 4, left: 5, width: 3.5, height: 3.5, borderRadius: '50%', background: 'radial-gradient(circle, #c5b596, #3d301e)', boxShadow: '0 0.5px 1px rgba(0,0,0,0.9)' }} />
+              <div style={{ position: 'absolute', top: 4, right: 5, width: 3.5, height: 3.5, borderRadius: '50%', background: 'radial-gradient(circle, #c5b596, #3d301e)', boxShadow: '0 0.5px 1px rgba(0,0,0,0.9)' }} />
+              <div style={{ position: 'absolute', bottom: 4, left: 5, width: 3.5, height: 3.5, borderRadius: '50%', background: 'radial-gradient(circle, #c5b596, #3d301e)', boxShadow: '0 0.5px 1px rgba(0,0,0,0.9)' }} />
+              <div style={{ position: 'absolute', bottom: 4, right: 5, width: 3.5, height: 3.5, borderRadius: '50%', background: 'radial-gradient(circle, #c5b596, #3d301e)', boxShadow: '0 0.5px 1px rgba(0,0,0,0.9)' }} />
 
-              {/* ── RIGHT CONTROLS (desktop only) ── */}
-              {!isMobile && (
-              <div
-                style={{
-                  width: 90,
-                  flexShrink: 0,
-                  background: 'linear-gradient(180deg, #2d241c 0%, #1e1711 50%, #130f0a 100%)',
-                  borderRadius: 8,
-                  border: '1.5px solid #3d2f20',
-                  padding: '10px 8px 10px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: 8,
-                  boxShadow: 'inset 2px 3px 8px rgba(0,0,0,0.95), inset -1px -1px 2px rgba(255,255,255,0.08), 0 0 0 1px #0d0906',
-                  position: 'relative',
-                }}
-              >
-                {/* Corner Metallic Screws / Rivets */}
-                <div style={{ position: 'absolute', top: 4, left: 5, width: 3.5, height: 3.5, borderRadius: '50%', background: 'radial-gradient(circle, #c5b596, #3d301e)', boxShadow: '0 0.5px 1px rgba(0,0,0,0.9)' }} />
-                <div style={{ position: 'absolute', top: 4, right: 5, width: 3.5, height: 3.5, borderRadius: '50%', background: 'radial-gradient(circle, #c5b596, #3d301e)', boxShadow: '0 0.5px 1px rgba(0,0,0,0.9)' }} />
-                <div style={{ position: 'absolute', bottom: 4, left: 5, width: 3.5, height: 3.5, borderRadius: '50%', background: 'radial-gradient(circle, #c5b596, #3d301e)', boxShadow: '0 0.5px 1px rgba(0,0,0,0.9)' }} />
-                <div style={{ position: 'absolute', bottom: 4, right: 5, width: 3.5, height: 3.5, borderRadius: '50%', background: 'radial-gradient(circle, #c5b596, #3d301e)', boxShadow: '0 0.5px 1px rgba(0,0,0,0.9)' }} />
+              {/* VOL — large 3D dial */}
+              <ControlBlock label="VOLUME" hint="Click to adjust volume">
+                <BigDial angle={volAngle} onClick={clickVol} size={42} />
+              </ControlBlock>
 
-                {/* VOL — large 3D dial */}
-                <ControlBlock label="VOLUME" hint="Click to adjust volume">
-                  <BigDial angle={volAngle} onClick={clickVol} size={42} />
+              <div style={{ width: '85%', height: 1.5, background: 'linear-gradient(90deg, transparent, #4a3b2a 20%, #4a3b2a 80%, transparent)', boxShadow: '0 1px 0 rgba(0,0,0,0.9)' }} />
+
+              {/* REPLAY + EXPAND — 3D push buttons */}
+              <div style={{ display: 'flex', gap: 6 }}>
+                <ControlBlock label="REPLAY" hint="Restart video from beginning">
+                  <OldTvBtn onClick={replay}>↺</OldTvBtn>
                 </ControlBlock>
-
-                <div style={{ width: '85%', height: 1.5, background: 'linear-gradient(90deg, transparent, #4a3b2a 20%, #4a3b2a 80%, transparent)', boxShadow: '0 1px 0 rgba(0,0,0,0.9)' }} />
-
-                {/* REPLAY + EXPAND — 3D push buttons */}
-                <div style={{ display: 'flex', gap: 6 }}>
-                  <ControlBlock label="REPLAY" hint="Restart video from beginning">
-                    <OldTvBtn onClick={replay}>↺</OldTvBtn>
-                  </ControlBlock>
-                  <ControlBlock label="EXPAND" hint="Expand to full screen">
-                    <OldTvBtn onClick={() => setExpanded(true)}>⊞</OldTvBtn>
-                  </ControlBlock>
-                </div>
-
-                <div style={{ width: '85%', height: 1.5, background: 'linear-gradient(90deg, transparent, #4a3b2a 20%, #4a3b2a 80%, transparent)', boxShadow: '0 1px 0 rgba(0,0,0,0.9)' }} />
-
-                {/* Speaker grille */}
-                <div style={{ display: 'flex', gap: 3.5, flex: 1, alignItems: 'center', width: '100%', padding: '0 4px' }}>
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        width: 3.5,
-                        flex: 1,
-                        height: 42,
-                        borderRadius: 1.5,
-                        background: 'linear-gradient(180deg, #090705 0%, #16100a 100%)',
-                        boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.95), 0 1px 0 rgba(255,255,255,0.08)',
-                        borderTop: '0.5px solid rgba(0,0,0,0.9)',
-                      }}
-                    />
-                  ))}
-                </div>
-
-                {/* POWER — 3D ruby lens button */}
-                <ControlBlock label="POWER" hint="Turn off TV">
-                  <OldTvBtn onClick={onClose} accent="#cc2200">
-                    ⏻
-                  </OldTvBtn>
+                <ControlBlock label="EXPAND" hint="Expand to full screen">
+                  <OldTvBtn onClick={() => setExpanded(true)}>⊞</OldTvBtn>
                 </ControlBlock>
               </div>
-              )}
 
-              {/* ── MOBILE BOTTOM CONTROLS STRIP ── */}
-              {isMobile && (
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-around',
-                  background: 'linear-gradient(180deg, #2d241c 0%, #130f0a 100%)',
-                  borderRadius: 8,
-                  border: '1.5px solid #3d2f20',
-                  padding: '8px 12px',
-                  boxShadow: 'inset 2px 3px 8px rgba(0,0,0,0.95), 0 0 0 1px #0d0906',
-                  position: 'relative',
-                }}>
-                  {/* Screws */}
-                  <div style={{ position: 'absolute', top: 3, left: 4, width: 3, height: 3, borderRadius: '50%', background: 'radial-gradient(circle, #c5b596, #3d301e)' }} />
-                  <div style={{ position: 'absolute', top: 3, right: 4, width: 3, height: 3, borderRadius: '50%', background: 'radial-gradient(circle, #c5b596, #3d301e)' }} />
-                  <div style={{ position: 'absolute', bottom: 3, left: 4, width: 3, height: 3, borderRadius: '50%', background: 'radial-gradient(circle, #c5b596, #3d301e)' }} />
-                  <div style={{ position: 'absolute', bottom: 3, right: 4, width: 3, height: 3, borderRadius: '50%', background: 'radial-gradient(circle, #c5b596, #3d301e)' }} />
+              <div style={{ width: '85%', height: 1.5, background: 'linear-gradient(90deg, transparent, #4a3b2a 20%, #4a3b2a 80%, transparent)', boxShadow: '0 1px 0 rgba(0,0,0,0.9)' }} />
 
-                  {/* VOL dial (smaller on mobile) */}
-                  <ControlBlock label="VOL" hint="Click to adjust volume">
-                    <BigDial angle={volAngle} onClick={clickVol} size={28} />
-                  </ControlBlock>
+              {/* Speaker grille */}
+              <div style={{ display: 'flex', gap: 3.5, flex: 1, alignItems: 'center', width: '100%', padding: '0 4px' }}>
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      width: 3.5,
+                      flex: 1,
+                      height: 42,
+                      borderRadius: 1.5,
+                      background: 'linear-gradient(180deg, #090705 0%, #16100a 100%)',
+                      boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.95), 0 1px 0 rgba(255,255,255,0.08)',
+                      borderTop: '0.5px solid rgba(0,0,0,0.9)',
+                    }}
+                  />
+                ))}
+              </div>
 
-                  <div style={{ width: 1, height: 28, background: 'linear-gradient(180deg, transparent, #4a3b2a 20%, #4a3b2a 80%, transparent)' }} />
-
-                  <ControlBlock label="REPLAY" hint="Restart">
-                    <OldTvBtn onClick={replay}>↺</OldTvBtn>
-                  </ControlBlock>
-                  <ControlBlock label="EXPAND" hint="Full screen">
-                    <OldTvBtn onClick={() => setExpanded(true)}>⊞</OldTvBtn>
-                  </ControlBlock>
-
-                  <div style={{ width: 1, height: 28, background: 'linear-gradient(180deg, transparent, #4a3b2a 20%, #4a3b2a 80%, transparent)' }} />
-
-                  <ControlBlock label="POWER" hint="Turn off TV">
-                    <OldTvBtn onClick={onClose} accent="#cc2200">⏻</OldTvBtn>
-                  </ControlBlock>
-                </div>
-              )}
-
-            </div>{/* end TV BODY */}
-
-            {/* Feet */}
-            <div style={{ display: 'flex', justifyContent: 'space-around', padding: '0 32px' }}>
-              {[0, 1].map((i) => (
-                <div
-                  key={i}
-                  style={{
-                    width: 24,
-                    height: 8,
-                    background: 'linear-gradient(180deg,#6a3e18,#4a2a10)',
-                    borderRadius: '0 0 5px 5px',
-                    boxShadow: '0 4px 8px rgba(0,0,0,0.5)',
-                  }}
-                />
-              ))}
+              {/* POWER — 3D ruby lens button */}
+              <ControlBlock label="POWER" hint="Turn off TV">
+                <OldTvBtn onClick={onClose} accent="#cc2200">
+                  ⏻
+                </OldTvBtn>
+              </ControlBlock>
             </div>
-          </motion.div>
-        ) : (
-          /* ── EXPANDED FULL-SCREEN VIDEO ── */
-          <motion.div
-            key={`expanded-${track.id}`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.35 }}
+          )}
+
+          {/* ── MOBILE BOTTOM CONTROLS STRIP ── */}
+          {isMobile && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-around',
+              background: 'linear-gradient(180deg, #2d241c 0%, #130f0a 100%)',
+              borderRadius: 8,
+              border: '1.5px solid #3d2f20',
+              padding: '8px 12px',
+              boxShadow: 'inset 2px 3px 8px rgba(0,0,0,0.95), 0 0 0 1px #0d0906',
+              position: 'relative',
+            }}>
+              {/* Screws */}
+              <div style={{ position: 'absolute', top: 3, left: 4, width: 3, height: 3, borderRadius: '50%', background: 'radial-gradient(circle, #c5b596, #3d301e)' }} />
+              <div style={{ position: 'absolute', top: 3, right: 4, width: 3, height: 3, borderRadius: '50%', background: 'radial-gradient(circle, #c5b596, #3d301e)' }} />
+              <div style={{ position: 'absolute', bottom: 3, left: 4, width: 3, height: 3, borderRadius: '50%', background: 'radial-gradient(circle, #c5b596, #3d301e)' }} />
+              <div style={{ position: 'absolute', bottom: 3, right: 4, width: 3, height: 3, borderRadius: '50%', background: 'radial-gradient(circle, #c5b596, #3d301e)' }} />
+
+              {/* VOL dial (smaller on mobile) */}
+              <ControlBlock label="VOL" hint="Click to adjust volume">
+                <BigDial angle={volAngle} onClick={clickVol} size={28} />
+              </ControlBlock>
+
+              <div style={{ width: 1, height: 28, background: 'linear-gradient(180deg, transparent, #4a3b2a 20%, #4a3b2a 80%, transparent)' }} />
+
+              <ControlBlock label="REPLAY" hint="Restart">
+                <OldTvBtn onClick={replay}>↺</OldTvBtn>
+              </ControlBlock>
+              <ControlBlock label="EXPAND" hint="Full screen">
+                <OldTvBtn onClick={() => setExpanded(true)}>⊞</OldTvBtn>
+              </ControlBlock>
+
+              <div style={{ width: 1, height: 28, background: 'linear-gradient(180deg, transparent, #4a3b2a 20%, #4a3b2a 80%, transparent)' }} />
+
+              <ControlBlock label="POWER" hint="Turn off TV">
+                <OldTvBtn onClick={onClose} accent="#cc2200">⏻</OldTvBtn>
+              </ControlBlock>
+            </div>
+          )}
+
+        </div>{/* end TV BODY */}
+
+        {/* Feet */}
+        <div style={{ display: 'flex', justifyContent: 'space-around', padding: '0 32px' }}>
+          {[0, 1].map((i) => (
+            <div
+              key={i}
+              style={{
+                width: 24,
+                height: 8,
+                background: 'linear-gradient(180deg,#6a3e18,#4a2a10)',
+                borderRadius: '0 0 5px 5px',
+                boxShadow: '0 4px 8px rgba(0,0,0,0.5)',
+              }}
+            />
+          ))}
+        </div>
+      </motion.div>
+
+      {/* ── EXPANDED FULL-SCREEN VIDEO ── */}
+      <motion.div
+        key={`expanded-${track.id}`}
+        animate={{
+          opacity: expanded ? 1 : 0,
+        }}
+        transition={{ duration: 0.3 }}
+        style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 9999,
+          background: 'rgba(0,0,0,0.93)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          pointerEvents: expanded ? 'auto' : 'none',
+          visibility: expanded ? 'visible' : 'hidden',
+        }}
+        onClick={() => setExpanded(false)}
+      >
+        <motion.div
+          animate={{
+            scale: expanded ? 1 : 0.8,
+          }}
+          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            width: 'min(94vw,1280px)',
+            aspectRatio: '16/9',
+            position: 'relative',
+            borderRadius: 6,
+            overflow: 'hidden',
+            boxShadow: '0 0 120px rgba(0,0,0,1)',
+          }}
+        >
+          <video
+            key={`big-${videoSrc}`}
+            ref={vidBigRef}
+            src={videoSrc}
+            preload="auto"
+            muted
+            playsInline
+            autoPlay
+            onEnded={() => {
+              setEnded(true);
+              setExpanded(false);
+            }}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+          <CrtFx />
+          <div
             style={{
-              position: 'fixed',
+              position: 'absolute',
               inset: 0,
-              zIndex: 9999,
-              background: 'rgba(0,0,0,0.93)',
+              background:
+                'radial-gradient(ellipse at 32% 28%,rgba(255,255,255,0.04),transparent 55%)',
+              pointerEvents: 'none',
+            }}
+          />
+          {/* REC */}
+          <div
+            style={{
+              position: 'absolute',
+              top: 12,
+              left: 14,
+              display: 'flex',
+              gap: 5,
+              alignItems: 'center',
+            }}
+          >
+            <div
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: '50%',
+                background: '#ff3b30',
+                boxShadow: '0 0 8px rgba(255,59,48,0.9)',
+              }}
+              className="animate-pulse"
+            />
+            <span
+              style={{
+                fontSize: 9,
+                fontWeight: 900,
+                color: 'rgba(255,80,60,0.95)',
+                fontFamily: 'monospace',
+                letterSpacing: '0.12em',
+              }}
+            >
+              REC // LIVE FEED
+            </span>
+          </div>
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 12,
+              left: 14,
+              fontSize: 8,
+              color: 'rgba(255,220,100,0.65)',
+              fontFamily: 'monospace',
+              letterSpacing: '0.12em',
+            }}
+          >
+            {track.codename} // {track.title.toUpperCase()}
+          </div>
+          <button
+            type="button"
+            onClick={() => setExpanded(false)}
+            style={{
+              position: 'absolute',
+              top: 12,
+              right: 14,
+              width: 30,
+              height: 30,
+              borderRadius: 6,
+              background: 'rgba(0,0,0,0.6)',
+              border: '1px solid rgba(255,255,255,0.15)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              pointerEvents: 'auto',
+              color: 'rgba(255,255,255,0.7)',
+              cursor: 'pointer',
+              fontSize: 14,
             }}
-            onClick={() => setExpanded(false)}
+            className="hover:!bg-black transition-colors"
           >
-            <motion.div
-              initial={{ scale: 0.7 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-              onClick={(e) => e.stopPropagation()}
-              style={{
-                width: 'min(94vw,1280px)',
-                aspectRatio: '16/9',
-                position: 'relative',
-                borderRadius: 6,
-                overflow: 'hidden',
-                boxShadow: '0 0 120px rgba(0,0,0,1)',
-              }}
-            >
-              <video
-                key={`big-${videoSrc}`}
-                ref={vidBigRef}
-                src={videoSrc}
-                preload="auto"
-                muted
-                playsInline
-                autoPlay
-                onEnded={() => {
-                  setEnded(true);
-                  setExpanded(false);
-                }}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
-              <CrtFx />
-              <div
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  background:
-                    'radial-gradient(ellipse at 32% 28%,rgba(255,255,255,0.04),transparent 55%)',
-                  pointerEvents: 'none',
-                }}
-              />
-              {/* REC */}
-              <div
-                style={{
-                  position: 'absolute',
-                  top: 12,
-                  left: 14,
-                  display: 'flex',
-                  gap: 5,
-                  alignItems: 'center',
-                }}
-              >
-                <div
-                  style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: '50%',
-                    background: '#ff3b30',
-                    boxShadow: '0 0 8px rgba(255,59,48,0.9)',
-                  }}
-                  className="animate-pulse"
-                />
-                <span
-                  style={{
-                    fontSize: 9,
-                    fontWeight: 900,
-                    color: 'rgba(255,80,60,0.95)',
-                    fontFamily: 'monospace',
-                    letterSpacing: '0.12em',
-                  }}
-                >
-                  REC // LIVE FEED
-                </span>
-              </div>
-              <div
-                style={{
-                  position: 'absolute',
-                  bottom: 12,
-                  left: 14,
-                  fontSize: 8,
-                  color: 'rgba(255,220,100,0.65)',
-                  fontFamily: 'monospace',
-                  letterSpacing: '0.12em',
-                }}
-              >
-                {track.codename} // {track.title.toUpperCase()}
-              </div>
-              <button
-                type="button"
-                onClick={() => setExpanded(false)}
-                style={{
-                  position: 'absolute',
-                  top: 12,
-                  right: 14,
-                  width: 30,
-                  height: 30,
-                  borderRadius: 6,
-                  background: 'rgba(0,0,0,0.6)',
-                  border: '1px solid rgba(255,255,255,0.15)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'rgba(255,255,255,0.7)',
-                  cursor: 'pointer',
-                  fontSize: 14,
-                }}
-                className="hover:!bg-black transition-colors"
-              >
-                ✕
-              </button>
-              <div
-                style={{
-                  position: 'absolute',
-                  bottom: 12,
-                  right: 14,
-                  fontSize: 7,
-                  color: 'rgba(255,255,255,0.25)',
-                  fontFamily: 'monospace',
-                }}
-              >
-                CLICK OUTSIDE OR ✕ TO COLLAPSE
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            ✕
+          </button>
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 12,
+              right: 14,
+              fontSize: 7,
+              color: 'rgba(255,255,255,0.25)',
+              fontFamily: 'monospace',
+            }}
+          >
+            CLICK OUTSIDE OR ✕ TO COLLAPSE
+          </div>
+        </motion.div>
+      </motion.div>
     </div>
   );
 }
