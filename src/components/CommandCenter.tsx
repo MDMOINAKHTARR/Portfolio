@@ -161,11 +161,9 @@ export function CommandCenter() {
 
   return (
     <>
-      {/* Flat side-by-side Launcher Dock */}
+      {/* Flat side-by-side Launcher Dock - Hidden on Mobile View */}
       <aside
-        className={`field-agent-launcher-dock fixed bottom-4 right-4 z-[380] flex items-center rounded-lg border-2 border-ink bg-paper p-1 shadow-[4px_4px_0_var(--c-ink)] print:hidden sm:right-8 ${
-          journalOpen ? 'hidden sm:flex' : 'flex'
-        }`}
+        className="field-agent-launcher-dock fixed bottom-4 right-4 z-[380] hidden sm:flex items-center rounded-lg border-2 border-ink bg-paper p-1 shadow-[4px_4px_0_var(--c-ink)] print:hidden sm:right-8"
         aria-label="Field Agent Control Launcher"
       >
         {/* Journal Tab Button */}
