@@ -116,7 +116,7 @@ export const MUSIC_TRACKS: MusicTrack[] = [
     title: 'People Get Up and Drive',
     artist: 'James Brown',
     codename: 'TAPE 07 // BULLY MAGUIRE',
-    src: '/bully maguire_opt.mp4',
+    src: '/bully-maguire.mp3',
     visual: {
       src: '/bully maguire_opt.mp4',
       type: 'video',
@@ -140,7 +140,7 @@ export const MUSIC_TRACKS: MusicTrack[] = [
     title: "I'm Amazing",
     artist: 'Spider-Man',
     codename: 'TAPE 09 // AMAZING',
-    src: '/im-amazing_opt.mp4',
+    src: '/im-amazing.mp3',
     visual: {
       src: '/im-amazing_opt.mp4',
       type: 'video',

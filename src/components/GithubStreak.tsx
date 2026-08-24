@@ -186,8 +186,8 @@ export function GithubStreak() {
         <div className="flex flex-wrap items-center gap-x-3.5 gap-y-0.5">
           <div className="flex items-center gap-1.5 px-2 py-0.5 bg-ink text-paper font-bold tracking-widest text-[10px] font-mono shadow-[2px_2px_0_rgba(0,0,0,0.2)] dark:shadow-[2px_2px_0_rgba(255,255,255,0.2)]">
             <Sparkles className="w-3.5 h-3.5 animate-pulse shrink-0" />
-            <span className="uppercase uppercase">
-              ACTIVITY MATRIX
+            <span className="uppercase tracking-widest">
+              REPOSITORIES COMMIT MATRIX
             </span>
           </div>
           <div className="flex items-center gap-1.5 ml-1">

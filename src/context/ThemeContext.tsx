@@ -59,8 +59,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [activeMusicTrack, setActiveMusicTrack] = useState<MusicTrack | null>(
     () => MUSIC_TRACKS[0] ?? null
   );
+  const [isPlaying, setIsPlaying] = useState(false);
 
-  const musicTheme = activeMusicTrack?.theme ?? null;
+  const musicTheme = isPlaying ? (activeMusicTrack?.theme ?? null) : null;
   const previousMusicTheme = useRef<MusicTheme | null>(null);
 
   // Persist & apply color/noir toggle.
@@ -78,8 +79,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     return musicEngine.subscribe((snapshot) => {
       const currentTrack = MUSIC_TRACKS[snapshot.trackIndex] ?? null;
       setActiveMusicTrack(currentTrack);
+      setIsPlaying(snapshot.isPlaying);
     });
   }, []);
+
 
   // Preload assets for current track & peek ahead at upcoming tracks.
   useEffect(() => {

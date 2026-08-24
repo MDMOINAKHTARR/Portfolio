@@ -3,9 +3,15 @@ import { AnimatePresence, motion } from 'motion/react';
 import { ChevronDown, Pause, Play, Shuffle, SkipBack, SkipForward, Volume2, VolumeX, Disc2, Disc, Film } from 'lucide-react';
 import { MUSIC_TRACKS, musicEngine } from '../lib/music';
 
+// Clear legacy track persistence if present in browser storage
+if (typeof window !== 'undefined') {
+  localStorage.removeItem('case-radio-track');
+}
+
 const readNum = (k: string, fb: number) => { const v = Number(localStorage.getItem(k)); return Number.isFinite(v) ? v : fb; };
 const readVol = () => { const v = readNum('case-radio-volume', 0.5); const ok = localStorage.getItem('case-radio-volume-v') === '2'; return (!ok && (v === 0 || v === 0.35)) ? 0.5 : Math.min(1, Math.max(0, v)); };
 const ft = (t: number) => !Number.isFinite(t) || t <= 0 ? '0:00' : `${Math.floor(t / 60)}:${Math.floor(t % 60).toString().padStart(2, '0')}`;
+
 
 const TRACK_ACCENTS = [
   '#7c3aed', // Am I Dreaming — royal violet
@@ -25,7 +31,14 @@ export function MusicPlayer({ mobileNav = false }: { mobileNav?: boolean }) {
 
   const [open, setOpen] = useState(false);
   const [playing, setPlaying] = useState(false);
-  const [idx, setIdx] = useState(() => Math.min(MUSIC_TRACKS.length - 1, Math.max(0, readNum('case-radio-track', 0))));
+  const [idx, setIdx] = useState(() => {
+    let initialTrackIndex = 0;
+    const unsub = musicEngine.subscribe(s => {
+      initialTrackIndex = s.trackIndex;
+    });
+    unsub();
+    return initialTrackIndex;
+  });
   const [vol, setVol] = useState(readVol);
   const [cur, setCur] = useState(0);
   const [dur, setDur] = useState(0);
@@ -50,9 +63,6 @@ export function MusicPlayer({ mobileNav = false }: { mobileNav?: boolean }) {
     localStorage.setItem('case-radio-volume-v', '2');
   }, [vol]);
 
-  useEffect(() => {
-    localStorage.setItem('case-radio-track', String(idx));
-  }, [idx]);
 
   useEffect(() => {
     if (!open) return;

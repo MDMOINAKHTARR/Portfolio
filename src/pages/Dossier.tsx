@@ -4,16 +4,18 @@ import { Typewriter } from '../components/Typewriter';
 import { PageTransition } from '../components/PageTransition';
 import { useState, useEffect, useCallback, lazy, Suspense, type SyntheticEvent } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Fingerprint, Search, MapPin, Activity, X, ExternalLink, Github, Award, Briefcase, BookOpen, Trophy } from 'lucide-react';
+import { Fingerprint, Search, MapPin, Activity, X, ExternalLink, Github, Award, Briefcase, BookOpen, Trophy, Code, Linkedin } from 'lucide-react';
+import { FaXTwitter } from 'react-icons/fa6';
 import { useTheme } from '../context/ThemeContext';
 import { AnalyticsWidget } from '../components/AnalyticsWidget';
 import { GithubStreak } from '../components/GithubStreak';
+import { LeetcodeStreak } from '../components/LeetcodeStreak';
 import { createPortal } from 'react-dom';
 import { OperationCard } from '../components/OperationCard';
 
 import { SkillsCarousel } from '../components/SkillsCarousel';
 import { ContactPill } from '../components/ContactPill';
-import type { MusicVisual } from '../lib/music';
+import { musicEngine, type MusicVisual } from '../lib/music';
 
 const SPIDER_NOIR_GIF = 'https://media1.tenor.com/m/T4YtiVsOLu4AAAAC/spider-noir-nicolas-cage.gif';
 const PdfViewer = lazy(() => import('../components/PdfViewer').then((module) => ({ default: module.PdfViewer })));
@@ -40,7 +42,15 @@ function RecTimestamp() {
 
 export function Dossier() {
   const { theme, musicTheme, activeMusicTrack } = useTheme();
-  const songVisual = activeMusicTrack?.visual;
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  useEffect(() => {
+    return musicEngine.subscribe((snapshot) => {
+      setIsPlaying(snapshot.isPlaying);
+    });
+  }, []);
+
+  const songVisual = isPlaying ? activeMusicTrack?.visual : null;
   const isCrtTvTrack = activeMusicTrack ? ['bully-maguire', 'raindrops', 'come-and-get-your-love', 'im-amazing'].includes(activeMusicTrack.id) : false;
 
   const portraitThemeClass = musicTheme ? `song-portrait--${musicTheme}` : '';
@@ -227,35 +237,129 @@ export function Dossier() {
                 <span className="bg-hl-pink-bg border border-hl-pink-border px-2 py-0.5 rounded-full not-italic text-[10px] tracking-wider shadow-sm mr-1">RENEUTRALIZING</span> complex AI-integration for deployment ready modules.
               </p>
               
-              <div className="flex flex-col sm:flex-row items-stretch gap-4 mb-8">
-                <a 
-                  href="https://github.com/MDMOINAKHTARR" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="block relative w-full sm:w-[200px] md:w-[240px] lg:w-[280px] sm:shrink-0 min-h-[144px] sm:min-h-full overflow-hidden border-2 border-ink/40 shadow-sm group bg-ink rounded-[2px]"
-                >
-                  <img 
-                    src="https://media1.tenor.com/m/czm3QzVCDJIAAAAC/batman-bruce-wayne.gif" 
-                    alt="GitHub Operations Banner" 
-                    className="absolute inset-0 w-full h-full object-cover object-center grayscale-[0.8] opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700"
-                    onError={(e) => {
-                      e.currentTarget.src = 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&q=80&w=1000';
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/60 to-transparent flex flex-col justify-end p-4 sm:p-6 transition-all duration-300">
-                    <div className="flex items-start gap-3 flex-col sm:flex-row sm:items-center transform translate-y-1 sm:translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                      <Github className="w-6 h-6 sm:w-8 sm:h-8 text-paper shrink-0 group-hover:scale-110 transition-transform" />
-                      <div>
-                        <h3 className="text-paper font-bold font-mono tracking-widest text-xs sm:text-base leading-tight">SECURE REPOSITORY ACCESS</h3>
-                        <p className="text-paper/70 font-mono text-[10px] sm:text-xs tracking-widest mt-0.5">OPEN CONNECTION TO @MDMOINAKHTARR</p>
+              {/* Premium Thematic 5-Banner Grid Layout */}
+              <div className="grid grid-cols-10 gap-2 mb-4">
+                {/* Left Column (LeetCode & LinkedIn) */}
+                <div className="col-span-4 flex flex-col gap-2">
+                  {/* LeetCode */}
+                  <a
+                    href="https://leetcode.com/__moinn_"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block relative w-full h-[130px] overflow-hidden border-2 border-ink/40 shadow-sm group bg-ink rounded-[2px]"
+                  >
+                    <img
+                      src="/leetcode banner.jpg"
+                      alt="LeetCode Operations"
+                      className="absolute inset-0 w-full h-full object-cover object-center transition-all duration-700"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-ink/80 to-transparent flex flex-col justify-end p-3 transition-all duration-300">
+                      <div className="flex items-start gap-2 flex-col transform translate-y-1 group-hover:translate-y-0 transition-transform duration-300">
+                        <Code className="w-5 h-5 text-paper shrink-0 group-hover:scale-110 transition-transform" />
+                        <div>
+                          <h3 className="text-paper font-bold font-mono tracking-widest text-sm sm:text-base leading-tight">LEETCODE</h3>
+                          <p className="text-paper/70 font-mono text-[9px] sm:text-[11px] tracking-widest mt-0.5 font-bold">ALGORITHM CHALLENGES // @__moinn_</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </a>
+                  </a>
 
-                <div className="flex-1 w-full min-w-0">
-                  <GithubStreak />
+                  {/* LinkedIn */}
+                  <a
+                    href="https://www.linkedin.com/in/mdmoinakhtar/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block relative w-full h-[120px] md:h-[210px] overflow-hidden border-2 border-ink/40 shadow-sm group bg-ink rounded-[2px]"
+                  >
+                    <img
+                      src="/linkedin banner.jpg"
+                      alt="LinkedIn Professional Network"
+                      className="absolute inset-0 w-full h-full object-cover object-center transition-all duration-700"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-ink/80 to-transparent flex flex-col justify-end p-3 transition-all duration-300">
+                      <div className="flex items-start gap-2 flex-col transform translate-y-1 group-hover:translate-y-0 transition-transform duration-300">
+                        <Linkedin className="w-5 h-5 text-paper shrink-0 group-hover:scale-110 transition-transform" />
+                        <div>
+                          <h3 className="text-paper font-bold font-mono tracking-widest text-sm sm:text-base leading-tight">LINKEDIN</h3>
+                          <p className="text-paper/70 font-mono text-[9px] sm:text-[11px] tracking-widest mt-0.5 font-bold">PROFESSIONAL NETWORK // @mdmoinakhtar</p>
+                        </div>
+                      </div>
+                    </div>
+                  </a>
                 </div>
+
+                {/* Right Column (GitHub + bottom row) */}
+                <div className="col-span-6 flex flex-col gap-2">
+                  {/* GitHub */}
+                  <a
+                    href="https://github.com/MDMOINAKHTARR"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block relative w-full h-[160px] md:h-[220px] overflow-hidden border-2 border-ink/40 shadow-sm group bg-ink rounded-[2px]"
+                  >
+                    <img
+                      src="https://media1.tenor.com/m/czm3QzVCDJIAAAAC/batman-bruce-wayne.gif"
+                      alt="GitHub Operations Banner"
+                      className="absolute inset-0 w-full h-full object-cover object-center transition-all duration-700"
+                      onError={(e) => {
+                        e.currentTarget.src = 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&q=80&w=1000';
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-ink/80 to-transparent flex flex-col justify-end p-3 transition-all duration-300">
+                      <div className="flex items-center gap-2 transform translate-y-1 group-hover:translate-y-0 transition-transform duration-300">
+                        <Github className="w-5 h-5 text-paper shrink-0 group-hover:scale-110 transition-transform" />
+                        <div>
+                          <h3 className="text-paper font-bold font-mono tracking-widest text-sm sm:text-base leading-tight">GITHUB</h3>
+                          <p className="text-paper/70 font-mono text-[9px] sm:text-[11px] tracking-widest mt-0.5 font-bold">SOURCE REPOSITORY // @MDMOINAKHTARR</p>
+                        </div>
+                      </div>
+                    </div>
+                  </a>
+
+                  {/* Bottom row: 4th Image + Twitter */}
+                  <div className="grid grid-cols-10 gap-2 h-[90px] md:h-[120px]">
+                    {/* 4th Image */}
+                    <div className="relative overflow-hidden border-2 border-ink/40 shadow-sm group bg-ink rounded-[2px] col-span-4 h-full">
+                      <img
+                        src="/4th image.jpg"
+                        alt="Classified Operations"
+                        className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-all duration-700"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-ink/70 to-transparent flex flex-col justify-end p-2 transition-all duration-300">
+                        <div className="font-mono text-[8px] tracking-widest text-paper/70 font-bold">CLASSIFIED // DATA-04</div>
+                      </div>
+                    </div>
+
+                    {/* Twitter / X */}
+                    <a
+                      href="https://x.com/___moinn_"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block relative overflow-hidden border-2 border-ink/40 shadow-sm group bg-ink rounded-[2px] col-span-6 h-full"
+                    >
+                      <img
+                        src="/twitter banner.jpg"
+                        alt="Twitter / X Banner"
+                        className="absolute inset-0 w-full h-full object-cover object-center transition-all duration-700"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-ink/80 to-transparent flex flex-col justify-end p-2 transition-all duration-300">
+                        <div className="flex items-center gap-2 transform translate-y-1 group-hover:translate-y-0 transition-transform duration-300">
+                          <FaXTwitter className="w-3.5 h-3.5 text-paper shrink-0 group-hover:scale-110 transition-transform" />
+                          <div>
+                            <h3 className="text-paper font-bold font-mono tracking-widest text-sm sm:text-base leading-tight">TWITTER / X</h3>
+                            <p className="text-paper/70 font-mono text-[9px] sm:text-[11px] tracking-widest mt-0.5 font-bold">@___moinn_</p>
+                          </div>
+                        </div>
+                      </div>
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              {/* Interactive Contribution Matrices */}
+              <div className="flex flex-col gap-6 mb-8">
+                <LeetcodeStreak />
+                <GithubStreak />
               </div>
 
               <div className="flex items-center gap-3 mb-6 mt-10 border-b-2 border-amber-900/20 pb-4">

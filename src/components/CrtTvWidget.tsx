@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
+import { X } from 'lucide-react';
 import { MUSIC_TRACKS, musicEngine, type MusicTrack } from '../lib/music';
 
 const CRT_TV_TRACK_IDS = ['bully-maguire', 'raindrops', 'come-and-get-your-love', 'im-amazing'];
@@ -191,45 +192,47 @@ function VintageTv({
 
   const videoSrc = track.visual?.src ?? '';
 
-  // Start/sync video on mount, track switch, or play state change
+  // Auto-expand 'im-amazing' track once on mount/switch
   useEffect(() => {
-    setEnded(false);
     if (track.id === 'im-amazing') {
       setExpanded(true);
     }
+  }, [track.id]);
+
+  // Start/sync video on mount, track switch, or play state change
+  useEffect(() => {
+    setEnded(false);
     
     const audioTime = musicEngine.getCurrentTime();
     
     const handleSync = () => {
-      if (expanded) {
-        if (vidRef.current) vidRef.current.pause();
-        if (vidBigRef.current) {
-          if (Math.abs(vidBigRef.current.currentTime - audioTime) > 0.3) {
-            vidBigRef.current.currentTime = audioTime;
-          }
-          if (playing) {
-            vidBigRef.current.play().catch(() => {});
-          } else {
-            vidBigRef.current.pause();
-          }
+      // Sync small video
+      if (vidRef.current) {
+        if (Math.abs(vidRef.current.currentTime - audioTime) > 0.3) {
+          vidRef.current.currentTime = audioTime;
         }
-      } else {
-        if (vidBigRef.current) vidBigRef.current.pause();
-        if (vidRef.current) {
-          if (Math.abs(vidRef.current.currentTime - audioTime) > 0.3) {
-            vidRef.current.currentTime = audioTime;
-          }
-          if (playing) {
-            vidRef.current.play().catch(() => {});
-          } else {
-            vidRef.current.pause();
-          }
+        if (playing) {
+          vidRef.current.play().catch(() => {});
+        } else {
+          vidRef.current.pause();
+        }
+      }
+
+      // Sync big video
+      if (vidBigRef.current) {
+        if (Math.abs(vidBigRef.current.currentTime - audioTime) > 0.3) {
+          vidBigRef.current.currentTime = audioTime;
+        }
+        if (playing) {
+          vidBigRef.current.play().catch(() => {});
+        } else {
+          vidBigRef.current.pause();
         }
       }
     };
 
     handleSync();
-  }, [track.id, expanded, playing]);
+  }, [track.id, playing]);
 
   // Periodically check drift between video currentTime and audio engine when TV is playing
   useEffect(() => {
@@ -237,17 +240,18 @@ function VintageTv({
 
     const syncInterval = setInterval(() => {
       const audioTime = musicEngine.getCurrentTime();
-      const activeVideo = expanded ? vidBigRef.current : vidRef.current;
       
-      if (activeVideo && activeVideo.readyState >= 2) {
-        if (Math.abs(activeVideo.currentTime - audioTime) > 0.5) {
-          activeVideo.currentTime = audioTime;
+      [vidRef.current, vidBigRef.current].forEach((video) => {
+        if (video && video.readyState >= 2) {
+          if (Math.abs(video.currentTime - audioTime) > 0.5) {
+            video.currentTime = audioTime;
+          }
         }
-      }
+      });
     }, 1000);
 
     return () => clearInterval(syncInterval);
-  }, [playing, expanded]);
+  }, [playing]);
 
   // Close TV on Escape key
   useEffect(() => {
@@ -753,29 +757,6 @@ function VintageTv({
           >
             {track.codename} // {track.title.toUpperCase()}
           </div>
-          <button
-            type="button"
-            onClick={() => setExpanded(false)}
-            style={{
-              position: 'absolute',
-              top: 12,
-              right: 14,
-              width: 30,
-              height: 30,
-              borderRadius: 6,
-              background: 'rgba(0,0,0,0.6)',
-              border: '1px solid rgba(255,255,255,0.15)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'rgba(255,255,255,0.7)',
-              cursor: 'pointer',
-              fontSize: 14,
-            }}
-            className="hover:!bg-black transition-colors"
-          >
-            ✕
-          </button>
           <div
             style={{
               position: 'absolute',
@@ -789,6 +770,36 @@ function VintageTv({
             CLICK OUTSIDE OR ✕ TO COLLAPSE
           </div>
         </motion.div>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setExpanded(false);
+          }}
+          style={{
+            position: 'fixed',
+            top: 24,
+            right: 24,
+            width: 44,
+            height: 44,
+            borderRadius: '50%',
+            background: 'rgba(0,0,0,0.85)',
+            border: '2px solid rgba(255,255,255,0.4)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#ffffff',
+            cursor: 'pointer',
+            zIndex: 10000,
+            pointerEvents: 'auto',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.8)',
+            transition: 'all 0.2s ease',
+          }}
+          className="hover:bg-red-600 hover:border-red-500 hover:text-white transition-all duration-200 active:scale-90"
+          aria-label="Close Fullscreen"
+        >
+          <X size={22} />
+        </button>
       </motion.div>
     </div>
   );
