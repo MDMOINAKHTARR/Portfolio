@@ -106,7 +106,7 @@ export const MUSIC_TRACKS: MusicTrack[] = [
     codename: 'TAPE 06 // SPIDEY-2',
     src: '/raindrops keep falling on my head.mp3',
     visual: {
-      src: '/Raindrops Keep Falling on my Head (Spider-Man 2) - JakeStateFarm (1080p, h264).mp4',
+      src: '/raindrops_opt.mp4',
       type: 'video',
       alt: "Spider-Man 2 Raindrops scene",
     },
@@ -116,9 +116,9 @@ export const MUSIC_TRACKS: MusicTrack[] = [
     title: 'People Get Up and Drive',
     artist: 'James Brown',
     codename: 'TAPE 07 // BULLY MAGUIRE',
-    src: '/bully maguire.mp4',
+    src: '/bully maguire_opt.mp4',
     visual: {
-      src: '/bully maguire.mp4',
+      src: '/bully maguire_opt.mp4',
       type: 'video',
       alt: 'Bully Maguire street walk',
     },
@@ -130,7 +130,7 @@ export const MUSIC_TRACKS: MusicTrack[] = [
     codename: 'TAPE 08 // GUARDIANS',
     src: '/Come and get your love.mp3',
     visual: {
-      src: '/Come and get your love (online-video-cutter.com).mp4',
+      src: '/come-get-love_opt.mp4',
       type: 'video',
       alt: 'Guardians of the Galaxy opening scene',
     },
@@ -140,9 +140,9 @@ export const MUSIC_TRACKS: MusicTrack[] = [
     title: "I'm Amazing",
     artist: 'Spider-Man',
     codename: 'TAPE 09 // AMAZING',
-    src: '/im-amazing.mp4',
+    src: '/im-amazing_opt.mp4',
     visual: {
-      src: '/im-amazing.mp4',
+      src: '/im-amazing_opt.mp4',
       type: 'video',
       alt: "I'm Amazing Spider-Man scene",
     },
