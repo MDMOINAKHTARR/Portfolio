@@ -160,6 +160,17 @@ export function CrtTvWidget() {
     : null;
 }
 
+function useIsMobile() {
+  const [mobile, setMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 560);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 559px)');
+    const handler = (e: MediaQueryListEvent) => setMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+  return mobile;
+}
+
 /* ─── Vintage Walnut TV ─── */
 function VintageTv({
   track,
@@ -176,6 +187,7 @@ function VintageTv({
   const [ended, setEnded] = useState(false);
   const [vol, setVol] = useState(0.7);
   const [volAngle, setVolAngle] = useState(140);
+  const isMobile = useIsMobile();
 
   const videoSrc = track.visual?.src ?? '';
 
@@ -339,9 +351,10 @@ function VintageTv({
                 border: '2px solid #4a2e10',
                 boxShadow:
                   '0 24px 64px rgba(0,0,0,0.85),inset 0 1px 0 rgba(255,255,255,0.15)',
-                padding: '18px 14px 12px 18px',
+                padding: isMobile ? '12px 10px 10px' : '18px 14px 12px 18px',
                 display: 'flex',
-                gap: 12,
+                flexDirection: isMobile ? 'column' : 'row',
+                gap: isMobile ? 8 : 12,
                 position: 'relative',
               }}
             >
@@ -491,7 +504,8 @@ function VintageTv({
                 </div>
               </div>
 
-              {/* ── RIGHT CONTROLS ── */}
+              {/* ── RIGHT CONTROLS (desktop only) ── */}
+              {!isMobile && (
               <div
                 style={{
                   width: 90,
@@ -558,7 +572,50 @@ function VintageTv({
                   </OldTvBtn>
                 </ControlBlock>
               </div>
-            </div>
+              )}
+
+              {/* ── MOBILE BOTTOM CONTROLS STRIP ── */}
+              {isMobile && (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-around',
+                  background: 'linear-gradient(180deg, #2d241c 0%, #130f0a 100%)',
+                  borderRadius: 8,
+                  border: '1.5px solid #3d2f20',
+                  padding: '8px 12px',
+                  boxShadow: 'inset 2px 3px 8px rgba(0,0,0,0.95), 0 0 0 1px #0d0906',
+                  position: 'relative',
+                }}>
+                  {/* Screws */}
+                  <div style={{ position: 'absolute', top: 3, left: 4, width: 3, height: 3, borderRadius: '50%', background: 'radial-gradient(circle, #c5b596, #3d301e)' }} />
+                  <div style={{ position: 'absolute', top: 3, right: 4, width: 3, height: 3, borderRadius: '50%', background: 'radial-gradient(circle, #c5b596, #3d301e)' }} />
+                  <div style={{ position: 'absolute', bottom: 3, left: 4, width: 3, height: 3, borderRadius: '50%', background: 'radial-gradient(circle, #c5b596, #3d301e)' }} />
+                  <div style={{ position: 'absolute', bottom: 3, right: 4, width: 3, height: 3, borderRadius: '50%', background: 'radial-gradient(circle, #c5b596, #3d301e)' }} />
+
+                  {/* VOL dial (smaller on mobile) */}
+                  <ControlBlock label="VOL" hint="Click to adjust volume">
+                    <BigDial angle={volAngle} onClick={clickVol} size={28} />
+                  </ControlBlock>
+
+                  <div style={{ width: 1, height: 28, background: 'linear-gradient(180deg, transparent, #4a3b2a 20%, #4a3b2a 80%, transparent)' }} />
+
+                  <ControlBlock label="REPLAY" hint="Restart">
+                    <OldTvBtn onClick={replay}>↺</OldTvBtn>
+                  </ControlBlock>
+                  <ControlBlock label="EXPAND" hint="Full screen">
+                    <OldTvBtn onClick={() => setExpanded(true)}>⊞</OldTvBtn>
+                  </ControlBlock>
+
+                  <div style={{ width: 1, height: 28, background: 'linear-gradient(180deg, transparent, #4a3b2a 20%, #4a3b2a 80%, transparent)' }} />
+
+                  <ControlBlock label="POWER" hint="Turn off TV">
+                    <OldTvBtn onClick={onClose} accent="#cc2200">⏻</OldTvBtn>
+                  </ControlBlock>
+                </div>
+              )}
+
+            </div>{/* end TV BODY */}
 
             {/* Feet */}
             <div style={{ display: 'flex', justifyContent: 'space-around', padding: '0 32px' }}>
