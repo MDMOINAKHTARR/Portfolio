@@ -1,137 +1,63 @@
-```
-██████╗  ██████╗ ███████╗███████╗██╗███████╗██████╗
-██╔══██╗██╔═══██╗██╔════╝██╔════╝██║██╔════╝██╔══██╗
-██║  ██║██║   ██║███████╗███████╗██║█████╗  ██████╔╝
-██║  ██║██║   ██║╚════██║╚════██║██║██╔══╝  ██╔══██╗
-██████╔╝╚██████╔╝███████║███████║██║███████╗██║  ██║
-╚═════╝  ╚═════╝ ╚══════╝╚══════╝╚═╝╚══════╝╚═╝  ╚═╝
-```
+# 📂 MD MOIN AKHTAR — FIELD DOSSIER
 
 <div align="center">
 
-```
-╔══════════════════════════════════════════════════════════════════╗
-║          CENTRAL INTELLIGENCE REGISTRY  //  ACTIVE CASE         ║
-║                  FILE NO. ENR-06717711923 · DELHI DIVISION       ║
-║                  ID: MMA-2026  ·  CASE ID: AX-D4UV48            ║
-╚══════════════════════════════════════════════════════════════════╝
-```
+`CENTRAL INTELLIGENCE REGISTRY · ACTIVE CASE FILE: AX-D4UV48`
 
-### **`[VERIFIED FIELD DOSSIER PORTFOLIO]`**
+**Software Engineer & AI Integrator** · New Delhi, India  
+*B.Tech AI & Data Science @ VIPS-TC*
+
+[Portfolio](https://github.com/MDMOINAKHTARR/Portfolio) · [Email](mailto:mohdmoinakhtar081@gmail.com) · [LinkedIn](https://linkedin.com/in/mdmoinakhtar) · [X (Twitter)](https://x.com/___moinn_)
 
 </div>
 
 ---
 
-## `// SUBJECT PROFILE`
+## ⚡ ABOUT
 
-| FIELD | DATA |
-|---|---|
-| **NAME** | MD MOIN AKHTAR |
-| **ROLE** | `SOFTWARE ENGINEER / AI INTEGRATOR` |
-| **AFFILIATION** | VIPS-TC · B.Tech AI & Data Science (CGPA: 8.03) |
-| **LEADERSHIP** | Core Member (Event Head) — Cluster Data Science Club |
-| **LOCATION** | NEW DELHI – 110086, INDIA |
-| **STATUS** | `ACTIVE / DEPLOYABLE` |
-| **CONTACT** | mohdmoinakhtar081@gmail.com |
+I engineer intelligent, scalable applications by bridging advanced AI models and autonomous agents with robust full-stack web architectures.
 
 ---
 
-## `// ABOUT THE OPERATIVE`
+## 🛠 TECH ARSENAL
 
-Software Engineer and AI Integrator architecting intelligent, scalable applications. Specializing in bridging advanced machine learning models, autonomous AI agents, and full-stack web platforms.
-
-> *"Am I an extraordinary man? Yes. Am I an ordinary man? Yes. I'm both. But aren't we all?"*  
-> — **Spider-Noir**
-
----
-
-## `// INTELLIGENCE — TECH CAPABILITIES`
-
-**PRIMARY ARSENAL**
-
-![React](https://img.shields.io/badge/React-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
-![TypeScript](https://img.shields.io/badge/TypeScript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
-![Python](https://img.shields.io/badge/Python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
-![AI Integration](https://img.shields.io/badge/AI--Integration-%23FF6B35.svg?style=for-the-badge&logo=openai&logoColor=white)
-
-> Demonstrates proficiency in **React**, **TypeScript**, and **Python** for AI implementation and interactive web application architecture.
-
-**SECONDARY ARSENAL**
-
-![Machine Learning](https://img.shields.io/badge/Machine%20Learning-%23F7931E.svg?style=for-the-badge&logo=tensorflow&logoColor=white)
-![OpenCV](https://img.shields.io/badge/OpenCV-%23white.svg?style=for-the-badge&logo=opencv&logoColor=white)
-![Node.js](https://img.shields.io/badge/Node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)
-![Neo4j](https://img.shields.io/badge/Neo4j-008CC1?style=for-the-badge&logo=neo4j&logoColor=white)
-
-> Operational capacity extends into **Machine Learning**, **Computer Vision (OpenCV)**, and **Backend Systems** (Node.js/Express/Neo4j). Proven track record in high-stakes **Hackathon Deployments**.
+- **Frontend & Core:** React, TypeScript, TailwindCSS, Vite
+- **AI & ML:** Python, PyTorch, OpenCV, LangChain, AI Agents
+- **Backend & Data:** Node.js, Express, Neo4j, PostgreSQL
 
 ---
 
-## `// FIELD OPERATIONS — HACKATHONS`
+## 🚀 KEY OPERATIONS (PROJECTS)
 
-| STATUS | OPERATION | DETAILS |
+| PROJECT | STACK | DESCRIPTION |
 |---|---|---|
-| `[SUCCESS: 1ST PLACE]` | **PROMPTWARS \| INNERVE 2026** — IGDTUW, Mar 2026 | Built *Devcation* AI Platform |
-| `[CLEARED: QUALIFIER]` | **PARANOX 2.0 National Hackathon**, Nov 2025 | Top 200 Teams Nationwide |
-| `[CERTIFIED]` | **AlgosQuest 2025** — Team Kaizenn | Recognized for technical innovation & execution |
+| **Devcation** | React, TypeScript, AI | Developer vacation & workspace platform *(1st Place PromptWars)* |
+| **HaloAI** | Electron, Node.js, AI Agents | Cross-platform AI desktop assistant |
+| **Upstart** | React, Neo4j, Python | Startup intelligence & analytical graph platform |
 
 ---
 
-## `// ACTIVE MISSIONS — FEATURED PROJECTS`
+## 🏆 ACHIEVEMENTS & RESEARCH
 
-| OPERATION | STACK | DESCRIPTION |
-|---|---|---|
-| **Devcation** | React, TypeScript, AI | Developer vacation & productivity workspace platform |
-| **HaloAI** | Electron, Node.js, AI Agents | Cross-platform AI desktop agent assistant |
-| **Upstart** | React, Neo4j, Python | Startup intelligence & analytical engine |
+- 🥇 **1st Place** — PromptWars | Innerve 2026 (IGDTUW)
+- 🥈 **Top 200 Finalist** — Paranox 2.0 National Innovation Hackathon
+- 📄 **IEEE Publication** — *A Sentence-Level Risk Estimator for Identifying Hallucinations in Generative AI* (ICAUC 2026)
 
 ---
 
-## `// RESEARCH & PUBLICATIONS`
-
-📄 **A Sentence-Level Risk Estimator for Identifying Hallucinations in Generative AI**  
-*International Conference on AI-Driven Smart Systems and Ubiquitous Computing (ICAUC), 2026*
-
-> Proposed a multi-stage framework for detecting AI hallucinations combining semantic similarity (BERT), QA-based factuality checks, and NLI entailment logic.
-
-[![IEEE](https://img.shields.io/badge/IEEE%20Xplore-00629B?style=for-the-badge&logo=ieee&logoColor=white)](https://ieeexplore.ieee.org/document/11441054)
-
----
-
-## `// DEPLOYMENT — LOCAL SETUP`
+## 💻 LOCAL SETUP
 
 ```bash
-# Clone the repository
 git clone https://github.com/MDMOINAKHTARR/Portfolio.git
-
-# Navigate into workspace
 cd Portfolio
-
-# Install dependencies
 npm install
-
-# Start local development server
 npm run dev
 ```
-
-> **Prerequisites:** Node.js 18+
-
----
-
-## `// SECURE CHANNELS — CONNECT`
-
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-%230077B5.svg?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/mdmoinakhtar)
-[![X](https://img.shields.io/badge/X-%23000000.svg?style=for-the-badge&logo=x&logoColor=white)](https://x.com/___moinn_)
-[![GitHub](https://img.shields.io/badge/GitHub-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)](https://github.com/MDMOINAKHTARR)
-[![Gmail](https://img.shields.io/badge/Gmail-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:mohdmoinakhtar081@gmail.com)
 
 ---
 
 <div align="center">
 
-```
-[ AUTH: SECURE ]  ·  CENTRAL INTELLIGENCE REGISTRY  ·  ACTIVE CASE ID: AX-D4UV48
-```
+`CLASSIFIED // FOR OFFICIAL USE ONLY`
 
 </div>
