@@ -1,63 +1,90 @@
-# 📂 MD MOIN AKHTAR — FIELD DOSSIER
+# MD MOIN AKHTAR
 
-<div align="center">
+Software Engineer & AI Integrator specializing in full-stack web applications, autonomous AI agents, and intelligent data systems.
 
-`CENTRAL INTELLIGENCE REGISTRY · ACTIVE CASE FILE: AX-D4UV48`
-
-**Software Engineer & AI Integrator** · New Delhi, India  
-*B.Tech AI & Data Science @ VIPS-TC*
-
-[Portfolio](https://github.com/MDMOINAKHTARR/Portfolio) · [Email](mailto:mohdmoinakhtar081@gmail.com) · [LinkedIn](https://linkedin.com/in/mdmoinakhtar) · [X (Twitter)](https://x.com/___moinn_)
-
-</div>
+[Portfolio](https://github.com/MDMOINAKHTARR/Portfolio) | [LinkedIn](https://linkedin.com/in/mdmoinakhtar) | [GitHub](https://github.com/MDMOINAKHTARR) | [Email](mailto:mohdmoinakhtar081@gmail.com)
 
 ---
 
-## ⚡ ABOUT
+## About Me
 
-I engineer intelligent, scalable applications by bridging advanced AI models and autonomous agents with robust full-stack web architectures.
+I am a Software Engineer and AI Integrator pursuing a B.Tech in Artificial Intelligence & Data Science at Vivekananda Institute of Professional Studies (VIPS-TC), New Delhi. 
 
----
+My work centers on building scalable web platforms and integrating production-grade artificial intelligence models. With experience spanning hackathons, technical leadership as an Event Head for the Cluster Data Science Club, and published research in generative AI hallucination detection, I focus on transforming complex technical concepts into intuitive, high-performance software.
 
-## 🛠 TECH ARSENAL
-
-- **Frontend & Core:** React, TypeScript, TailwindCSS, Vite
-- **AI & ML:** Python, PyTorch, OpenCV, LangChain, AI Agents
-- **Backend & Data:** Node.js, Express, Neo4j, PostgreSQL
+Whether architecting intelligent desktop agents, graph-powered startup analytics, or interactive developer platforms, I aim to create software that is both technically robust and user-centric.
 
 ---
 
-## 🚀 KEY OPERATIONS (PROJECTS)
+## Technical Skills
 
-| PROJECT | STACK | DESCRIPTION |
-|---|---|---|
-| **Devcation** | React, TypeScript, AI | Developer vacation & workspace platform *(1st Place PromptWars)* |
-| **HaloAI** | Electron, Node.js, AI Agents | Cross-platform AI desktop assistant |
-| **Upstart** | React, Neo4j, Python | Startup intelligence & analytical graph platform |
-
----
-
-## 🏆 ACHIEVEMENTS & RESEARCH
-
-- 🥇 **1st Place** — PromptWars | Innerve 2026 (IGDTUW)
-- 🥈 **Top 200 Finalist** — Paranox 2.0 National Innovation Hackathon
-- 📄 **IEEE Publication** — *A Sentence-Level Risk Estimator for Identifying Hallucinations in Generative AI* (ICAUC 2026)
+- **Languages:** TypeScript, JavaScript, Python, C++, SQL, HTML/CSS
+- **Frameworks & Libraries:** React, Next.js, Node.js, Express, TailwindCSS, Vite
+- **AI & Data Science:** PyTorch, OpenCV, LangChain, AI Agents, Neo4j, Scikit-Learn
+- **Tools & Platforms:** Git, GitHub, Vercel, Docker, Electron, Linux
 
 ---
 
-## 💻 LOCAL SETUP
+## Featured Projects
+
+### Devcation
+*Developer Vacation & Productivity Platform*
+- An interactive platform designed for developers to manage workflow, track productivity, and collaborate.
+- Winner of 1st Place at **PromptWars | Innerve 2026** (IGDTUW).
+- **Tech Stack:** React, TypeScript, TailwindCSS, AI Integration
+
+### HaloAI
+*Cross-Platform AI Desktop Assistant*
+- A lightweight, desktop-native AI assistant built to streamline daily developer tasks through localized agent workflows.
+- **Tech Stack:** Electron, Node.js, TypeScript, AI Agents
+
+### Upstart
+*Startup Intelligence & Analytical Platform*
+- A graph-based analytical tool designed to visualize startup ecosystems, investor networks, and market data.
+- **Tech Stack:** React, Neo4j, Python, Express
+
+---
+
+## Research & Publications
+
+**A Sentence-Level Risk Estimator for Identifying Hallucinations in Generative AI**  
+*Published in the International Conference on AI-Driven Smart Systems and Ubiquitous Computing (ICAUC), 2026.*  
+- Developed a multi-stage framework combining semantic similarity metrics (BERT), QA-based factuality checks, and NLI entailment logic to detect and mitigate hallucinations in large language models.
+- [IEEE Xplore Paper Link](https://ieeexplore.ieee.org/document/11441054)
+
+---
+
+## Achievements
+
+- **1st Place Winner** — PromptWars | Innerve 2026, IGDTUW (March 2026)
+- **Top 200 Finalist** — Paranox 2.0 National Innovation Hackathon (November 2025)
+- **Recognized Participant** — AlgosQuest 2025 (Team Kaizenn)
+
+---
+
+## Local Setup
+
+To run this portfolio locally:
 
 ```bash
+# Clone repository
 git clone https://github.com/MDMOINAKHTARR/Portfolio.git
+
+# Navigate to project directory
 cd Portfolio
+
+# Install dependencies
 npm install
+
+# Start local dev server
 npm run dev
 ```
 
 ---
 
-<div align="center">
+## Contact
 
-`CLASSIFIED // FOR OFFICIAL USE ONLY`
-
-</div>
+- **Email:** mohdmoinakhtar081@gmail.com
+- **LinkedIn:** [mdmoinakhtar](https://linkedin.com/in/mdmoinakhtar)
+- **GitHub:** [MDMOINAKHTARR](https://github.com/MDMOINAKHTARR)
+- **Location:** New Delhi, India
