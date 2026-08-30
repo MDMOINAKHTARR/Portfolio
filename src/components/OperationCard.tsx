@@ -1,7 +1,9 @@
 import { Typewriter } from './Typewriter';
 import { ScrambleText } from './ScrambleText';
-import { Lock, Unlock, Github, ExternalLink, PlayCircle, Cpu, Database, Settings, ChevronDown } from 'lucide-react';
+import { Lock, Unlock, Github, ExternalLink, PlayCircle, Cpu, Database, Settings, ChevronDown, Sparkles } from 'lucide-react';
 import React, { useId, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { audioEngine } from '../lib/audio';
 import { 
   SiPython, SiReact, SiMysql, SiExpress, SiNodedotjs, SiNextdotjs, 
   SiTailwindcss, SiTypescript, SiGooglegemini, SiSqlite, SiOpencv
@@ -20,6 +22,7 @@ function getTechIcon(name: string) {
   if (norm.includes('opencv')) return SiOpencv;
   if (norm.includes('tailwind')) return SiTailwindcss;
   if (norm.includes('typescript')) return SiTypescript;
+  if (norm.includes('spider-verse') || norm.includes('comic')) return Sparkles;
   if (norm.includes('deepface') || norm.includes('ai')) return Cpu;
   if (norm.includes('data analysis') || norm.includes('database')) return Database;
   if (norm.includes('matter')) return Cpu;
@@ -38,6 +41,7 @@ function getTechColor(name: string) {
   if (norm.includes('opencv')) return '#5C3EE8';
   if (norm.includes('tailwind')) return '#06B6D4';
   if (norm.includes('typescript')) return '#3178C6';
+  if (norm.includes('spider-verse') || norm.includes('comic')) return '#E11D48';
   if (norm.includes('deepface') || norm.includes('ai')) return '#EC4899';
   if (norm.includes('data analysis') || norm.includes('database')) return '#3B82F6';
   if (norm.includes('matter')) return '#F59E0B';
@@ -54,6 +58,7 @@ interface OperationDetailsProps {
   imageUrl?: string;
   githubUrl?: string;
   liveUrl?: string;
+  liveLabel?: string;
   youtubeUrl?: string;
   xUrl?: string;
   caseEvidence?: CaseEvidence;
@@ -76,6 +81,7 @@ const OperationDetails = React.memo(function OperationDetails({
   imageUrl,
   githubUrl,
   liveUrl,
+  liveLabel,
   youtubeUrl,
   xUrl,
   caseEvidence,
@@ -166,10 +172,21 @@ const OperationDetails = React.memo(function OperationDetails({
             </a>
           )}
           {liveUrl && (
-            <a href={liveUrl} target="_blank" rel="noreferrer" className="operation-action operation-action--live flex min-h-11 items-center justify-center gap-2 border px-3 py-2 text-[11px] font-black font-mono transition-[transform,box-shadow,background-color] sm:justify-start sm:text-[10px]">
-              <ExternalLink className="w-3.5 h-3.5" />
-              LIVE DEPLOYMENT
-            </a>
+            liveUrl.startsWith('/') ? (
+              <Link 
+                to={liveUrl} 
+                onClick={() => { audioEngine.init(); audioEngine.playClick(); }}
+                className="operation-action operation-action--live flex min-h-11 items-center justify-center gap-2 border px-3 py-2 text-[11px] font-black font-mono transition-[transform,box-shadow,background-color] sm:justify-start sm:text-[10px]"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-rose-600" />
+                {liveLabel || 'READ COMIC LOG'}
+              </Link>
+            ) : (
+              <a href={liveUrl} target="_blank" rel="noreferrer" className="operation-action operation-action--live flex min-h-11 items-center justify-center gap-2 border px-3 py-2 text-[11px] font-black font-mono transition-[transform,box-shadow,background-color] sm:justify-start sm:text-[10px]">
+                <ExternalLink className="w-3.5 h-3.5" />
+                {liveLabel || 'LIVE DEPLOYMENT'}
+              </a>
+            )
           )}
           {youtubeUrl && (
             <a href={youtubeUrl} target="_blank" rel="noreferrer" className="operation-action operation-action--video flex min-h-11 items-center justify-center gap-2 border px-3 py-2 text-[11px] font-black font-mono transition-[transform,box-shadow,background-color] sm:justify-start sm:text-[10px]">
@@ -201,6 +218,7 @@ export function OperationCard({
   imageUrl,
   githubUrl,
   liveUrl,
+  liveLabel,
   youtubeUrl,
   xUrl,
   caseEvidence,
@@ -216,6 +234,7 @@ export function OperationCard({
   imageUrl?: string,
   githubUrl?: string,
   liveUrl?: string,
+  liveLabel?: string,
   youtubeUrl?: string,
   xUrl?: string,
   caseEvidence?: CaseEvidence,
@@ -295,6 +314,7 @@ export function OperationCard({
             imageUrl={imageUrl}
             githubUrl={githubUrl}
             liveUrl={liveUrl}
+            liveLabel={liveLabel}
             youtubeUrl={youtubeUrl}
             xUrl={xUrl}
             caseEvidence={caseEvidence}

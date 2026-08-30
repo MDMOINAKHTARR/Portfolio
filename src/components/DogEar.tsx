@@ -20,7 +20,7 @@ export function DogEar() {
 
   const handleHover = (hover: boolean) => {
     if (hover !== isHovered) {
-      audioEngine.playPaper();
+      audioEngine.playClick();
       setIsHovered(hover);
     }
   };

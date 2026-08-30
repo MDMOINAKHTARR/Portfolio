@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
+import { Link } from 'react-router-dom';
 import { Highlight } from '../components/Highlight';
 import { ClassifiedStamp } from '../components/Stamps';
 import { Typewriter } from '../components/Typewriter';
 import { PageTransition } from '../components/PageTransition';
-import { Award, BookOpen, ExternalLink, Medal, Sparkles, Trophy, X } from 'lucide-react';
+import { Award, BookOpen, ExternalLink, Medal, Sparkles, Trophy, X, Pin, ArrowRight } from 'lucide-react';
 import { PdfViewer } from '../components/PdfViewer';
+import { audioEngine } from '../lib/audio';
 
 export function Evidence() {
   const [showPubDetails, setShowPubDetails] = useState(false);
@@ -32,6 +34,48 @@ export function Evidence() {
           <span><strong>01</strong> IEEE paper</span>
         </div>
       </section>
+
+      {/* Creative Interactive Evidence Wall Banner (Desktop) */}
+      <div className="hidden sm:block mt-6">
+        <Link
+          to="/evidence-wall"
+          onClick={() => {
+            audioEngine.init();
+            audioEngine.playClick();
+          }}
+          className="group relative flex items-center justify-between overflow-hidden rounded-[3px] border-2 border-amber-800/30 bg-amber-50 hover:bg-amber-100/90 p-3.5 sm:p-4 shadow-[3px_3px_0_rgba(180,83,9,0.18)] hover:shadow-[5px_5px_0_rgba(180,83,9,0.3)] hover:border-amber-800/60 transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer"
+        >
+          {/* Decorative Pushpin at Top */}
+          <div className="absolute -top-1.5 left-8 w-4 h-4 rounded-full bg-rose-600 shadow-[0_2px_4px_rgba(0,0,0,0.25)] border border-rose-900 flex items-center justify-center z-10">
+            <div className="w-1.5 h-1.5 rounded-full bg-rose-200" />
+          </div>
+
+          <div className="flex items-center gap-4 pl-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded border border-amber-800/30 bg-amber-200/80 text-amber-950 shadow-xs group-hover:scale-110 group-hover:rotate-6 transition-transform">
+              <Pin className="h-5 w-5 text-rose-700" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="inline-block h-2 w-2 rounded-full bg-rose-600 animate-pulse" />
+                <span className="font-mono text-[9px] font-black uppercase tracking-widest text-rose-800">
+                  INTERACTIVE FABRIC CORKBOARD
+                </span>
+              </div>
+              <h3 className="font-mono text-sm sm:text-base font-black uppercase tracking-tight text-amber-950 group-hover:text-amber-900 transition-colors">
+                LAUNCH EVIDENCE WALL (PINBOARD EXHIBIT)
+              </h3>
+              <p className="font-mono text-[11px] text-amber-900/75">
+                Explore connected case nodes, investigative red strings, polaroids & interactive soundscapes.
+              </p>
+            </div>
+          </div>
+
+          <div className="mr-2 flex items-center gap-2 rounded border border-amber-800/40 bg-amber-200/90 hover:bg-amber-300 px-3.5 py-2 font-mono text-xs font-black text-amber-950 shadow-xs transition-all shrink-0">
+            <span>ENTER WALL</span>
+            <ArrowRight className="h-4 w-4 text-amber-950 group-hover:translate-x-1 transition-transform" />
+          </div>
+        </Link>
+      </div>
 
       <section className="awards-mobile-hero mt-5 sm:hidden" aria-labelledby="mobile-awards-title">
         <div className="awards-mobile-eyebrow">

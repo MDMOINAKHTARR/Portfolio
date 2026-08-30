@@ -9,7 +9,9 @@ import { CommandCenter } from './components/CommandCenter';
 const Capabilities = lazy(() => import('./pages/Capabilities').then((module) => ({ default: module.Capabilities })));
 const Operations = lazy(() => import('./pages/Operations').then((module) => ({ default: module.Operations })));
 const Evidence = lazy(() => import('./pages/Evidence').then((module) => ({ default: module.Evidence })));
+const EvidenceWall = lazy(() => import('./pages/EvidenceWall').then((module) => ({ default: module.EvidenceWall })));
 const Comms = lazy(() => import('./pages/Comms').then((module) => ({ default: module.Comms })));
+const Classified = lazy(() => import('./pages/Classified').then((module) => ({ default: module.Classified })));
 
 const loadRoute = (element: ReactNode) => (
   <Suspense fallback={<RouteFallback />}>
@@ -32,12 +34,14 @@ export default function App() {
         <GlobalAudio />
         <CommandCenter />
         <Routes>
+          <Route path="/classified" element={loadRoute(<Classified />)} />
           <Route path="/" element={<Layout />}>
             <Route index element={<Dossier />} />
             <Route path="capabilities" element={loadRoute(<Capabilities />)} />
             <Route path="operations" element={loadRoute(<Operations />)} />
             <Route path="evidence" element={loadRoute(<Evidence />)} />
             <Route path="comms" element={loadRoute(<Comms />)} />
+            <Route path="evidence-wall" element={loadRoute(<EvidenceWall />)} />
           </Route>
         </Routes>
       </BrowserRouter>

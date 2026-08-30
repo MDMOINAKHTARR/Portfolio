@@ -135,11 +135,18 @@ export function CommandCenter() {
   };
 
   const executeCommand = (verb: string, value: string): string[] => {
-    if (verb === 'help') return ['Nav: about | projects | awards | contact', 'Music: play <song> | pause | resume', 'System: theme <color/noir> | github | clear'];
+    if (verb === 'help') return [
+      'Nav: about | projects | awards | contact',
+      'Music: play <song> | pause | resume',
+      'System: theme <color/noir> | github | clear',
+      'Directives: classified | board'
+    ];
     if (verb === 'about') { navigate('/'); return ['Opening subject dossier...']; }
     if (verb === 'projects') { navigate('/operations'); return ['Opening operation archive...']; }
     if (verb === 'awards') { navigate('/evidence'); return ['Opening evidence vault...']; }
     if (verb === 'contact') { navigate('/comms'); return ['Opening secure comms...']; }
+    if (verb === 'classified' || (verb === 'access' && value === '0x00')) { navigate('/classified'); return ['Opening Spider-Verse Comic Issue #001...']; }
+    if (verb === 'board' || verb === 'wall') { navigate('/evidence-wall'); return ['Accessing conspiracy layout... Opening Evidence Wall.']; }
     if (verb === 'resume') { window.open('/MdMoinAkhtar.pdf', '_blank', 'noopener,noreferrer'); return ['Resume file released in a new tab.']; }
     if (verb === 'github') { window.open('https://github.com/MDMOINAKHTARR', '_blank', 'noopener,noreferrer'); return ['External repository channel opened.']; }
     if (verb === 'pause') { musicEngine.pause(); return ['Transmission paused.']; }

@@ -1,6 +1,54 @@
 @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite&family=Caveat:wght@400..700&family=Kalam:wght@400;700&display=swap');
 @import "tailwindcss";
 
+@keyframes spider-glitch {
+  0% { text-shadow: -1.5px 0 #00f0ff, 1.5px 0 #ff0055; transform: translate(0, 0); }
+  25% { text-shadow: 1.5px 0 #00f0ff, -1.5px 0 #ff0055; transform: translate(-0.5px, 0.5px); }
+  50% { text-shadow: -1.5px 0 #00f0ff, 1.5px 0 #ff0055; transform: translate(0.5px, -0.5px); }
+  75% { text-shadow: 1.5px 0 #00f0ff, -1.5px 0 #ff0055; transform: translate(-0.5px, -0.5px); }
+  100% { text-shadow: -1.5px 0 #00f0ff, 1.5px 0 #ff0055; transform: translate(0, 0); }
+}
+
+@keyframes spider-pulse-glow {
+  0%, 100% { box-shadow: 0 0 12px rgba(255, 0, 85, 0.4), 0 0 4px rgba(0, 240, 255, 0.6); }
+  50% { box-shadow: 0 0 22px rgba(0, 240, 255, 0.7), 0 0 10px rgba(255, 0, 85, 0.6); }
+}
+
+@keyframes spider-portal-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.spider-active-word {
+  animation: spider-glitch 0.35s ease-in-out infinite alternate;
+}
+
+.spider-pulse-box {
+  animation: spider-pulse-glow 1.8s ease-in-out infinite;
+}
+
+.spider-halftone-bg {
+  background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1.2px, transparent 0);
+  background-size: 7px 7px;
+}
+
+.spider-halftone-dots-dark {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1.5px, transparent 0);
+  background-size: 8px 8px;
+}
+
+.comic-box-shadow {
+  box-shadow: 4px 4px 0px #09090b, 7px 7px 0px rgba(255, 0, 85, 0.5);
+}
+
+.comic-box-shadow-cyan {
+  box-shadow: 4px 4px 0px #09090b, 7px 7px 0px rgba(0, 240, 255, 0.5);
+}
+
+.comic-box-shadow-yellow {
+  box-shadow: 4px 4px 0px #09090b, 7px 7px 0px rgba(255, 230, 0, 0.6);
+}
+
 @keyframes flash {
   0% { opacity: 1; }
   100% { opacity: 0; }
@@ -3526,5 +3574,34 @@ html.music-theme-starman .music-theme-texture {
   .music-theme-texture::before,
   .music-theme-texture::after {
     filter: none !important;
+  }
+}
+
+/* Card Flip 3D Utilities */
+.perspective-1000 {
+  perspective: 1000px;
+}
+.transform-style-3d {
+  transform-style: preserve-3d;
+}
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+/* Exit file button sliding transition on details drawer open */
+.exit-file-btn {
+  transition: right 0.45s cubic-bezier(0.16, 1, 0.3, 1), transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s !important;
+}
+body.details-drawer-open .exit-file-btn {
+  right: 566px !important; /* Shipped nicely next to the drawer border (550px + 16px) */
+}
+@media (max-width: 1279px) {
+  body.details-drawer-open .exit-file-btn {
+    opacity: 0;
+    pointer-events: none;
   }
 }

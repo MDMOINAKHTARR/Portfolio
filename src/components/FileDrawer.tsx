@@ -27,7 +27,7 @@ export function FileDrawer() {
   };
 
   const handleSelect = (path: string) => {
-    audioEngine.playPaper();
+    audioEngine.playClick();
     navigate(path);
     setIsOpen(false);
   };

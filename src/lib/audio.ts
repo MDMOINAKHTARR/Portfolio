@@ -3,225 +3,203 @@ class AudioEngine {
   private initialized = false;
   private muted = false;
 
+  // Decoded audio buffers
+  private paperAudioBuffer: AudioBuffer | null = null;
+  private clickAudioBuffer: AudioBuffer | null = null;
+
+  // Active gain nodes — stop previous sound before playing new one to kill echo
+  private activeClickGain: GainNode | null = null;
+  private activePaperGain: GainNode | null = null;
+
+  // Debounce timestamps — prevents double-firing from event bubbling or duplicate listeners
+  private lastClickTime = 0;
+  private lastPaperTime = 0;
+  private readonly CLICK_DEBOUNCE_MS = 150;
+  private readonly PAPER_DEBOUNCE_MS = 300;
+
   public init() {
     if (this.initialized) return;
     try {
       const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      if (AudioCtx) {
-        this.ctx = new AudioCtx();
-        this.initialized = true;
-      }
+      if (!AudioCtx) return;
+
+      this.ctx = new AudioCtx();
+      this.initialized = true;
+
+      // Decode click sound
+      fetch(encodeURI('/onclick sound.mp3'))
+        .then((res) => res.arrayBuffer())
+        .then((buf) => this.ctx!.decodeAudioData(buf))
+        .then((decoded) => { this.clickAudioBuffer = decoded; })
+        .catch((err) => console.warn('Could not decode click audio', err));
+
+      // Decode paper sound
+      fetch(encodeURI('/paper turning sound.mp3'))
+        .then((res) => res.arrayBuffer())
+        .then((buf) => this.ctx!.decodeAudioData(buf))
+        .then((decoded) => { this.paperAudioBuffer = decoded; })
+        .catch((err) => console.warn('Could not decode paper audio', err));
+
     } catch (e) {
-      console.error("Audio Context failed to initialize", e);
+      console.error('AudioContext failed to initialize', e);
     }
   }
 
   public get isMuted() {
-      return this.muted;
+    return this.muted;
   }
 
   public toggleMute() {
-     this.muted = !this.muted;
+    this.muted = !this.muted;
   }
 
-  public playClack() {
-    if (!this.ctx || this.muted) return;
-    if (this.ctx.state === 'suspended') {
-        this.ctx.resume();
+  private resumeCtx() {
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume();
     }
-    
-    const t = this.ctx.currentTime;
-    
-    // Noise burst
-    const bufferSize = this.ctx.sampleRate * 0.05;
-    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-      data[i] = Math.random() * 2 - 1;
-    }
-    
-    const noise = this.ctx.createBufferSource();
-    noise.buffer = buffer;
-    
-    const noiseFilter = this.ctx.createBiquadFilter();
-    noiseFilter.type = 'highpass';
-    noiseFilter.frequency.value = 3000;
-    
-    const noiseGain = this.ctx.createGain();
-    const noiseVol = 0.05 + Math.random() * 0.02;
-    noiseGain.gain.setValueAtTime(noiseVol, t);
-    noiseGain.gain.exponentialRampToValueAtTime(0.01, t + 0.04);
-    
-    noise.connect(noiseFilter);
-    noiseFilter.connect(noiseGain);
-    noiseGain.connect(this.ctx.destination);
-    
-    // Mechanical click/thud
-    const osc = this.ctx.createOscillator();
-    const oscGain = this.ctx.createGain();
-    
-    osc.type = 'square';
-    osc.frequency.setValueAtTime(400, t);
-    osc.frequency.exponentialRampToValueAtTime(50, t + 0.03);
-    
-    const oscVol = 0.1 + Math.random() * 0.05;
-    oscGain.gain.setValueAtTime(0, t);
-    oscGain.gain.linearRampToValueAtTime(oscVol, t + 0.005);
-    oscGain.gain.exponentialRampToValueAtTime(0.01, t + 0.04);
-    
-    osc.connect(oscGain);
-    oscGain.connect(this.ctx.destination);
-    
-    noise.start(t);
-    osc.start(t);
-    osc.stop(t + 0.05);
   }
 
+  // Play onclick sound — deduplicated, echo-free
+  public playClick() {
+    if (this.muted) return;
+
+    // Debounce: drop duplicate calls within 150ms
+    const now = performance.now();
+    if (now - this.lastClickTime < this.CLICK_DEBOUNCE_MS) return;
+    this.lastClickTime = now;
+
+    if (!this.ctx || !this.clickAudioBuffer) {
+      // Not yet decoded — silent fail (no fallback that could echo)
+      return;
+    }
+
+    this.resumeCtx();
+
+    // Stop any currently playing click sound to eliminate echo
+    if (this.activeClickGain) {
+      try {
+        this.activeClickGain.gain.setValueAtTime(0, this.ctx.currentTime);
+      } catch (_) { /* ignore */ }
+      this.activeClickGain = null;
+    }
+
+    try {
+      const source = this.ctx.createBufferSource();
+      source.buffer = this.clickAudioBuffer;
+
+      const gain = this.ctx.createGain();
+      gain.gain.setValueAtTime(0.85, this.ctx.currentTime);
+
+      source.connect(gain);
+      gain.connect(this.ctx.destination);
+      source.start(0);
+
+      this.activeClickGain = gain;
+      source.onended = () => {
+        if (this.activeClickGain === gain) this.activeClickGain = null;
+      };
+    } catch (err) {
+      console.warn('Click playback error', err);
+    }
+  }
+
+  // Aliases
+  public playClack() { this.playClick(); }
+  public playSwitch() { this.playClick(); }
+
+  // Play paper turning sound — deduplicated, echo-free
   public playPaper() {
-     if (!this.ctx || this.muted) return;
-    if (this.ctx.state === 'suspended') {
-        this.ctx.resume();
+    if (this.muted) return;
+
+    // Debounce: drop duplicate calls within 300ms
+    const now = performance.now();
+    if (now - this.lastPaperTime < this.PAPER_DEBOUNCE_MS) return;
+    this.lastPaperTime = now;
+
+    if (!this.ctx || !this.paperAudioBuffer) {
+      return;
     }
-    
-    const t = this.ctx.currentTime;
-    const duration = 0.2 + Math.random() * 0.1;
-    
-    const bufferSize = this.ctx.sampleRate * duration;
-    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    
-    // Generate pink-ish noise
-    let b0, b1, b2, b3, b4, b5, b6;
-    b0 = b1 = b2 = b3 = b4 = b5 = b6 = 0.0;
-    for (let i = 0; i < bufferSize; i++) {
-        let white = Math.random() * 2 - 1;
-        b0 = 0.99886 * b0 + white * 0.0555179;
-        b1 = 0.99332 * b1 + white * 0.0750759;
-        b2 = 0.96900 * b2 + white * 0.1538520;
-        b3 = 0.86650 * b3 + white * 0.3104856;
-        b4 = 0.55000 * b4 + white * 0.5329522;
-        b5 = -0.7616 * b5 - white * 0.0168980;
-        data[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
-        data[i] *= 0.11; // compensation
-        b6 = white * 0.115926;
+
+    this.resumeCtx();
+
+    // Stop any currently playing paper sound to eliminate echo
+    if (this.activePaperGain) {
+      try {
+        this.activePaperGain.gain.setValueAtTime(0, this.ctx.currentTime);
+      } catch (_) { /* ignore */ }
+      this.activePaperGain = null;
     }
-    
-    const noise = this.ctx.createBufferSource();
-    noise.buffer = buffer;
-    
-    const filter = this.ctx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(1000 + Math.random() * 500, t);
-    filter.frequency.linearRampToValueAtTime(300, t + duration);
-    
-    const gainNode = this.ctx.createGain();
-    gainNode.gain.setValueAtTime(0, t);
-    gainNode.gain.linearRampToValueAtTime(0.3, t + 0.02);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, t + duration);
-    
-    noise.connect(filter);
-    filter.connect(gainNode);
-    gainNode.connect(this.ctx.destination);
-    
-    noise.start(t);
+
+    try {
+      const source = this.ctx.createBufferSource();
+      source.buffer = this.paperAudioBuffer;
+
+      const gain = this.ctx.createGain();
+      gain.gain.setValueAtTime(1.0, this.ctx.currentTime);
+
+      source.connect(gain);
+      gain.connect(this.ctx.destination);
+      source.start(0);
+
+      this.activePaperGain = gain;
+      source.onended = () => {
+        if (this.activePaperGain === gain) this.activePaperGain = null;
+      };
+    } catch (err) {
+      console.warn('Paper playback error', err);
+    }
   }
 
   public playDrawer() {
     if (!this.ctx || this.muted) return;
-    if (this.ctx.state === 'suspended') {
-        this.ctx.resume();
-    }
-    
+    this.resumeCtx();
+
     const t = this.ctx.currentTime;
     const duration = 0.4;
-    
+
     // Metallic rumble
     const bufferSize = this.ctx.sampleRate * duration;
     const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
     const data = buffer.getChannelData(0);
     for (let i = 0; i < bufferSize; i++) {
-        data[i] = (Math.random() * 2 - 1) * 0.5;
+      data[i] = (Math.random() * 2 - 1) * 0.5;
     }
-    
+
     const noise = this.ctx.createBufferSource();
     noise.buffer = buffer;
-    
+
     const filter = this.ctx.createBiquadFilter();
     filter.type = 'lowpass';
     filter.frequency.setValueAtTime(300, t);
     filter.frequency.linearRampToValueAtTime(100, t + duration);
-    
+
     const gainNode = this.ctx.createGain();
     gainNode.gain.setValueAtTime(0, t);
     gainNode.gain.linearRampToValueAtTime(0.4, t + 0.05);
     gainNode.gain.exponentialRampToValueAtTime(0.01, t + duration);
-    
+
     noise.connect(filter);
     filter.connect(gainNode);
     gainNode.connect(this.ctx.destination);
-    
+
     // Heavy thud
     const osc = this.ctx.createOscillator();
     const oscGain = this.ctx.createGain();
-    
+
     osc.type = 'triangle';
     osc.frequency.setValueAtTime(80, t);
     osc.frequency.exponentialRampToValueAtTime(30, t + 0.15);
-    
+
     oscGain.gain.setValueAtTime(0, t);
     oscGain.gain.linearRampToValueAtTime(0.8, t + 0.02);
     oscGain.gain.exponentialRampToValueAtTime(0.01, t + 0.15);
-    
+
     osc.connect(oscGain);
     oscGain.connect(this.ctx.destination);
-    
+
     noise.start(t);
     osc.start(t);
     osc.stop(t + 0.15);
-  }
-
-  public playSwitch() {
-    if (!this.ctx || this.muted) return;
-    if (this.ctx.state === 'suspended') {
-        this.ctx.resume();
-    }
-    
-    const t = this.ctx.currentTime;
-    
-    // High pitched transient click
-    const osc1 = this.ctx.createOscillator();
-    const gain1 = this.ctx.createGain();
-    
-    osc1.type = 'sine';
-    osc1.frequency.setValueAtTime(1200, t);
-    osc1.frequency.exponentialRampToValueAtTime(100, t + 0.05);
-    
-    gain1.gain.setValueAtTime(0, t);
-    gain1.gain.linearRampToValueAtTime(0.5, t + 0.005);
-    gain1.gain.exponentialRampToValueAtTime(0.01, t + 0.05);
-    
-    osc1.connect(gain1);
-    gain1.connect(this.ctx.destination);
-    
-    // Low frequency "chunk"
-    const osc2 = this.ctx.createOscillator();
-    const gain2 = this.ctx.createGain();
-    
-    osc2.type = 'triangle';
-    osc2.frequency.setValueAtTime(200, t);
-    osc2.frequency.exponentialRampToValueAtTime(50, t + 0.05);
-    
-    gain2.gain.setValueAtTime(0, t);
-    gain2.gain.linearRampToValueAtTime(0.4, t + 0.005);
-    gain2.gain.exponentialRampToValueAtTime(0.01, t + 0.05);
-
-    osc2.connect(gain2);
-    gain2.connect(this.ctx.destination);
-    
-    osc1.start(t);
-    osc1.stop(t + 0.05);
-    osc2.start(t);
-    osc2.stop(t + 0.05);
   }
 }
 

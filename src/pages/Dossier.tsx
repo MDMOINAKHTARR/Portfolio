@@ -1,10 +1,11 @@
+import { Link } from 'react-router-dom';
 import { Highlight } from '../components/Highlight';
 import { TopSecretStamp } from '../components/Stamps';
 import { Typewriter } from '../components/Typewriter';
 import { PageTransition } from '../components/PageTransition';
 import { useState, useEffect, useCallback, lazy, Suspense, type SyntheticEvent } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Fingerprint, Search, MapPin, Activity, X, ExternalLink, Github, Award, Briefcase, BookOpen, Trophy, Code, Linkedin } from 'lucide-react';
+import { Fingerprint, Search, MapPin, Activity, X, ExternalLink, Github, Award, Briefcase, BookOpen, Trophy, Code, Linkedin, Sparkles, ArrowRight, BookOpenCheck } from 'lucide-react';
 import { FaXTwitter } from 'react-icons/fa6';
 import { useTheme } from '../context/ThemeContext';
 import { AnalyticsWidget } from '../components/AnalyticsWidget';
@@ -12,6 +13,7 @@ import { GithubStreak } from '../components/GithubStreak';
 import { LeetcodeStreak } from '../components/LeetcodeStreak';
 import { createPortal } from 'react-dom';
 import { OperationCard } from '../components/OperationCard';
+import { audioEngine } from '../lib/audio';
 
 import { SkillsCarousel } from '../components/SkillsCarousel';
 import { ContactPill } from '../components/ContactPill';
@@ -197,13 +199,13 @@ export function Dossier() {
                </div>
                
                <div>
-                 <div className="opacity-60 font-bold tracking-widest text-[8px] mb-0.5">LEADERSHIP:</div>
-                 <div className="bg-hl-pink-bg border border-hl-pink-border px-2 py-1 rounded inline-block shadow-sm w-full">
-                   <div className="font-bold tracking-wider leading-tight text-[9px] uppercase">
-                     CORE MEMBER -<br/>CLUSTER DATA SCIENCE CLUB
-                   </div>
-                 </div>
-               </div>
+                  <div className="opacity-60 font-bold tracking-widest text-[8px] mb-0.5">LEADERSHIP:</div>
+                  <div className="bg-hl-pink-bg border border-hl-pink-border px-2 py-1 rounded inline-block shadow-sm w-full">
+                    <div className="font-bold tracking-wider leading-tight text-[9px] uppercase">
+                      CORE MEMBER -<br/>CLUSTER DATA SCIENCE CLUB
+                    </div>
+                  </div>
+                </div>
              </div>
            </div>
         </div>
@@ -939,7 +941,7 @@ export function Dossier() {
                 transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                 className="absolute top-full -mt-6 mt-[-10px] w-[240px] sm:w-[280px] lg:w-[320px] z-10 origin-top overflow-hidden pt-12 translate-x-4 sm:translate-x-10 pointer-events-none"
               >
-                <div className="w-full rounded-b border-x-2 border-b-2 border-slate-300 shadow-xl overflow-hidden aspect-[16/9] bg-ink/10">
+                <div className="w-full border-x-2 border-b-2 border-slate-300 shadow-xl overflow-hidden aspect-[16/9] bg-ink/10">
                   <img src="https://media.tenor.com/XT5Z51WyY8EAAAAC/spiderman-spider-verse.gif" alt="Spider-Noir Quote" className="w-full h-full object-cover" />
                 </div>
               </motion.div>

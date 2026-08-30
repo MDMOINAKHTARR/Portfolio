@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import React from 'react';
 
-export const PageTransition = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => {
+export const PageTransition = ({ children, className = "", style }: { children: React.ReactNode, className?: string, style?: React.CSSProperties }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
@@ -9,6 +9,7 @@ export const PageTransition = ({ children, className = "" }: { children: React.R
       exit={{ opacity: 0, y: -8 }}
       transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
       className={`row-start-1 col-start-1 flex flex-col relative w-full h-full will-change-[opacity,transform] ${className}`}
+      style={style}
     >
       {/* Base Paper Background to hide underlaying exiting page */}
       <div className="absolute [-inset-x-0] [-inset-y-0] pointer-events-none -z-20 bg-doc bg-texture" />
