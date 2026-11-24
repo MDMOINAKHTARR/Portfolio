@@ -2,6 +2,7 @@
   "buildCommand": "vite build",
   "outputDirectory": "dist",
   "rewrites": [
+    { "source": "/api/dossier-chat", "destination": "/api/dossier-chat" },
     { "source": "/api/activity-timeline", "destination": "/api/activity-timeline" },
     { "source": "/api/github-contributions", "destination": "/api/github-contributions" },
     { "source": "/api/leetcode-stats", "destination": "/api/leetcode-stats" },

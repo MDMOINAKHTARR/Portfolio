@@ -412,9 +412,23 @@ function buildDynamicAnalyzedFallback(
     return `If you're actually hiring and not just window-shopping, here's the case for **Md Moin Akhtar** [1]:\n• **Production AI + Full-Stack**: Built 8 systems across **React, TypeScript, Next.js, FastAPI & Supabase**, including **LedgerForge** (**112-test safety suite**) and **LazyClip.buzz** (**100+ Day-1 users**).\n• **Receipts, Not Buzzwords**: First-author **IEEE Xplore paper (#11441054)**, **4 hackathon wins** (**$5,800 Hermes × GrowthX**, **1st Place IGDTUW**), and **8.27 CGPA** at VIPS-TC. Email: **mohdmoinakhtar081@gmail.com**.`;
   }
 
+  if (/^(hi|hello|hey|yo|sup|hola|greetings|good (morning|afternoon|evening))\b/i.test(q)) {
+    return `Look who wandered into **File Cabinet A-4**. I'm **Wade Wilson**—reluctant tour guide to **Md Moin Akhtar's** dossier [1]. Ask me about his **8 shipped projects** (like **LazyClip.buzz** or **LedgerForge**), his **4 hackathon wins**, his **IEEE paper (#11441054)**, or how to hire him before I get bored.`;
+  }
+
+  if (/who are you|your name|deadpool|wade|persona|what can you do|help/i.test(q)) {
+    return `I'm **Wade**—yes, *that* Wade—babysitting **Md Moin Akhtar's** classified engineering dossier [1]. Throw me a **role or JD** (\`/fit\`), ask about **LazyClip.buzz**, **LedgerForge**, his **IEEE hallucination-detection paper (#11441054)**, or grab his **contact info** (**mohdmoinakhtar081@gmail.com**).`;
+  }
+
   const top = baseRag.citations[0];
   if (!top || top.score < 0.12) {
-    return `Moin published an **IEEE paper on catching AI hallucinations (#11441054)**, so unlike your favorite chatbot I don't make stuff up [1]. That's not in the files—ask about his **8 projects**, **hackathon wins**, **tech stack**, or **contact info**.`;
+    const outOfDossierReplies = [
+      `Checked every folder in **Cabinet A-4** for "${q.slice(0, 48)}"—zero matches [1]. Unlike a hallucinating chatbot, I stick to Moin's receipts: ask about his **8 projects**, **4 hackathon wins**, **tech stack**, or **contact info**.`,
+      `Nice try, but "${q.slice(0, 48)}" isn't in **Md Moin Akhtar's** dossier [1]. Moin literally published an **IEEE paper on catching AI hallucinations (#11441054)**, so I'm not making it up. Ask about **LazyClip.buzz**, **LedgerForge**, or his **skills**.`,
+      `I'm good, not psychic—"${q.slice(0, 48)}" isn't on file [1]. Try asking what Moin actually shipped: **100+ Day-1 users on LazyClip.buzz**, **$5,800 Hermes × GrowthX hackathon win**, or his **VIPS-TC B.Tech (8.27 CGPA)**.`,
+    ];
+    const hash = Array.from(lower).reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+    return outOfDossierReplies[hash % outOfDossierReplies.length];
   }
 
   return `${baseRag.answer} [1]\n${baseRag.bullets.slice(0, 2).map((b) => `• ${b}`).join('\n')}`;
