@@ -3,31 +3,53 @@ import { Highlight } from '../components/Highlight';
 import { TopSecretStamp } from '../components/Stamps';
 import { Typewriter } from '../components/Typewriter';
 import { PageTransition } from '../components/PageTransition';
+import { Lettering } from '../components/ui/lettering';
 import { useState, useEffect, useCallback, lazy, Suspense, type SyntheticEvent } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Fingerprint, Search, MapPin, Activity, X, ExternalLink, Github, Award, Briefcase, BookOpen, Trophy, Code, Linkedin, Sparkles, ArrowRight, BookOpenCheck } from 'lucide-react';
+import { Fingerprint, Search, Activity, ExternalLink, Github, Briefcase, BookOpen, Trophy, Code, Linkedin, Sparkles, ArrowRight, BookOpenCheck, FileText, Mail } from 'lucide-react';
 import { FaXTwitter } from 'react-icons/fa6';
 import { useTheme } from '../context/ThemeContext';
-import { AnalyticsWidget } from '../components/AnalyticsWidget';
-import { GithubStreak } from '../components/GithubStreak';
-import { LeetcodeStreak } from '../components/LeetcodeStreak';
-import { createPortal } from 'react-dom';
-import { OperationCard } from '../components/OperationCard';
+import { DeferredSection } from '../components/DeferredSection';
 import { audioEngine } from '../lib/audio';
+import { PROJECTS, type Project } from '../data/projectsData';
 
-import { SkillsCarousel } from '../components/SkillsCarousel';
+const AnalyticsWidget = lazy(() => import('../components/AnalyticsWidget').then((m) => ({ default: m.AnalyticsWidget })));
+const ActivityHeatmaps = lazy(() => import('../components/ActivityHeatmaps').then((m) => ({ default: m.ActivityHeatmaps })));
+const CertificatesSection = lazy(() => import('../components/CertificatesSection').then((m) => ({ default: m.CertificatesSection })));
+const ProjectScrollStack = lazy(() => import('../components/ProjectScrollStack').then((m) => ({ default: m.ProjectScrollStack })));
+const ProjectCaseModal = lazy(() => import('../components/ProjectCaseModal').then((m) => ({ default: m.ProjectCaseModal })));
+const SkillsCarousel = lazy(() => import('../components/SkillsCarousel').then((m) => ({ default: m.SkillsCarousel })));
 import { ContactPill } from '../components/ContactPill';
 import { musicEngine, type MusicVisual } from '../lib/music';
+import { getEffectiveVideoSrc, tryVideoFallback } from '../lib/media';
+import { HoverPreviewLink } from '../components/HoverPreviewLink';
+import { FocusParagraph } from '../components/FocusParagraph';
 
 const SPIDER_NOIR_GIF = 'https://media1.tenor.com/m/T4YtiVsOLu4AAAAC/spider-noir-nicolas-cage.gif';
-const PdfViewer = lazy(() => import('../components/PdfViewer').then((module) => ({ default: module.PdfViewer })));
+const lensGrad = 'radial-gradient(circle closest-side, black 0%, rgba(0,0,0,0.9) 32%, rgba(0,0,0,0.5) 60%, rgba(0,0,0,0.15) 82%, transparent 100%)';
+
+// Mobile stack shows only these four, in this order — keeps the scroll list light.
+const DECK_PROJECT_IDS = ['OP-001', 'OP-410', 'OP-109', 'OP-081'];
+const DECK_PROJECTS: Project[] = DECK_PROJECT_IDS
+  .map((id) => PROJECTS.find((project) => project.id === id))
+  .filter((project): project is Project => Boolean(project));
 
 function RecTimestamp() {
   const [time, setTime] = useState('');
   useEffect(() => {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const resolvedTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const tzLabel =
+      resolvedTz === 'Asia/Kolkata' || resolvedTz === 'Asia/Calcutta'
+        ? 'IST'
+        : Intl.DateTimeFormat(undefined, { timeZoneName: 'short' })
+          .formatToParts(new Date())
+          .find((p) => p.type === 'timeZoneName')?.value ?? 'LOCAL';
+
     const updateTime = () => {
       const now = new Date();
-      setTime(now.toISOString().replace('T', ' ').substring(0, 19) + ' UTC');
+      const dateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+      const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+      setTime(`${dateStr} ${timeStr} ${tzLabel}`);
     };
     updateTime();
     const int = setInterval(updateTime, 1000);
@@ -61,10 +83,15 @@ export function Dossier() {
   const [gifFading, setGifFading] = useState(false);
   const [gifReady, setGifReady] = useState(false);
   const [isMobileViewport, setIsMobileViewport] = useState(() => window.matchMedia('(max-width: 639px)').matches);
-  const [showQuoteGif, setShowQuoteGif] = useState(false);
-  const [showUltimateCert, setShowUltimateCert] = useState(false);
-  const [showDataScienceCert, setShowDataScienceCert] = useState(false);
+  const [isPhotoFlipped, setIsPhotoFlipped] = useState(false);
+  const [lensPos, setLensPos] = useState<{ x: number; y: number; active: boolean }>({ x: 137, y: 152, active: false });
   const revealPortrait = useCallback(() => setIsPortraitRevealed(true), []);
+
+  const handleCardSequenceClick = useCallback(() => {
+    audioEngine.init();
+    audioEngine.playPaper();
+    setIsPhotoFlipped((prev) => !prev);
+  }, []);
 
   useEffect(() => {
     setIsPortraitRevealed(!songVisual);
@@ -96,7 +123,7 @@ export function Dossier() {
     if (theme === 'noir' && gifReady) {
       setShowGif(true);
       setGifFading(false);
-      
+
       const fadeTimer = setTimeout(() => {
         setGifFading(true);
       }, 2200);
@@ -105,7 +132,7 @@ export function Dossier() {
         setShowGif(false);
         setGifFading(false);
       }, 2800);
-      
+
       return () => {
         clearTimeout(fadeTimer);
         clearTimeout(removeTimer);
@@ -116,98 +143,124 @@ export function Dossier() {
     }
   }, [theme, gifReady]);
 
+  const [activeProject, setActiveProject] = useState<Project | null>(null);
+
+  const handleOpenProject = useCallback((project: Project) => setActiveProject(project), []);
+
   return (
     <PageTransition className="px-5 py-6 sm:px-20 sm:py-24 relative overflow-hidden h-full">
-      
+
       {/* ========================================================= */}
       {/* MOBILE-ONLY VIEW (Hidden on sm and larger) */}
       {/* ========================================================= */}
       <div className="block sm:hidden w-full font-mono text-ink pb-4 relative z-20">
-        
+
         {/* Mobile Layout: Photo on Left, Summary on Right */}
         <div className="flex gap-4 mb-2 relative z-20 items-start">
-           
-           {/* Mobile Photo */}
-           <div className="w-[120px] shrink-0 transform -rotate-2 relative mt-4">
-             <div className="song-photo-frame bg-polaroid p-1.5 pb-6 shadow-[2px_4px_10px_rgba(0,0,0,0.3)] border border-gray-300 relative">
-               <div className="absolute -top-3 left-1/2 ml-1 w-1.5 h-6 border-[1.5px] border-slate-400 rounded-full bg-transparent z-30"></div>
-               
-               <div className="w-full h-[130px] bg-zinc-800 border border-zinc-700 relative overflow-hidden">
-                 <SubjectPortrait
-                   alt="Subject"
-                   className="song-portrait w-full h-full object-cover relative z-10 opacity-100"
-                 />
 
-                 {/* Photo stays normal */}
-                 
-                 {/* Song visuals take over the portrait while music is playing. */}
-                  {songVisual && !isCrtTvTrack ? (
-                    <SongThemeOverlay key={songVisual.src} visual={songVisual} onRevealPortrait={revealPortrait} />
-                  ) : (
-                    showGif && isMobileViewport && <SpiderNoirThemeOverlay fading={gifFading} />
-                  )}
-                 
-                 <div className="absolute inset-0 bg-ink/5 mix-blend-overlay z-20 pointer-events-none"></div>
+          {/* Mobile Photo */}
+          <div className="w-[120px] shrink-0 transform -rotate-2 relative mt-4">
+            <div className="song-photo-frame bg-polaroid p-1.5 pb-6 shadow-[2px_4px_10px_rgba(0,0,0,0.3)] border border-gray-300 relative">
+              <div className="absolute -top-3 left-1/2 ml-1 w-1.5 h-6 border-[1.5px] border-slate-400 rounded-full bg-transparent z-30"></div>
 
-                 {/* Surveillance UI Overlay */}
-                 <div className="absolute inset-0 z-20 pointer-events-none p-0.5 flex flex-col justify-between opacity-80">
-                    <div className="flex justify-between items-start">
-                       <div className="w-1.5 h-1.5 border-t border-l border-red-500/80"></div>
-                       <div className="w-1.5 h-1.5 border-t border-r border-red-500/80"></div>
-                    </div>
-                    <div className="flex justify-between items-end">
-                       <div className="w-1.5 h-1.5 border-b border-l border-red-500/80"></div>
-                       <div className="w-1.5 h-1.5 border-b border-r border-red-500/80"></div>
-                    </div>
-                 </div>
-               </div>
-               <div className="absolute bottom-1 w-full text-center left-0 font-typewriter text-[7px] text-ink/70 tracking-widest mt-1">
-                  TARGET // LOCKED
-               </div>
-             </div>
-           </div>
+              <div className="w-full h-[130px] bg-zinc-800 border border-zinc-700 relative overflow-hidden">
+                <SubjectPortrait
+                  alt="Subject"
+                  className="song-portrait w-full h-full object-cover relative z-10 opacity-100"
+                />
 
-           {/* Profile Summary */}
-           <div className="flex-1 flex flex-col">
-             <div className="flex items-center gap-1 mb-1">
-               <span className="w-2.5 h-2.5 bg-yellow-400 rounded-full shrink-0" />
-               <h2 className="text-[11px] font-bold tracking-[0.1em] font-mono leading-none pt-[1px]">PROFILE SUMMARY</h2>
-             </div>
-             
-             <div className="border-t border-ink/10 pt-1.5 flex flex-col gap-2 text-xs">
-               <div>
-                 <div className="opacity-60 font-bold tracking-widest text-[8px] mb-0.5">NAME:</div>
-                 <div className="text-sm font-black tracking-widest leading-none">MD MOIN AKHTAR</div>
-               </div>
-               
-               <div>
-                 <div className="opacity-60 font-bold tracking-widest text-[8px] mb-0.5">ROLE:</div>
-                 <div className="bg-hl-blue-bg border border-hl-blue-border px-2 py-1 rounded inline-block shadow-sm w-full">
-                   <div className="font-bold tracking-wider leading-tight text-[9px] uppercase">
-                     SOFTWARE DEVELOPER
-                   </div>
-                 </div>
-               </div>
-               
-               <div>
-                 <div className="opacity-60 font-bold tracking-widest text-[8px] mb-0.5">AFFILIATION:</div>
-                 <div className="bg-hl-pink-bg border border-hl-pink-border px-2 py-1 rounded inline-block shadow-sm w-full">
-                   <div className="font-bold tracking-wider leading-tight text-[9px] uppercase">
-                     VIPS-TC (B.TECH, & DATA<br/>SCIENCE, CGPA: 8.03)
-                   </div>
-                 </div>
-               </div>
-               
-               <div>
-                  <div className="opacity-60 font-bold tracking-widest text-[8px] mb-0.5">LEADERSHIP:</div>
-                  <div className="bg-hl-pink-bg border border-hl-pink-border px-2 py-1 rounded inline-block shadow-sm w-full">
-                    <div className="font-bold tracking-wider leading-tight text-[9px] uppercase">
-                      CORE MEMBER -<br/>CLUSTER DATA SCIENCE CLUB
-                    </div>
+                {/* Photo stays normal */}
+
+                {/* Song visuals take over the portrait while music is playing. */}
+                {songVisual && !isCrtTvTrack ? (
+                  <SongThemeOverlay key={songVisual.src} visual={songVisual} onRevealPortrait={revealPortrait} />
+                ) : (
+                  showGif && isMobileViewport && <SpiderNoirThemeOverlay fading={gifFading} />
+                )}
+
+                <div className="absolute inset-0 bg-ink/5 mix-blend-overlay z-20 pointer-events-none"></div>
+
+                {/* Surveillance UI Overlay */}
+                <div className="absolute inset-0 z-20 pointer-events-none p-0.5 flex flex-col justify-between opacity-80">
+                  <div className="flex justify-between items-start">
+                    <div className="w-1.5 h-1.5 border-t border-l border-red-500/80"></div>
+                    <div className="w-1.5 h-1.5 border-t border-r border-red-500/80"></div>
+                  </div>
+                  <div className="flex justify-between items-end">
+                    <div className="w-1.5 h-1.5 border-b border-l border-red-500/80"></div>
+                    <div className="w-1.5 h-1.5 border-b border-r border-red-500/80"></div>
                   </div>
                 </div>
-             </div>
-           </div>
+              </div>
+              <div aria-hidden="true" className="absolute bottom-1 w-full text-center left-0 font-typewriter text-[9px] text-ink/70 tracking-widest mt-1">
+                TARGET // LOCKED
+              </div>
+            </div>
+          </div>
+
+          {/* Profile Summary */}
+          <div className="flex-1 flex flex-col">
+            <div className="flex items-center gap-1 mb-1">
+              <span className="w-2.5 h-2.5 bg-yellow-400 rounded-full shrink-0" />
+              <h2 className="text-xs font-bold tracking-[0.1em] font-mono leading-none pt-[1px]">PROFILE SUMMARY</h2>
+            </div>
+
+            <div className="border-t border-ink/10 pt-1.5 flex flex-col gap-2 text-xs">
+              <div>
+                <div className="opacity-65 font-bold tracking-widest text-[10px] mb-0.5">NAME:</div>
+                <Lettering
+                  as="div"
+                  size="sm"
+                  tone="marker"
+                  wobble={0.3}
+                  seed="moin-name-mobile"
+                  style={{ ['--ll-marker' as string]: '#fba368', ['--ll-riso' as string]: '#fba368' }}
+                  className="font-bold whitespace-nowrap text-base sm:text-lg tracking-tight uppercase leading-tight text-ink inline-block font-script"
+                >
+                  MD MOIN AKHTAR
+                </Lettering>
+              </div>
+
+              <div>
+                <div className="opacity-65 font-bold tracking-widest text-[10px] mb-0.5">ROLE:</div>
+                <div className="bg-hl-blue-bg border border-hl-blue-border px-2 py-1 rounded inline-block shadow-sm w-full">
+                  <div className="font-bold tracking-wider leading-tight text-[11px] uppercase">
+                    SOFTWARE DEVELOPER
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div className="opacity-65 font-bold tracking-widest text-[10px] mb-0.5">AFFILIATION:</div>
+                <div className="bg-hl-pink-bg border border-hl-pink-border px-2 py-1 rounded inline-block shadow-sm w-full">
+                  <div className="font-bold tracking-wider leading-tight text-[10.5px] uppercase">
+                    VIPS-TC (B.TECH AI &amp; DATA<br />SCIENCE, CGPA: 8.27)
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                <a
+                  href="/MdMoinAkhtar_Resume.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => audioEngine.playClick()}
+                  className="inline-flex items-center gap-1 bg-stamp text-white font-mono text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-xs border border-ink/30 shadow-xs"
+                >
+                  <FileText className="w-3 h-3" />
+                  <span>RESUME.PDF</span>
+                </a>
+                <a
+                  href="mailto:mohdmoinakhtar081@gmail.com"
+                  onClick={() => audioEngine.playClick()}
+                  className="inline-flex items-center gap-1 bg-paper text-ink font-mono text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-xs border border-ink/40 shadow-xs"
+                >
+                  <Mail className="w-3 h-3" />
+                  <span>EMAIL ME</span>
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* About */}
@@ -233,12 +286,14 @@ export function Dossier() {
             </div>
             <div className="border-t border-ink/10 pt-1">
               <div className="-mx-6 sm:-mx-8 mb-0">
-                <SkillsCarousel />
+                <Suspense fallback={null}>
+                  <SkillsCarousel />
+                </Suspense>
               </div>
               <p className="text-xs font-mono italic opacity-80 leading-relaxed max-w-[90%] mb-8">
-                <span className="bg-hl-pink-bg border border-hl-pink-border px-2 py-0.5 rounded-full not-italic text-[10px] tracking-wider shadow-sm mr-1">RENEUTRALIZING</span> complex AI-integration for deployment ready modules.
+                <span className="bg-hl-pink-bg border border-hl-pink-border px-2 py-0.5 rounded-full not-italic text-[10px] tracking-wider shadow-sm mr-1">ARCHITECTING</span> complex AI-integration for deployment ready modules.
               </p>
-              
+
               {/* Premium Thematic 5-Banner Grid Layout */}
               <div className="grid grid-cols-10 gap-2 mb-4">
                 {/* Left Column (LeetCode & LinkedIn) */}
@@ -334,7 +389,7 @@ export function Dossier() {
 
                     {/* Twitter / X */}
                     <a
-                      href="https://x.com/___moinn_"
+                      href="https://x.com/Moincrafted"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="block relative overflow-hidden border-2 border-ink/40 shadow-sm group bg-ink rounded-[2px] col-span-6 h-full"
@@ -349,7 +404,7 @@ export function Dossier() {
                           <FaXTwitter className="w-3.5 h-3.5 text-paper shrink-0 group-hover:scale-110 transition-transform" />
                           <div>
                             <h3 className="text-paper font-bold font-mono tracking-widest text-sm sm:text-base leading-tight">TWITTER / X</h3>
-                            <p className="text-paper/70 font-mono text-[9px] sm:text-[11px] tracking-widest mt-0.5 font-bold">@___moinn_</p>
+                            <p className="text-paper/70 font-mono text-[9px] sm:text-[11px] tracking-widest mt-0.5 font-bold">@Moincrafted</p>
                           </div>
                         </div>
                       </div>
@@ -360,55 +415,41 @@ export function Dossier() {
 
               {/* Interactive Contribution Matrices */}
               <div className="flex flex-col gap-6 mb-8">
-                <LeetcodeStreak />
-                <GithubStreak />
+                <DeferredSection minHeight={340}>
+                  <ActivityHeatmaps />
+                </DeferredSection>
               </div>
 
-              <div className="flex items-center gap-3 mb-6 mt-10 border-b-2 border-amber-900/20 pb-4">
-                <div className="bg-amber-900/10 p-2.5 rounded-lg border border-amber-900/20 shadow-sm">
-                  <Award className="w-6 h-6 sm:w-8 sm:h-8 text-amber-700 dark:text-amber-500" />
-                </div>
-                <h2 className="text-xl sm:text-3xl font-black tracking-[0.15em] font-mono leading-none pt-[2px] text-amber-900 dark:text-amber-500 uppercase drop-shadow-sm">
-                  CERTIFICATES
-                </h2>
-              </div>
-
-              <div 
-                className="dossier-record dossier-record--certificate group flex w-full cursor-pointer items-start gap-3 p-4"
-                onClick={() => setShowDataScienceCert(true)}
-              >
-                  <Typewriter delay={0.1} className="opacity-50 font-bold font-mono tracking-widest mt-1 shrink-0">[!]</Typewriter>
-                  <div className="flex flex-col gap-1.5 flex-1 select-none">
-                    <Typewriter delay={0.2} className="font-bold text-[11px] leading-tight sm:text-sm tracking-widest font-mono text-amber-900 dark:text-amber-500">
-                      <Highlight style="circle" color="yellow" className="border-b border-dashed border-amber-500/40 pb-1">
-                        CERTIFIED: DATA SCIENCE FOUNDATIONS (2024)
-                      </Highlight>
-                    </Typewriter>
-                    <span className="evidence-action evidence-action--certificate mt-2.5 inline-flex w-full items-center justify-center gap-1.5 sm:w-fit">
-                      <ExternalLink className="h-3.5 w-3.5" /> VIEW CERTIFICATE
-                    </span>
-                  </div>
-              </div>
-
-              <div 
-                className="dossier-record dossier-record--certificate group mt-4 flex w-full cursor-pointer items-start gap-3 p-4"
-                onClick={() => setShowUltimateCert(true)}
-              >
-                  <Typewriter delay={0.2} className="opacity-50 font-bold font-mono tracking-widest mt-1 shrink-0">[!]</Typewriter>
-                  <div className="flex flex-col gap-1.5 flex-1 select-none">
-                    <Typewriter delay={0.3} className="font-bold text-[11px] leading-tight sm:text-sm tracking-widest font-mono text-amber-900 dark:text-amber-500">
-                      <Highlight style="circle" color="yellow" className="border-b border-dashed border-amber-500/40 pb-1">
-                        CERTIFIED: THE ULTIMATE JOB READY DATA SCIENCE COURSE
-                      </Highlight>
-                    </Typewriter>
-                    <span className="evidence-action evidence-action--certificate mt-2.5 inline-flex w-full items-center justify-center gap-1.5 sm:w-fit">
-                      <ExternalLink className="h-3.5 w-3.5" /> VIEW CERTIFICATE
-                    </span>
-                  </div>
-              </div>
+              <DeferredSection minHeight={260}>
+                <CertificatesSection />
+              </DeferredSection>
             </div>
 
-            <div className="flex items-center gap-3 mb-6 mt-10 border-b-2 border-blue-950/20 pb-4">
+            <div className="flex items-center gap-3 mb-3 mt-8 border-b-2 border-red-900/20 pb-3">
+              <div className="bg-red-900/10 p-2 rounded-lg border border-red-900/20 shadow-sm">
+                <Briefcase className="w-5 h-5 text-red-900" />
+              </div>
+              <h2 className="text-lg font-black tracking-[0.15em] font-mono leading-none pt-[2px] text-red-900 dark:text-red-500 uppercase drop-shadow-sm">
+                PROJECTS
+              </h2>
+            </div>
+
+            {/* Project scroll stack */}
+            {isMobileViewport ? (
+              <DeferredSection minHeight={420}>
+                <ProjectScrollStack projects={DECK_PROJECTS} onOpen={handleOpenProject} />
+              </DeferredSection>
+            ) : null}
+
+            {activeProject ? (
+              <Suspense fallback={null}>
+                <ProjectCaseModal project={activeProject} onClose={() => setActiveProject(null)} />
+              </Suspense>
+            ) : null}
+
+            <div className="border-b border-ink/15 mx-[-20px] my-4" />
+
+            <div className="flex items-center gap-3 mb-6 mt-6 border-b-2 border-blue-950/20 pb-4">
               <div className="bg-blue-950/10 p-2.5 rounded-lg border border-blue-950/20 shadow-sm">
                 <BookOpen className="w-6 h-6 sm:w-8 sm:h-8 text-blue-900 dark:text-blue-400" />
               </div>
@@ -416,36 +457,54 @@ export function Dossier() {
                 RESEARCH & PUBLICATIONS
               </h2>
             </div>
-            
+
             <div className="space-y-6">
-              <div 
+              <div
                 className="dossier-record dossier-record--research flex w-full flex-col gap-3 p-4"
               >
-                  <div className="flex items-start gap-3 w-full">
-                    <Typewriter delay={0.3} className="opacity-50 font-bold font-mono tracking-widest mt-1 shrink-0">[!]</Typewriter>
-                    <div className="flex flex-col gap-1.5 flex-1 select-none">
-                      <Typewriter delay={0.4} className="font-bold text-[11px] leading-tight sm:text-sm tracking-widest font-mono text-blue-900 dark:text-blue-400">
-                        <Highlight style="circle" color="blue" className="border-b border-dashed border-blue-500/40 pb-1">
-                          RESEARCH: A SENTENCE-LEVEL RISK ESTIMATOR FOR IDENTIFYING HALLUCINATIONS IN GENERATIVE AI
-                        </Highlight>
-                      </Typewriter>
-                      <Typewriter delay={0.5} className="block italic opacity-80 mt-1 text-[11px] sm:text-xs text-ink/75">
-                        International Conference on AI-Driven Smart Systems and Ubiquuting (ICAUC), 2026
-                      </Typewriter>
-                    </div>
+                <div className="flex items-start gap-3 w-full">
+                  <Typewriter delay={0.3} className="opacity-50 font-bold font-mono tracking-widest mt-1 shrink-0">[!]</Typewriter>
+                  <div className="flex flex-col gap-1.5 flex-1 select-none">
+                    <Typewriter delay={0.4} className="font-bold text-[11px] leading-tight sm:text-sm tracking-widest font-mono text-blue-900 dark:text-blue-400">
+                      <Highlight style="circle" color="blue" className="border-b border-dashed border-blue-500/40 pb-1">
+                        RESEARCH: A SENTENCE-LEVEL RISK ESTIMATOR FOR IDENTIFYING HALLUCINATIONS IN GENERATIVE AI
+                      </Highlight>
+                    </Typewriter>
+                    <Typewriter delay={0.5} className="block italic opacity-80 mt-1 text-[11px] sm:text-xs text-ink/75">
+                      International Conference on AI-Driven Smart Systems and Ubiquitous Computing (ICAUC), 2026
+                    </Typewriter>
                   </div>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2 pt-3 border-t border-blue-950/10 dark:border-blue-500/10">
-                    <a href="https://ieeexplore.ieee.org/document/11441054" target="_blank" rel="noreferrer" className="evidence-action evidence-action--ieee flex items-center justify-center gap-2">
-                      <ExternalLink className="h-3.5 w-3.5" /> IEEE XPLORE PAPER
-                    </a>
-                    <a href="https://x.com/___moinn_/status/2038219385077375293?s=20" target="_blank" rel="noreferrer" className="evidence-action evidence-action--x flex items-center justify-center gap-2">
-                      <ExternalLink className="h-3.5 w-3.5" /> VIEW X POST
-                    </a>
-                    <a href="https://www.linkedin.com/posts/mdmoinakhtar_ai-machinelearning-generativeai-share-7444005556559794176-z_Ot/?utm_source=share&utm_medium=member_desktop&rcm=ACoAAErQS70BROmbAnLMOHVZZb-iJMzWSNGt-lA" target="_blank" rel="noreferrer" className="evidence-action evidence-action--linkedin flex items-center justify-center gap-2">
-                      <ExternalLink className="h-3.5 w-3.5" /> LINKEDIN POST
-                    </a>
-                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2 pt-3 border-t border-blue-950/10 dark:border-blue-500/10">
+                  <HoverPreviewLink
+                    href="https://ieeexplore.ieee.org/document/11441054"
+                    title="IEEE Xplore // Hallucination Risk Estimator"
+                    domain="ieeexplore.ieee.org"
+                    imageUrl="/moin cover.png"
+                    className="evidence-action evidence-action--ieee flex items-center justify-center gap-2 no-underline"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" /> IEEE XPLORE PAPER
+                  </HoverPreviewLink>
+                  <HoverPreviewLink
+                    href="https://x.com/Moincrafted/status/2038219385077375293?s=20"
+                    title="Research Release Thread // X"
+                    domain="x.com"
+                    imageUrl="/twitter banner.jpg"
+                    className="evidence-action evidence-action--x flex items-center justify-center gap-2 no-underline"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" /> VIEW X POST
+                  </HoverPreviewLink>
+                  <HoverPreviewLink
+                    href="https://www.linkedin.com/posts/mdmoinakhtar_ai-machinelearning-generativeai-share-7444005556559794176-z_Ot/?utm_source=share&utm_medium=member_desktop&rcm=ACoAAErQS70BROmbAnLMOHVZZb-iJMzWSNGt-lA"
+                    title="Publication Dispatch // LinkedIn"
+                    domain="linkedin.com"
+                    imageUrl="/linkedin banner.jpg"
+                    className="evidence-action evidence-action--linkedin flex items-center justify-center gap-2 no-underline"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" /> LINKEDIN POST
+                  </HoverPreviewLink>
+                </div>
               </div>
             </div>
 
@@ -457,7 +516,7 @@ export function Dossier() {
                 HACKATHONS & COMPETITIONS
               </h2>
             </div>
-            
+
             <div className="space-y-4">
               <div className="dossier-record dossier-record--grand-win flex flex-row items-start gap-4 p-4">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-amber-700/30 bg-amber-300/45 shadow-sm select-none">
@@ -523,7 +582,7 @@ export function Dossier() {
                         PARANOX 2.0 NATIONAL HACKATHON
                       </span>
                       <span className="text-[10px] bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded font-bold font-mono text-emerald-800 dark:text-emerald-400 uppercase leading-none">
-                        Top 40 Finalist
+                        Top 10 Finalist
                       </span>
                     </div>
                     <div className="text-[10px] font-mono opacity-60 font-bold whitespace-nowrap sm:self-center">
@@ -531,7 +590,7 @@ export function Dossier() {
                     </div>
                   </div>
                   <p className="text-[12px] font-mono opacity-80 leading-relaxed">
-                    National Level Innovation Hackathon — Qualified in the Top 200 teams nationwide for intelligent automation tracking platforms.
+                    National Level Innovation Hackathon — Qualified in the Top 10 national finalists (out of 200+ teams nationwide) for intelligent automation tracking platforms.
                   </p>
                 </div>
               </div>
@@ -561,235 +620,17 @@ export function Dossier() {
                 </div>
               </div>
             </div>
-
-            <div className="border-b border-ink/10 mx-[-20px] my-6" />
-
-            {/* PROJECT OBJECTIVE */}
-            <div className="pt-2 mb-2">
-              <h2 className="text-[11px] font-bold tracking-[0.25em] font-mono mb-3 text-ink">PROJECT OBJECTIVE</h2>
-              <div className="border-t-2 border-ink/20 pt-4 text-[14px] sm:text-base font-bold font-mono leading-[1.8] text-ink select-none">
-                Intelligent and <span className="bg-hl-blue-bg border-b-[3px] border-hl-blue-border px-1.5 py-0.5">analytical platforms</span> and executing <span className="bg-hl-blue-bg border-b-[3px] border-hl-blue-border px-1.5 py-0.5">seamless digital</span> <span className="bg-hl-blue-bg border-b-[3px] border-hl-blue-border px-1.5 py-0.5 mt-1.5 inline-block">experiences</span>. Currently reported developing scalable AI models and agents.
-              </div>
-            </div>
-
-            <div className="border-b border-ink/15 mx-[-20px] my-6" />
-
-            <div className="flex items-center gap-3 mb-6 mt-10 border-b-2 border-red-900/20 pb-4">
-              <div className="bg-red-900/10 p-2.5 rounded-lg border border-red-900/20 shadow-sm">
-                <Briefcase className="w-6 h-6 sm:w-8 sm:h-8 text-red-900" />
-              </div>
-              <h2 className="text-xl sm:text-3xl font-black tracking-[0.15em] font-mono leading-none pt-[2px] text-red-900 dark:text-red-500 uppercase drop-shadow-sm">
-                PROJECTS
-              </h2>
-            </div>
-            <div className="space-y-6">
-              <OperationCard
-                id="OP-001"
-                delay={0.1}
-                title="LAZYCLIP.BUZZ"
-                tech="Open Source, Video Editing, Natural Language, Captions, Voice-over"
-                status="ACTIVE"
-                statusColor="text-emerald-800"
-                imageUrl="/lazyclip.buzz mock.png"
-                githubUrl="https://github.com/JAYATIAHUJA/LAZYCLIP.BUZZ"
-                liveUrl="https://lazyclip.buzz"
-                xUrl="https://x.com/___moinn_/status/2076235594209042859?s=20"
-                defaultOpen={true}
-                desc={
-                  <>
-                    An open-source video editor that turns prompts, uploads, or YouTube segments into captioned vertical videos with optional voice-over.
-                  </>
-                }
-              />
-
-              <OperationCard
-                id="OP-317"
-                delay={0.2}
-                title="RELAY VAULT"
-                tech="Monad Testnet, Smart Contracts, AI Agents, Escrow"
-                status="ACTIVE"
-                statusColor="text-emerald-800"
-                imageUrl="/RelayVault landing page.png"
-                githubUrl="https://github.com/MDMOINAKHTARR/Relay_Vault"
-                youtubeUrl="https://youtu.be/IpkW9Zmbb7s?si=qtM8zDWlvqMVsKKQ"
-                defaultOpen={true}
-                desc={
-                  <>
-                    An on-chain marketplace where AI agents negotiate, exchange value, and complete protected workflows through smart-contract escrow.
-                  </>
-                }
-              />
-
-              <OperationCard
-                id="OP-081"
-                delay={0.3}
-                title="UPSTART - STARTUP BLUEPRINT ENGINE"
-                tech="Next.js, Node.js, SQLite, Google Gen AI"
-                status="DEPLOYED"
-                statusColor="text-emerald-800"
-                imageUrl="/upstart-mockup.png"
-                githubUrl="https://github.com/MDMOINAKHTARR"
-                liveUrl="#"
-                youtubeUrl="https://youtu.be/mIntn3mUa50?si=7fvye7ZSGPpWbKM6"
-                defaultOpen={true}
-                desc={
-                  <>
-                    An AI generation platform transforming concepts into validated plans and roadmaps using <Highlight style="circle" color="red">Google Generative AI</Highlight>.
-                  </>
-                }
-              />
-
-              <OperationCard 
-                id="OP-109"
-                delay={0.4}
-                title="HALO AI"
-                tech="React, Node.js, Next.js, REST API"
-                status="ACTIVE"
-                statusColor="text-emerald-800"
-                imageUrl="/haloai mockup.png"
-                githubUrl="https://github.com/MDMOINAKHTARR"
-                liveUrl="#"
-                youtubeUrl="https://youtu.be/x34yyyCvm3E?si=KWrS3WjbGiywp3Ai"
-                defaultOpen={true}
-                desc={
-                  <>
-                    A highly responsive workspace assistant pairing modern conversational models with a <Highlight style="squiggly" color="yellow">real-time streaming stream</Highlight>.
-                  </>
-                }
-              />
-
-              <OperationCard
-                id="OP-044"
-                delay={0.5}
-                title="EMOTION-BASED MOVIE RECOMMENDER"
-                tech="Python, DeepFace, OpenCV, MySQL"
-                status="SUCCESS"
-                statusColor="text-emerald-800"
-                imageUrl="https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&q=80&w=1000"
-                githubUrl="https://github.com/MDMOINAKHTARR"
-                defaultOpen={true}
-                desc={
-                  <>
-                    Real-time movie recommendations matching webcam facial responses using <Highlight style="circle" color="green">DeepFace</Highlight> OpenCV analysis.
-                  </>
-                }
-              />
-
-              <OperationCard 
-                id="OP-012"
-                delay={0.6}
-                title="DEVCATION - HACKATHON ENVIRONMENT"
-                tech="Next.js 15, Matter.js, React"
-                status="VERIFIED"
-                statusColor="text-emerald-800"
-                imageUrl="/devacation-mockup.jpg"
-                githubUrl="https://github.com/MDMOINAKHTARR"
-                liveUrl="#"
-                defaultOpen={true}
-                desc={
-                  <>
-                    High-engagement physics engine portfolio site using <Highlight style="marker" color="yellow">Matter.js</Highlight> which secured 1st Place at PromptWars (IGDTUW 2026).
-                  </>
-                }
-              />
-
-              <OperationCard 
-                id="OP-256"
-                delay={0.7}
-                title="CASSENDRA"
-                tech="React, Data Analysis, Next.js, Tailwind"
-                status="VERIFIED"
-                statusColor="text-emerald-800"
-                imageUrl="/cassendra-dashboard.png"
-                githubUrl="https://github.com/MDMOINAKHTARR"
-                liveUrl="#"
-                defaultOpen={true}
-                desc={
-                  <>
-                    High-performance structured dataset analyzer offering live querying and multi-attribute schema <Highlight style="marker" color="red">graph views</Highlight>.
-                  </>
-                }
-              />
-            </div>
           </section>
 
           <div className="border-b border-ink/5 mx-[-20px] mb-2" />
 
-          <section className="pt-0">
-            <div className="mt-8 relative z-10 border-2 border-postit-border border-solid bg-postit-bg p-5 shadow-sm text-center mx-1 cursor-pointer transition-transform active:scale-95" onClick={() => setShowQuoteGif(!showQuoteGif)}>
-              <div className="absolute -top-[14px] left-1/2 -translate-x-1/2 bg-postit-title-bg px-2 text-[10px] font-bold tracking-widest text-ink/60 font-mono flex items-center justify-center">
-                 <div className="h-6 w-[140px] bg-postit-title-bg absolute top-0 -z-10" />
-                 THE SPIDER-NOIR QUOTE
-              </div>
-              <div className="border-l-[3px] border-postit-accent text-[15px] font-typewriter italic tracking-wider leading-relaxed text-left pl-4 py-1 text-ink font-bold">
-                "Am I an extraordinary man? Yes. Am I an ordinary man? Yes. I'm both. I'm neither. But aren't we all?"
-              </div>
-              <div className="text-right mt-4 text-[11px] font-bold text-red-600 tracking-widest font-mono">
-                /\\ SPIDER-NOIR(ME)
-              </div>
-            </div>
-            
-            <AnimatePresence>
-              {showQuoteGif && (
-                <motion.div 
-                  initial={{ height: 0, opacity: 0, scale: 0.95 }}
-                  animate={{ height: "auto", opacity: 1, scale: 1 }}
-                  exit={{ height: 0, opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                  className="flex justify-center relative z-0 pl-1 overflow-hidden pt-4 origin-top pb-4"
-                >
-                  <div className="w-[260px] transform rotate-[2deg] rounded-b border-x border-b border-ink/20 shadow-lg overflow-hidden aspect-video bg-ink/10">
-                    <img src="https://media.tenor.com/XT5Z51WyY8EAAAAC/spiderman-spider-verse.gif" alt="Spider-Noir Quote" className="w-full h-full object-cover pointer-events-none" />
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </section>
-
-          <div className="h-4 border-b border-ink/5 mx-[-20px]" />
-
-          {/* DEPLOYMENT & METRICS STATUS */}
-          <section className="pt-2 pb-0">
-            <h2 className="text-[10px] font-bold tracking-[0.1em] font-mono mb-2 opacity-60 uppercase">Operational Status</h2>
-            <div className="border border-ink/20 bg-ink/[0.02]">
-              <div className="grid grid-cols-2 text-[9px] uppercase tracking-wider divide-x divide-y divide-ink/10 font-mono">
-                <div className="p-2 flex flex-col gap-1">
-                  <span className="opacity-50 font-bold">STATUS</span>
-                  <span className="text-blue-600 font-bold flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
-                    ACTIVE / DEPLOYABLE
-                  </span>
-                </div>
-                <div className="p-2 flex flex-col gap-1">
-                  <span className="opacity-50 font-bold">LOCATION</span>
-                  <span className="font-bold -ml-[6px] flex items-center"><MapPin className="w-3 h-3 text-ink/50 mr-[2px]" strokeWidth={2}/>NEW DELHI, IN</span>
-                </div>
-                
-                <div className="p-2 flex flex-col gap-1 col-span-2">
-                  <span className="opacity-50 font-bold">CONTACT</span>
-                  <span className="font-bold">mohdmoinakhtar081@gmail.com</span>
-                </div>
-                
-                <div className="p-2 flex flex-col gap-1">
-                  <span className="opacity-50 font-bold">LAST ACCESSED</span>
-                  <span className="font-bold">[2026-06-09]</span>
-                </div>
-                <div className="p-2 flex flex-col gap-1">
-                  <span className="opacity-50 font-bold">CASE ID</span>
-                  <span className="font-bold">AX-D4UV4R</span>
-                </div>
-              </div>
-              <div className="bg-ink/5 p-1.5 text-[8px] text-center font-bold tracking-widest text-ink/70 border-t border-ink/10 font-mono uppercase">
-                CENTRAL INTEL REGISTRY
-              </div>
-            </div>
-          </section>
-
           <section>
-            <AnalyticsWidget />
+            <DeferredSection minHeight={220}>
+              <AnalyticsWidget />
+            </DeferredSection>
           </section>
 
-          <section className="mt-8 border-t border-ink/10 pt-8 pb-4">
+          <section className="mt-8 border-t border-ink/10 pt-8 pb-20 sm:pb-4">
             <div className="flex flex-col items-center text-center space-y-4 max-w-sm mx-auto px-2">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-ink text-paper rounded text-[10px] sm:text-xs font-mono tracking-widest font-bold shadow-sm">
                 AI Messaging Hub <span className="text-emerald-400">指</span>
@@ -797,9 +638,35 @@ export function Dossier() {
               <h2 className="text-3xl font-black tracking-tight text-ink font-sans">
                 No Artificial Vibes
               </h2>
-              <p className="text-base font-medium opacity-80 leading-relaxed text-ink text-center max-w-[440px]">
-                Got something to say? Drop your message below, and let's talk artificial intelligence, machine learning, and all things data. No spam, just straight-up analytical vibes. Slide into my DMs on <a href="https://x.com/___moinn_" target="_blank" rel="noreferrer" className="font-bold text-ink hover:text-sky-400 underline decoration-ink/30 underline-offset-2 transition-colors">X/Twitter</a>, <a href="https://www.linkedin.com/in/mdmoinakhtar/" target="_blank" rel="noreferrer" className="font-bold text-ink hover:text-sky-400 underline decoration-ink/30 underline-offset-2 transition-colors">LinkedIn</a>, or drop a line via email.
-              </p>
+              <FocusParagraph
+                sentences={[
+                  "Got something to say?",
+                  "Drop your message below, and let's talk artificial intelligence, machine learning, and all things data.",
+                  "No spam, just straight-up analytical vibes.",
+                  <span>
+                    Slide into my DMs on{" "}
+                    <HoverPreviewLink
+                      href="https://x.com/Moincrafted"
+                      title="Moin Akhtar // @Moincrafted"
+                      domain="x.com"
+                      imageUrl="/twitter banner.jpg"
+                    >
+                      X/Twitter
+                    </HoverPreviewLink>
+                    ,{" "}
+                    <HoverPreviewLink
+                      href="https://www.linkedin.com/in/mdmoinakhtar/"
+                      title="Md Moin Akhtar // LinkedIn"
+                      domain="linkedin.com"
+                      imageUrl="/linkedin banner.jpg"
+                    >
+                      LinkedIn
+                    </HoverPreviewLink>
+                    , or drop a line via email.
+                  </span>,
+                ]}
+                className="text-base font-medium opacity-85 leading-relaxed text-ink text-center max-w-[440px]"
+              />
               <div className="w-full pt-2">
                 <ContactPill />
               </div>
@@ -817,21 +684,21 @@ export function Dossier() {
         <div className="scale-100 sm:scale-[0.65] lg:scale-[0.85] origin-top ml-[-20px] sm:ml-0">
           <TopSecretStamp />
         </div>
-        
+
         {/* Massive confidential watermark */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden opacity-[0.03]">
+        <div aria-hidden="true" className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden opacity-[0.025]">
           <div className="transform -rotate-45 font-stamp text-[150px] leading-none text-ink tracking-widest select-none whitespace-nowrap">
             CONFIDENTIAL
           </div>
         </div>
 
         {/* Massive fingerprint watermark */}
-        <div className="absolute -bottom-20 -left-20 opacity-[0.02] pointer-events-none z-0 mix-blend-multiply transform -rotate-12">
+        <div aria-hidden="true" className="absolute -bottom-20 -left-20 opacity-[0.015] pointer-events-none z-0 mix-blend-multiply transform -rotate-12">
           <Fingerprint strokeWidth={0.5} className="w-[600px] h-[600px] text-ink" />
         </div>
 
         {/* Barcode Graphic */}
-        <div className="absolute top-12 left-6 sm:left-20 flex flex-col gap-1 opacity-60">
+        <div aria-hidden="true" className="absolute top-12 left-6 sm:left-20 flex flex-col gap-1 opacity-35">
           <div className="flex items-end h-8 gap-[2px]">
             <div className="w-1 h-full bg-ink"></div>
             <div className="w-2 h-full bg-ink"></div>
@@ -850,122 +717,223 @@ export function Dossier() {
         {/* Surveillance Timestamp Overlay */}
         <RecTimestamp />
 
-        {/* Attached Photo (Clipped to the Dossier) */}
-        <div className="absolute top-12 -right-2 sm:right-0 lg:right-6 xl:right-10 z-20 flex flex-col items-center">
-          <div className="transform rotate-3 relative group/photo">
-            {/* Paperclip */}
-            <div className="absolute -top-6 left-1/2 -ml-2 w-4 h-12 border-2 border-slate-400 rounded-full bg-transparent shadow-[1px_1px_2px_rgba(0,0,0,0.3)] z-30"></div>
-            <div className="absolute -top-4 left-1/2 ml-1 w-2 h-8 border-[1.5px] border-slate-400 rounded-full bg-transparent z-30"></div>
-            
-            {/* Photo Container */}
-            <div className="song-photo-frame w-[250px] h-[280px] sm:w-[290px] sm:h-[340px] lg:w-[350px] lg:h-[420px] bg-polaroid p-2 pb-6 sm:p-3 sm:pb-10 lg:p-4 lg:pb-12 shadow-[2px_4px_10px_rgba(0,0,0,0.3)] border border-gray-300 transition-all transform-gpu will-change-transform group-hover/photo:rotate-0 group-hover/photo:scale-[1.02] duration-700 ease-out relative z-20">
-              
-              <div className="w-full h-full bg-zinc-800 overflow-hidden relative border border-zinc-700 group/image">
-                 <SubjectPortrait
-                   alt="Subject 8092-AX"
-                   className="song-portrait w-full h-full object-cover relative z-10 transition-transform duration-[420ms] ease-out transform-gpu will-change-transform opacity-100 group-hover/image:scale-[1.05]"
-                   onError={(event) => {
-                     event.currentTarget.style.display = 'none';
-                   }}
-                 />
+        {/* Attached Photo (Clipped to the Dossier) - Interactive 3D Flip Card */}
+        <div className="absolute top-12 -right-2 sm:right-0 lg:right-6 xl:right-10 z-20 flex flex-col items-center -translate-x-10">
+          <div className="perspective-1000 relative">
+            <div
+              onClick={handleCardSequenceClick}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleCardSequenceClick();
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              title={!isPhotoFlipped ? 'Click to reveal alter-ego' : 'Click to flip back to portrait'}
+              aria-label={
+                !isPhotoFlipped
+                  ? 'Portrait photo. Click to flip and reveal Spider-Noir alter-ego.'
+                  : 'Spider-Noir alter-ego and quote. Click to flip back to portrait.'
+              }
+              className={`relative cursor-pointer transition-transform duration-700 ease-[cubic-bezier(0.34,1.2,0.64,1)] transform-style-3d will-change-transform ${isPhotoFlipped ? 'rotate-y-180 -rotate-1' : 'rotate-3'
+                } w-[260px] h-[320px] sm:w-[285px] sm:h-[365px] lg:w-[320px] lg:h-[410px]`}
+            >
+              {/* ========================================= */}
+              {/* FRONT FACE: Polaroid Photo */}
+              {/* ========================================= */}
+              <div className="absolute inset-0 backface-hidden bg-polaroid p-2 pb-6 sm:p-3 sm:pb-9 lg:p-4 lg:pb-11 shadow-[2px_6px_18px_rgba(0,0,0,0.32)] border border-gray-300 rounded-[2px] flex flex-col z-20">
+                {/* Paperclip front wire */}
+                <div className="absolute -top-5 left-1/2 -ml-2 w-4 h-12 border-2 border-slate-400 rounded-full bg-transparent shadow-[1px_1px_2px_rgba(0,0,0,0.3)] z-30 pointer-events-none"></div>
+                <div className="absolute -top-3 left-1/2 ml-1 w-2 h-8 border-[1.5px] border-slate-400 rounded-full bg-transparent z-30 pointer-events-none"></div>
 
-                 {/* Photo stays normal */}
-                 
-                 {/* Song visuals take over the portrait for image assets (videos play on the CRT TV). */}
+                {/* Photo Image Area with Grained Gradient Black & White Effect */}
+                <div
+                  onMouseMove={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    setLensPos({
+                      x: e.clientX - rect.left,
+                      y: e.clientY - rect.top,
+                      active: true,
+                    });
+                  }}
+                  onMouseEnter={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    setLensPos({
+                      x: e.clientX - rect.left,
+                      y: e.clientY - rect.top,
+                      active: true,
+                    });
+                  }}
+                  onMouseLeave={() => {
+                    setLensPos((prev) => ({ ...prev, active: false }));
+                  }}
+                  className="w-full flex-1 bg-zinc-800 overflow-hidden relative border border-zinc-700 select-none cursor-default"
+                >
+                  {/* Normal Color Portrait Base */}
+                  <SubjectPortrait
+                    alt="Subject 8092-AX"
+                    className="song-portrait w-full h-full object-cover relative z-10 opacity-100"
+                    onError={(event) => {
+                      event.currentTarget.style.display = 'none';
+                    }}
+                  />
+
+                  {/* Song visuals take over the portrait for image assets (videos play on the CRT TV). */}
                   {songVisual && !isCrtTvTrack ? (
                     <SongThemeOverlay key={songVisual.src} visual={songVisual} onRevealPortrait={revealPortrait} />
                   ) : (
                     showGif && !isMobileViewport && <SpiderNoirThemeOverlay fading={gifFading} />
                   )}
 
-                 {/* Surveillance UI Overlay */}
-                 <div className="absolute inset-0 z-20 pointer-events-none p-1 flex flex-col justify-between opacity-80 group-hover/image:opacity-100 transition-opacity duration-700 ease-out">
+                  {/* Monochrome film-grain region with liquid (delayed) follow: mask-position eases toward the cursor, never resets */}
+                  <div
+                    className="absolute inset-0 z-15 pointer-events-none overflow-hidden"
+                    style={{
+                      maskImage: lensGrad,
+                      WebkitMaskImage: lensGrad,
+                      maskSize: '310px 310px',
+                      WebkitMaskSize: '310px 310px',
+                      maskPosition: `${lensPos.x - 155}px ${lensPos.y - 155}px`,
+                      WebkitMaskPosition: `${lensPos.x - 155}px ${lensPos.y - 155}px`,
+                      maskRepeat: 'no-repeat',
+                      WebkitMaskRepeat: 'no-repeat',
+                      filter: 'grayscale(1) contrast(1.12) brightness(1.03)',
+                      opacity: lensPos.active ? 1 : 0,
+                      transition: 'mask-position 0.5s cubic-bezier(0.22, 1, 0.36, 1), -webkit-mask-position 0.5s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                    }}
+                  >
+                    <SubjectPortrait
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                    {songVisual && !isCrtTvTrack && (
+                      <SongThemeOverlay key={`noir-lens-${songVisual.src}`} visual={songVisual} onRevealPortrait={revealPortrait} />
+                    )}
+                    {/* Static 35mm film grain, seeps in slightly after the monochrome layer */}
+                    <div
+                      className="film-grain pointer-events-none"
+                      style={{
+                        opacity: lensPos.active ? 0.5 : 0,
+                        transition: 'opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.12s',
+                      }}
+                    />
+                  </div>
+
+                  {/* Surveillance UI Corner Brackets */}
+                  <div className="absolute inset-0 z-20 pointer-events-none p-1 flex flex-col justify-between opacity-80">
                     <div className="flex justify-between items-start">
-                       <div className="w-2 h-2 border-t-[1.5px] border-l-[1.5px] border-red-500/80"></div>
-                       <div className="w-2 h-2 border-t-[1.5px] border-r-[1.5px] border-red-500/80"></div>
-                    </div>
-                    {/* Crosshair */}
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/image:opacity-100 transition-all duration-700 ease-out scale-150 group-hover/image:scale-100">
-                       <div className="w-full h-[1px] bg-red-500/30 absolute top-1/2"></div>
-                       <div className="w-[1px] h-full bg-red-500/30 absolute left-1/2"></div>
-                       <div className="w-6 h-6 border border-red-500/60 rounded-full flex items-center justify-center">
-                         <div className="w-1 h-1 bg-red-500/80 rounded-full"></div>
-                       </div>
+                      <div className="w-2 h-2 border-t-[1.5px] border-l-[1.5px] border-red-500/80"></div>
+                      <div className="w-2 h-2 border-t-[1.5px] border-r-[1.5px] border-red-500/80"></div>
                     </div>
                     <div className="flex justify-between items-end">
-                       <div className="w-2 h-2 border-b-[1.5px] border-l-[1.5px] border-red-500/80"></div>
-                       <div className="w-2 h-2 border-b-[1.5px] border-r-[1.5px] border-red-500/80"></div>
+                      <div className="w-2 h-2 border-b-[1.5px] border-l-[1.5px] border-red-500/80"></div>
+                      <div className="w-2 h-2 border-b-[1.5px] border-r-[1.5px] border-red-500/80"></div>
                     </div>
-                 </div>
+                  </div>
 
-                 {/* Fallback silhouette if image fails to load */}
-                 <div className="absolute inset-0 flex items-end justify-center pointer-events-none opacity-30">
-                   <svg viewBox="0 0 24 24" fill="currentColor" className="w-20 h-20 text-white">
-                     <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                   </svg>
-                 </div>
-                 <div className="absolute inset-0 bg-ink/5 mix-blend-overlay"></div>
-              </div>
-              <div className="absolute bottom-1 w-full text-center left-0 font-typewriter text-[8px] sm:text-[9px] lg:text-[11px] text-ink/70 tracking-widest mt-1 group-hover/photo:text-red-700 transition-colors duration-700 ease-out">
-                TARGET // LOCKED
-              </div>
-            </div>
-          </div>
-          
-          {/* Spider-Noir Quote Note under the image */}
-          <div className="mt-8 ml-4 w-[240px] sm:w-[280px] lg:w-[320px] bg-paper shadow-[3px_6px_12px_rgba(0,0,0,0.3)] border-[2px] border-folder-dark/30 transform -rotate-3 relative transition-all duration-700 ease-out hover:scale-[1.02] active:scale-[0.98] z-30 p-4 sm:p-5 lg:p-6 cursor-pointer" onClick={() => setShowQuoteGif(!showQuoteGif)}>
-            {/* Top Tape */}
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-16 sm:w-20 h-5 sm:h-6 bg-tape opacity-90 rotate-[-5deg] shadow-[1px_2px_3px_rgba(0,0,0,0.15)] transition-colors duration-500 ease-out z-10" />
-            
-            <div className="font-typewriter text-[11px] sm:text-xs lg:text-sm tracking-wide leading-[1.6] text-ink font-bold transition-colors relative z-10 border-l-[3px] border-ink/40 pl-3">
-              "Am I an extraordinary man? Yes. Am I an ordinary man? Yes. I'm both. I'm neither. But aren't we all?"
-            </div>
-            
-            <div className="mt-4 pt-3 border-t border-ink/20 flex gap-2 justify-end items-center relative z-10">
-               <div className="flex gap-0.5 opacity-80">
-                  <div className="w-0.5 h-3 bg-red-600 transform rotate-[15deg] transition-all duration-500"></div>
-                  <div className="w-0.5 h-3 bg-red-600 transform -rotate-[15deg] transition-all duration-500"></div>
-               </div>
-               <div className="text-[10px] sm:text-[11px] lg:text-xs uppercase tracking-[0.15em] font-stamp text-stamp font-bold transition-colors duration-500">
-                 Spider-Noir
-               </div>
-            </div>
-          </div>
-          
-          <AnimatePresence>
-            {showQuoteGif && (
-              <motion.div 
-                initial={{ opacity: 0, y: -20, rotate: -3 }}
-                animate={{ opacity: 1, y: 0, rotate: 6 }}
-                exit={{ opacity: 0, y: -20, rotate: -3 }}
-                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                className="absolute top-full -mt-6 mt-[-10px] w-[240px] sm:w-[280px] lg:w-[320px] z-10 origin-top overflow-hidden pt-12 translate-x-4 sm:translate-x-10 pointer-events-none"
-              >
-                <div className="w-full border-x-2 border-b-2 border-slate-300 shadow-xl overflow-hidden aspect-[16/9] bg-ink/10">
-                  <img src="https://media.tenor.com/XT5Z51WyY8EAAAAC/spiderman-spider-verse.gif" alt="Spider-Noir Quote" className="w-full h-full object-cover" />
+                  {/* Fallback silhouette if image fails to load */}
+                  <div className="absolute inset-0 flex items-end justify-center pointer-events-none opacity-30">
+                    <svg viewBox="0 0 24 24" fill="currentColor" className="w-20 h-20 text-white">
+                      <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                    </svg>
+                  </div>
+                  <div className="absolute inset-0 bg-ink/5 mix-blend-overlay"></div>
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+
+                {/* Bottom Polaroid Border Label */}
+                <div className="mt-2 sm:mt-2.5 flex items-center px-1">
+                  <span className="font-typewriter text-[8px] sm:text-[9px] lg:text-[10px] text-ink/70 tracking-widest">
+                    TARGET // LOCKED
+                  </span>
+                </div>
+
+                {/* Tactile Curled Paper Corner */}
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute bottom-0 right-0 w-7 h-7 overflow-hidden"
+                >
+                  <span className="absolute bottom-0 right-0 w-7 h-7 bg-gradient-to-tl from-stone-400/45 via-polaroid to-white border-t border-l border-ink/20 shadow-[-2px_-2px_5px_rgba(0,0,0,0.16)] [clip-path:polygon(100%_0,0_100%,100%_100%)]" />
+                </span>
+              </div>
+
+              {/* ========================================= */}
+              {/* BACK FACE: Alter-Ego Polaroid (GIF + Quote) */}
+              {/* ========================================= */}
+              <div className="absolute inset-0 backface-hidden rotate-y-180 bg-polaroid p-2.5 pb-3 sm:p-3.5 sm:pb-4 shadow-[2px_6px_18px_rgba(0,0,0,0.32),inset_0_0_20px_rgba(0,0,0,0.06)] border border-gray-300 rounded-[2px] flex flex-col z-20 text-ink select-none">
+                {/* Paperclip back wire */}
+                <div className="absolute -top-3 left-1/2 -ml-1 w-3.5 h-10 border-2 border-slate-400 rounded-full bg-transparent z-30 pointer-events-none"></div>
+
+                {/* Alter-Ego Polaroid Photo Window (Spider-Noir GIF) */}
+                <div className="relative flex-1 min-h-0 w-full bg-black border border-ink/50 overflow-hidden">
+                  <img
+                    src="https://media.tenor.com/XT5Z51WyY8EAAAAC/spiderman-spider-verse.gif"
+                    alt="Spider-Noir Scene"
+                    className="w-full h-full object-cover contrast-105"
+                  />
+                  <div
+                    className="pointer-events-none absolute inset-0"
+                    style={{
+                      background:
+                        'radial-gradient(circle, transparent 52%, rgba(0,0,0,0.52) 100%)',
+                    }}
+                  />
+                </div>
+
+                {/* Bottom Polaroid Caption Area: Quote + Hand-Underlined Attribution */}
+                <div className="shrink-0 pt-2.5 sm:pt-3 px-1 flex flex-col gap-1.5">
+                  <p className="font-typewriter text-[9.5px] sm:text-[10.5px] lg:text-[11px] leading-[1.48] font-bold italic text-ink/90 border-l-2 border-red-700/85 pl-2.5">
+                    &ldquo;Am I an extraordinary man? Yes. Am I an ordinary man? Yes. I&apos;m both. I&apos;m neither. But aren&apos;t we all?&rdquo;
+                  </p>
+                  <div className="flex items-center justify-between pt-0.5">
+                    <span className="relative inline-block font-stamp text-[9.5px] sm:text-[10.5px] text-red-700 tracking-[0.14em] font-black uppercase pb-1">
+                      — Spider-Noir
+                      <svg
+                        aria-hidden="true"
+                        viewBox="0 0 110 8"
+                        className="pointer-events-none absolute left-0 bottom-0 w-full h-1.5 text-red-700/75"
+                        fill="none"
+                      >
+                        <path
+                          d="M2 5.5 Q35 1.5 72 4.5 T108 3"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                    </span>
+                    <span className="font-mono text-[10px] text-ink/45 font-bold" aria-hidden="true">
+                      ↺
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="mt-[120px] sm:mt-[160px] lg:mt-0 lg:pr-[380px] xl:pr-[460px] relative z-10 w-full max-w-[1200px]">
           {/* Classification Header */}
-          <div className="mt-2 lg:mt-6 mb-8 lg:mb-10 flex flex-col sm:flex-row sm:justify-between sm:items-end border-b-[3px] border-ink/20 pb-2 gap-2">
-            <Typewriter delay={0.1} className="text-sm sm:text-[11px] md:text-xs tracking-tight font-bold opacity-80">
-              FILE NO. ENR-06717711923 · DELHI DIVISION
-            </Typewriter>
-            <Typewriter delay={0.2} className="text-sm sm:text-[11px] md:text-xs tracking-tight font-bold opacity-80">
-              ID: MMA-2026 · PAGE 1/4
-            </Typewriter>
-          </div>
+          <div className="mt-2 lg:mt-6 mb-4 lg:mb-6 border-b-[3px] border-ink/20" />
 
           {/* Data Fields */}
           <div className="space-y-6 sm:space-y-8 text-sm sm:text-base leading-relaxed">
-            
+
             <div className="grid grid-cols-[100px_1fr] sm:grid-cols-[140px_1fr] items-baseline gap-2">
               <Typewriter delay={0.4} className="font-bold opacity-60 tracking-wider text-sm sm:text-base">NAME:</Typewriter>
-              <Typewriter delay={0.5} className="font-bold text-2xl sm:text-3xl uppercase tracking-widest px-1">MD MOIN AKHTAR</Typewriter>
+              <Typewriter delay={0.5} className="px-1">
+                <Lettering
+                  as="h1"
+                  size="md"
+                  tone="marker"
+                  wobble={0.35}
+                  seed="moin-name-desktop"
+                  style={{ ['--ll-marker' as string]: '#fba368', ['--ll-riso' as string]: '#fba368' }}
+                  className="font-bold whitespace-nowrap text-xl sm:text-2xl md:text-3xl lg:text-[2.35rem] tracking-tight uppercase leading-none text-ink inline-block font-script"
+                >
+                  MD MOIN AKHTAR
+                </Lettering>
+              </Typewriter>
             </div>
 
             <div className="grid grid-cols-[100px_1fr] sm:grid-cols-[140px_1fr] items-baseline gap-2">
@@ -975,37 +943,32 @@ export function Dossier() {
 
             <div className="grid grid-cols-[100px_1fr] sm:grid-cols-[140px_1fr] items-baseline gap-2">
               <Typewriter delay={0.8} className="font-bold opacity-60 tracking-wider text-sm sm:text-base">AFFILIATION:</Typewriter>
-              <Typewriter delay={0.9}><Highlight style="circle" color="red" className="uppercase font-bold text-base sm:text-lg">VIPS-TC (B.Tech AI & Data Science, CGPA: 8.03)</Highlight></Typewriter>
-            </div>
-
-            <div className="grid grid-cols-[100px_1fr] sm:grid-cols-[140px_1fr] items-baseline gap-2">
-              <Typewriter delay={0.95} className="font-bold opacity-60 tracking-wider text-sm sm:text-base">LEADERSHIP:</Typewriter>
-              <Typewriter delay={0.98}><Highlight style="squiggly" color="yellow" className="uppercase font-bold text-base sm:text-lg pl-1">Core Member  - Cluster Data Science Club</Highlight></Typewriter>
+              <Typewriter delay={0.9}><span className="uppercase font-bold text-base sm:text-lg">VIPS-TC (B.Tech AI &amp; Data Science, CGPA: 8.27)</span></Typewriter>
             </div>
 
             <div className="grid grid-cols-[100px_1fr] sm:grid-cols-[140px_1fr] items-baseline gap-2">
               <Typewriter delay={1.0} className="font-bold opacity-60 tracking-wider text-xs sm:text-sm">PRIMARY SKILL:</Typewriter>
               <Typewriter delay={1.1} className="leading-7 text-sm sm:text-base">
-                Subject demonstrates extreme proficiency in <Highlight style="circle" color="yellow">React, TypeScript</Highlight>, and <Highlight style="underline" color="green">Python</Highlight> for AI implementation. Known capable of neutralizing <Highlight style="marker" color="pink">complex AI-integration</Highlight> with high efficiency.
+                Subject demonstrates extreme proficiency in <Highlight style="circle" color="yellow">React, TypeScript</Highlight>, and <strong className="font-bold">Python</strong> for AI implementation. Known capable of architecting <strong className="font-bold">complex AI-integration</strong> with high efficiency.
               </Typewriter>
             </div>
 
             <div className="grid grid-cols-[100px_1fr] sm:grid-cols-[140px_1fr] items-baseline gap-2">
               <Typewriter delay={1.4} className="font-bold opacity-60 tracking-wider text-xs sm:text-sm">SECONDARY:</Typewriter>
               <Typewriter delay={1.5} className="leading-7 text-sm sm:text-base">
-                Operational capacity extends into <Highlight style="marker" color="yellow">Machine Learning</Highlight>, <Highlight style="circle" color="blue">OpenCV / AI Agents</Highlight>, and <Highlight style="underline" color="red">Backend Architecture</Highlight> (Node.js/Express/Neo4j). History of success in highly competitive <Highlight style="squiggly" color="pink">Hackathon Environments</Highlight>.
+                Operational capacity extends into <strong className="font-bold">Machine Learning</strong>, <strong className="font-bold">OpenCV / AI Agents</strong>, and <strong className="font-bold">Backend Architecture</strong> (Node.js/Express/Neo4j). History of success in highly competitive <Highlight style="squiggly" color="pink">Hackathon Environments</Highlight>.
               </Typewriter>
             </div>
 
             <div className="grid grid-cols-[100px_1fr] sm:grid-cols-[140px_1fr] items-baseline gap-2">
               <Typewriter delay={1.8} className="font-bold opacity-60 tracking-wider text-xs sm:text-sm">OBJECTIVE:</Typewriter>
               <Typewriter delay={1.9} className="leading-7 text-[15px] sm:text-[17px] font-bold text-ink">
-                Tasked with engineering <Highlight style="underline" color="green">intelligent analytical platforms</Highlight> and executing <Highlight style="squiggly" color="blue">seamless digital experiences</Highlight>. Currently reported to be <Highlight style="marker" color="yellow">developing scalable AI models and agents</Highlight>.
+                Tasked with engineering intelligent analytical platforms and executing seamless digital experiences. Currently reported to be developing scalable AI models and agents.
               </Typewriter>
             </div>
 
           </div>
-          
+
           <div className="mt-8 lg:mt-12 pt-6 border-t-[3px] border-ink/20">
             <div className="grid grid-cols-[100px_1fr] sm:grid-cols-[140px_1fr] items-baseline gap-2">
               <Typewriter delay={2.1} className="font-bold opacity-60 tracking-wider">STATUS:</Typewriter>
@@ -1017,49 +980,38 @@ export function Dossier() {
                   <span className="opacity-50 inline-block w-28 text-xs sm:text-sm">VERIFICATION:</span> ACTIVE / DEPLOYABLE
                 </Typewriter>
                 <Typewriter delay={2.6}>
-                  <span className="opacity-50 inline-block w-28 text-xs sm:text-sm">CONTACT:</span> <Highlight>mohdmoinakhtar081@gmail.com</Highlight>
+                  <span className="opacity-50 inline-block w-28 text-xs sm:text-sm">CONTACT:</span>{' '}
+                  <a href="mailto:mohdmoinakhtar081@gmail.com" className="hover:underline font-bold">
+                    <Highlight>mohdmoinakhtar081@gmail.com</Highlight>
+                  </a>
                 </Typewriter>
+
+                <div className="flex flex-wrap items-center gap-3 pt-3">
+                  <a
+                    href="/MdMoinAkhtar_Resume.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => audioEngine.playClick()}
+                    className="inline-flex items-center gap-2 bg-stamp hover:bg-red-800 text-white font-mono text-xs font-black uppercase tracking-[0.15em] px-4 py-2 rounded-xs border border-ink/30 shadow-[3px_3px_0_rgba(0,0,0,0.25)] transition-transform hover:-translate-y-0.5"
+                  >
+                    <FileText className="w-3.5 h-3.5" />
+                    <span>DOWNLOAD RESUME.PDF</span>
+                  </a>
+                  <a
+                    href="mailto:mohdmoinakhtar081@gmail.com"
+                    onClick={() => audioEngine.playClick()}
+                    className="inline-flex items-center gap-2 bg-paper hover:bg-folder/40 text-ink font-mono text-xs font-black uppercase tracking-[0.15em] px-4 py-2 rounded-xs border-2 border-ink/50 shadow-[3px_3px_0_rgba(0,0,0,0.18)] transition-transform hover:-translate-y-0.5"
+                  >
+                    <Mail className="w-3.5 h-3.5" />
+                    <span>DIRECT DISPATCH (EMAIL)</span>
+                  </a>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {showDataScienceCert && typeof document !== 'undefined' && createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 pb-20 sm:pb-6 bg-ink/80 backdrop-blur-sm" onClick={() => setShowDataScienceCert(false)}>
-          <div className="relative w-full max-w-4xl max-h-[85vh] bg-paper shadow-2xl flex flex-col z-10 animate-in fade-in zoom-in duration-200" onClick={(e) => e.stopPropagation()}>
-            <div className="flex justify-between items-center bg-ink text-paper p-3 shrink-0">
-               <span className="font-mono text-xs uppercase tracking-widest font-bold">SECURE VIEWER // [ENCRYPTED DATA]</span>
-               <button onClick={() => setShowDataScienceCert(false)} className="hover:bg-paper/20 p-1 transition-colors">
-                 <X className="w-5 h-5" />
-               </button>
-            </div>
-            <div className="flex-1 w-full bg-zinc-200 relative overflow-hidden flex items-center justify-center p-4">
-               <img src="/DATA SCIENCE FOUNDATIONS (2024).jpeg" alt="Data Science Foundations Certificate" className="max-w-full max-h-[75vh] object-contain shadow-md" />
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
-
-      {showUltimateCert && typeof document !== 'undefined' && createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 pb-20 sm:pb-6 bg-ink/80 backdrop-blur-sm" onClick={() => setShowUltimateCert(false)}>
-          <div className="relative w-full max-w-4xl h-[85vh] bg-paper shadow-2xl flex flex-col z-10 animate-in fade-in zoom-in duration-200" onClick={(e) => e.stopPropagation()}>
-            <div className="flex justify-between items-center bg-ink text-paper p-3 shrink-0">
-               <span className="font-mono text-xs uppercase tracking-widest font-bold">SECURE VIEWER // [ENCRYPTED DATA]</span>
-               <button onClick={() => setShowUltimateCert(false)} className="hover:bg-paper/20 p-1 transition-colors">
-                 <X className="w-5 h-5" />
-               </button>
-            </div>
-            <div className="flex-1 w-full bg-zinc-200 relative overflow-hidden flex items-center justify-center">
-               <Suspense fallback={<SecureViewerFallback />}>
-                 <PdfViewer url="/The_Ultimate_Job_Ready_Data_Science_Course_Certificate.pdf" />
-               </Suspense>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
     </PageTransition>
   );
 }
@@ -1079,14 +1031,6 @@ function SubjectPortrait({
       <source srcSet="/portrait.webp" type="image/webp" />
       <img src="/portrait.jpg" alt={alt} className={className} loading="eager" decoding="async" onError={onError} />
     </picture>
-  );
-}
-
-function SecureViewerFallback() {
-  return (
-    <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-zinc-200 p-8 font-mono text-zinc-700">
-      <span className="text-[10px] font-black tracking-[0.22em] opacity-60">Loading viewer…</span>
-    </div>
   );
 }
 
@@ -1173,7 +1117,7 @@ function SongThemeOverlay({ visual, onRevealPortrait }: { visual: MusicVisual; o
       <div className="absolute inset-0 z-20 bg-ink/10 mix-blend-overlay" />
       {visual.type === 'video' ? (
         <video
-          src={visual.src}
+          src={getEffectiveVideoSrc(visual.src, visual.fallbackSrc)}
           className={mediaClassName}
           style={mediaStyle}
           autoPlay
@@ -1189,7 +1133,10 @@ function SongThemeOverlay({ visual, onRevealPortrait }: { visual: MusicVisual; o
             }
           }}
           onEnded={(event) => handleVideoEnded(event.currentTarget)}
-          onError={() => {
+          onError={(event) => {
+            if (tryVideoFallback(event.currentTarget, visual.src, visual.fallbackSrc)) {
+              return;
+            }
             onRevealPortrait();
             setIsVisible(false);
           }}
