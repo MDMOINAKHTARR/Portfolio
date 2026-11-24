@@ -8,7 +8,7 @@
 ![Publication](https://img.shields.io/badge/Research-IEEE_Xplore-00629b?style=flat-square)
 ![Location](https://img.shields.io/badge/Location-New_Delhi%2C_India-4b5563?style=flat-square)
 
-[Portfolio Website](https://github.com/MDMOINAKHTARR/Portfolio) · [LinkedIn](https://linkedin.com/in/mdmoinakhtar) · [GitHub](https://github.com/MDMOINAKHTARR) · [X (Twitter)](https://x.com/___moinn_) · [Email](mailto:mohdmoinakhtar081@gmail.com)
+[Portfolio Website](https://github.com/MDMOINAKHTARR/Portfolio) · [LinkedIn](https://linkedin.com/in/mdmoinakhtar) · [GitHub](https://github.com/MDMOINAKHTARR) · [X (Twitter)](https://x.com/Moincrafted) · [Email](mailto:mohdmoinakhtar081@gmail.com)
 
 ---
 
@@ -110,5 +110,5 @@ npm run dev
 - **Email:** [mohdmoinakhtar081@gmail.com](mailto:mohdmoinakhtar081@gmail.com)
 - **LinkedIn:** [linkedin.com/in/mdmoinakhtar](https://linkedin.com/in/mdmoinakhtar)
 - **GitHub:** [github.com/MDMOINAKHTARR](https://github.com/MDMOINAKHTARR)
-- **X (Twitter):** [@___moinn_](https://x.com/___moinn_)
+- **X (Twitter):** [@Moincrafted](https://x.com/Moincrafted)
 - **Location:** New Delhi, India
