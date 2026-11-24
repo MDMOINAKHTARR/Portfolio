@@ -8,6 +8,7 @@ import type {
   ConversationMessage,
   GeminiDossierResponse,
   VisitorLens,
+  buildDossierPromptContext as buildDossierPromptContextType,
 } from '../src/lib/geminiDossierAi';
 
 const SERVER_RATE_WINDOW_MS = 60_000;
@@ -42,9 +43,17 @@ export async function generateDossierChatReply(options: {
     options.history || [],
     options.routeContext,
     options.lens
-  );
-  const { baseRag, followUps, abuseRefusal, systemPrompt, contents, temperature, fallbackAnswer, mode } =
-    ctx;
+  ) as ReturnType<typeof buildDossierPromptContextType>;
+  const {
+    baseRag,
+    followUps,
+    abuseRefusal,
+    systemPrompt,
+    contents,
+    temperature,
+    fallbackAnswer,
+    mode,
+  } = ctx;
 
   if (options.clientIp && !checkServerRateLimit(options.clientIp)) {
     return {
