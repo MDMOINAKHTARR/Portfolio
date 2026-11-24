@@ -1,23 +1,40 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Github, Linkedin, Code2, FileText, Link as LinkIcon } from 'lucide-react';
 import { FaXTwitter } from 'react-icons/fa6';
 import { audioEngine } from '../lib/audio';
 
 const SOCIAL_LINKS = [
-  { id: 'resume', label: 'RESUME[CV]', stamp: 'REF', icon: FileText, url: '/MdMoinAkhtar.pdf' },
+  { id: 'resume', label: 'RESUME.PDF', stamp: 'REF', icon: FileText, url: '/MdMoinAkhtar_Resume.pdf' },
   { id: 'linkedin', label: 'LINKEDIN', stamp: 'NET', icon: Linkedin, url: 'https://www.linkedin.com/in/mdmoinakhtar/' },
   { id: 'github', label: 'GITHUB', stamp: 'GIT', icon: Github, url: 'https://github.com/MDMOINAKHTARR' },
   { id: 'leetcode', label: 'LEETCODE', stamp: 'LTC', icon: Code2, url: 'https://leetcode.com/u/__moinn_/' },
-  { id: 'x', label: 'X-COMMS', stamp: 'COM', icon: FaXTwitter, url: 'https://x.com/___moinn_' },
+  { id: 'x', label: 'X-COMMS', stamp: 'COM', icon: FaXTwitter, url: 'https://x.com/Moincrafted' },
 ];
 
 export function SocialSidebar() {
+  const [footerVisible, setFooterVisible] = useState(() =>
+    typeof document !== 'undefined' && document.documentElement.classList.contains('footer-in-view')
+  );
+
+  useEffect(() => {
+    const onFooterVisibility = (e: Event) => {
+      const visible = Boolean((e as CustomEvent<boolean>).detail);
+      setFooterVisible(visible);
+    };
+    window.addEventListener('footer-visibility', onFooterVisibility);
+    return () => window.removeEventListener('footer-visibility', onFooterVisibility);
+  }, []);
+
   const handleHover = () => {
      audioEngine.playClick();
   };
 
   return (
-    <div className="hidden sm:flex fixed right-0 top-1/3 flex-col items-end gap-3 z-[85] pointer-events-none">
+    <div
+      className={`hidden sm:flex fixed right-0 top-1/3 flex-col items-end gap-3 z-[85] pointer-events-none transition-all duration-300 ease-out ${
+        footerVisible ? 'opacity-0 translate-x-16 invisible' : 'opacity-100 translate-x-0 visible'
+      }`}
+    >
       {SOCIAL_LINKS.map((link, index) => (
         <a
           key={link.id}

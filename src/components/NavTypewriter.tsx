@@ -76,9 +76,9 @@ export function NavTypewriter({
   }, [text, delay, speed]);
 
   return (
-    <span className="relative inline-flex items-center justify-center">
+    <span className="relative inline-flex items-center justify-center" aria-label={text}>
       <span className="opacity-0 select-none pointer-events-none" aria-hidden="true">{text}</span>
-      <span className="absolute inset-0 flex items-center justify-center whitespace-nowrap">
+      <span className="absolute inset-0 flex items-center justify-center whitespace-nowrap" aria-hidden="true">
         <span>
           {displayedText}
           {isTyping && <span className="bg-ink w-[4px] h-[10px] inline-block ml-[1px] translate-y-[-1px] opacity-70 animate-pulse" />}

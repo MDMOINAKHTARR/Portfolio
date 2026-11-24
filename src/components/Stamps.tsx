@@ -1,13 +1,21 @@
 import { Paperclip } from './Paperclip';
 
-export function TopSecretStamp({ text = "VERIFIED PORTFOLIO" }: { text?: string }) {
-  const isDefault = text === "VERIFIED PORTFOLIO" || text === "SKILLS" || text === "SKILLS & CERTIFICATES";
+export function TopSecretStamp({ 
+  text = "VERIFIED PORTFOLIO",
+  className
+}: { 
+  text?: string;
+  className?: string;
+}) {
+  const isDefault = text === "VERIFIED PORTFOLIO" || text === "SKILLS" || text === "SKILLS & CERTIFICATES" || text === "OPERATIONS" || text === "OPERATIONS & PROJECTS" || text === "PROJECTS";
   const textClasses = isDefault 
     ? "text-lg sm:text-[24px] md:text-[28px] lg:text-[40px] tracking-[0.2em]" 
     : "text-sm sm:text-lg md:text-[20px] lg:text-[28px] whitespace-nowrap tracking-[0.1em] sm:tracking-[0.15em]";
 
+  const defaultWrapper = "w-full flex justify-center sm:justify-start sm:pl-6 md:pl-12 lg:pl-[60px] xl:pl-[80px] pointer-events-none mb-4 sm:mb-2 -mt-2 sm:-mt-4 relative z-10 opacity-[0.95]";
+
   return (
-    <div className="w-full flex justify-center sm:justify-start sm:pl-6 md:pl-12 lg:pl-[60px] xl:pl-[80px] pointer-events-none mb-4 sm:mb-2 -mt-2 sm:-mt-4 relative z-10 opacity-[0.95]">
+    <div className={className ?? defaultWrapper}>
       <div className="relative inline-block transform -rotate-[2deg]">
         <Paperclip className="top-[-26px] left-[-8px] sm:top-[-36px] sm:left-[-12px] transform rotate-[10deg] scale-75 sm:scale-100 z-20" />
         

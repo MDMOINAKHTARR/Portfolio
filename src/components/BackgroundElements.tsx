@@ -2,6 +2,7 @@ import React, { type CSSProperties } from 'react';
 import { motion } from 'motion/react';
 import { useTheme } from '../context/ThemeContext';
 import { MUSIC_THEME_ARTWORK, type MusicTheme } from '../lib/music';
+import { slipDeskBackground } from '../lib/ink/textures';
 
 type ArtworkPieceKind = 'building' | 'flower' | 'roller' | 'chrome' | 'cape' | 'cloud' | 'crystal' | 'hero';
 type ArtworkMotion = 'float-a' | 'float-b' | 'tilt' | 'sway' | 'pulse' | 'rush-left' | 'rush-right' | 'flutter' | 'drift' | 'glint' | 'hero-flight';
@@ -30,13 +31,11 @@ const THEME_ARTWORK_PIECES: Record<MusicTheme, readonly ArtworkPiece[]> = {
     { id: 'dream-building-southeast', kind: 'building', motion: 'float-a', x: 58, y: 61, width: 42, height: 39, duration: 5.6, delay: -3.9, origin: '78% 100%' },
   ],
   sunflower: [
-    { id: 'sunflower-left-large', kind: 'flower', motion: 'sway', x: 0, y: 37, width: 24, height: 37, duration: 4.9, delay: -1.5, origin: '42% 88%' },
-    { id: 'sunflower-right-large', kind: 'flower', motion: 'sway', x: 77, y: 40, width: 23, height: 39, duration: 5.7, delay: -3.1, origin: '60% 92%' },
-    { id: 'sunflower-right-small', kind: 'flower', motion: 'pulse', x: 67, y: 69, width: 22, height: 31, duration: 4.5, delay: -2.4, origin: '55% 90%' },
-    { id: 'sunflower-roller-top', kind: 'roller', motion: 'tilt', x: 0, y: 0, width: 24, height: 35, duration: 4.2, delay: -1.8, origin: '20% 65%' },
-    { id: 'sunflower-roller-bottom', kind: 'roller', motion: 'float-b', x: 73, y: 72, width: 27, height: 28, duration: 5.3, delay: -3.6, origin: '75% 82%' },
-    { id: 'sunflower-city-west', kind: 'building', motion: 'float-a', x: 0, y: 9, width: 19, height: 35, duration: 6.3, delay: -4.2, origin: '0% 70%' },
-    { id: 'sunflower-city-south', kind: 'building', motion: 'float-b', x: 22, y: 62, width: 29, height: 38, duration: 7.1, delay: -2.9, origin: '50% 100%' },
+    { id: 'sunflower-top-left', kind: 'flower', motion: 'sway', x: 0, y: 0, width: 23, height: 42, duration: 5.2, delay: -1.4, origin: '18% 22%' },
+    { id: 'sunflower-bottom-left', kind: 'flower', motion: 'sway', x: 0, y: 62, width: 25, height: 38, duration: 5.6, delay: -2.8, origin: '22% 88%' },
+    { id: 'sunflower-bottom-right', kind: 'flower', motion: 'sway', x: 82, y: 55, width: 18, height: 45, duration: 5.0, delay: -2.1, origin: '88% 85%' },
+    { id: 'sunflower-brooklyn-rooftops', kind: 'building', motion: 'float-a', x: 0, y: 40, width: 34, height: 58, duration: 6.8, delay: -3.5, origin: '10% 80%' },
+    { id: 'sunflower-brooklyn-bridge', kind: 'building', motion: 'float-b', x: 63, y: 2, width: 37, height: 92, duration: 7.4, delay: -2.4, origin: '88% 45%' },
   ],
   quicksilver: [
     { id: 'chrome-upper-left', kind: 'chrome', motion: 'rush-right', x: 0, y: 0, width: 44, height: 34, duration: 3.8, delay: -1.4, origin: '0% 30%' },
@@ -83,19 +82,11 @@ const getPieceStyle = (piece: ArtworkPiece): PieceStyle => ({
 });
 
 export function BackgroundElements() {
-  const { musicTheme, activeMusicTrack } = useTheme();
+  const { musicTheme, theme } = useTheme();
+  const isSlipDesk = !musicTheme && theme !== 'noir';
 
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden print:hidden">
-      {/* Wood Texture Background */}
-      <div 
-        className="desk-wood-texture absolute inset-0 z-0 opacity-40 mix-blend-multiply"
-        style={{
-          backgroundImage: `url("https://www.transparenttextures.com/patterns/wood-pattern.png")`,
-          backgroundRepeat: 'repeat'
-        }}
-      />
-
       {/* Song-specific static textures: visually rich without continuous repaints. */}
       <div className="music-theme-texture absolute inset-0 z-0" aria-hidden="true" />
 
@@ -119,40 +110,65 @@ export function BackgroundElements() {
         <div className={`music-ambient-light music-ambient-light--${musicTheme} absolute inset-0 z-0`} aria-hidden="true" />
       )}
 
-      {activeMusicTrack && (
-        <div className="ambient-waveform absolute bottom-10 left-1/2 z-0 flex -translate-x-1/2 items-end gap-1 opacity-20" aria-hidden="true">
-          {[34, 62, 45, 78, 52, 88, 66, 42, 74, 48, 82, 38].map((height, index) => (
-            <span key={`${height}-${index}`} style={{ height: `${height}%`, animationDelay: `${index * -90}ms` }} />
-          ))}
+      {/* Sunflower Golden-Hour Sunburst & Drifting Pollen Bokeh */}
+      {musicTheme === 'sunflower' && (
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden" aria-hidden="true">
+          {/* Upper-right golden sun-flare */}
+          <div
+            className="absolute -top-24 -right-24 w-[420px] h-[420px] sm:w-[560px] sm:h-[560px] rounded-full opacity-75 mix-blend-screen"
+            style={{
+              background:
+                'radial-gradient(circle, rgba(254, 240, 138, 0.65) 0%, rgba(251, 191, 36, 0.38) 32%, rgba(234, 88, 12, 0.14) 58%, transparent 76%)',
+            }}
+          />
+          {/* Lower-left warm amber horizon glow */}
+          <div
+            className="absolute -bottom-28 -left-24 w-[460px] h-[460px] sm:w-[620px] sm:h-[620px] rounded-full opacity-65 mix-blend-screen"
+            style={{
+              background:
+                'radial-gradient(circle, rgba(251, 191, 36, 0.42) 0%, rgba(234, 88, 12, 0.24) 42%, transparent 74%)',
+            }}
+          />
         </div>
       )}
-      
-      {/* Subtle vignette/shadow around the edges of the desk */}
-      <div className="desk-edge-vignette absolute inset-0 shadow-[inset_0_0_100px_rgba(0,0,0,0.5)] z-0" />
-      
-      {/* Texture overlay */}
-      <div className="absolute inset-0 bg-texture mix-blend-overlay opacity-30 z-0" />
 
-      {/* Decorative minimalistic lines / framing */}
-      <div className="absolute top-4 left-4 w-12 h-12 border-t-2 border-l-2 border-slate-500/20 z-0" />
-      <div className="absolute top-4 right-4 w-12 h-12 border-t-2 border-r-2 border-slate-500/20 z-0" />
-      <div className="absolute bottom-4 left-4 w-12 h-12 border-b-2 border-l-2 border-slate-500/20 z-0" />
-      <div className="absolute bottom-4 right-4 w-12 h-12 border-b-2 border-r-2 border-slate-500/20 z-0" />
+      {/* Slip Stock Desk Surface Texture or Charcoal Felt for Noir */}
+      {isSlipDesk ? (
+        <div
+          className="absolute inset-0 z-0 pointer-events-none"
+          style={slipDeskBackground('#224836', { seed: 'site-desk-canvas' })}
+          aria-hidden="true"
+        />
+      ) : (
+        <>
+          {/* Matte Charcoal Felt / Wool Desk Pad micro-weave grain */}
+          <div
+            className="desk-wood-texture absolute inset-0 z-0 opacity-90"
+            style={{
+              backgroundImage: [
+                'radial-gradient(ellipse 65% 55% at 10% 8%, rgba(255, 214, 153, 0.12) 0%, rgba(255, 192, 118, 0.045) 40%, transparent 72%)',
+                'repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.014) 0px, rgba(255, 255, 255, 0.014) 1px, rgba(0, 0, 0, 0.09) 1px, rgba(0, 0, 0, 0.09) 2px)',
+                'repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.012) 0px, rgba(255, 255, 255, 0.012) 1px, rgba(0, 0, 0, 0.07) 1px, rgba(0, 0, 0, 0.07) 3px)',
+                'repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.008) 0px, rgba(255, 255, 255, 0.008) 1px, transparent 1px, transparent 4px)',
+              ].join(', '),
+            }}
+            aria-hidden="true"
+          />
+
+          {/* Fine wool fiber noise texture overlay */}
+          <div className="absolute inset-0 bg-texture mix-blend-overlay opacity-35 z-0" aria-hidden="true" />
+        </>
+      )}
 
       {/* Subtle classified watermark */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0 }}
-        animate={{ opacity: 0.03 }}
+        animate={{ opacity: 0.025 }}
         transition={{ duration: 2 }}
         className="absolute bottom-12 left-12 font-stamp text-6xl md:text-8xl text-ink tracking-widest transform -rotate-12 select-none z-0"
       >
         TOP SECRET
       </motion.div>
-
-      {/* Coordinates / Meta text */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 font-typewriter text-[10px] text-slate-500/30 tracking-[0.2em] uppercase select-none z-0">
-        SYS.REQ // DIRECTIVE: ARCHIVE
-      </div>
     </div>
   );
 }

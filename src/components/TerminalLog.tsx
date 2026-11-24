@@ -54,7 +54,7 @@ export function TerminalLog() {
        
        <div className="absolute top-1 right-2 text-[8px] text-green-700 font-bold z-20">SYSTEM TERMINAL / LIVE</div>
        
-       <div ref={scrollRef} className="relative z-0 h-full overflow-y-auto pr-2 scrollbar-hide space-y-1">
+       <div ref={scrollRef} className="relative z-0 h-full overflow-y-auto pr-2 scrollbar-hide space-y-1" data-lenis-prevent>
           {logs.map((log, i) => (
              <div key={i} className="opacity-80 break-all">{log}</div>
           ))}
