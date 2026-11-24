@@ -1,14 +1,17 @@
+import { getMediaUrl } from './media';
+
 export type MusicTheme = 'am-i-dreaming' | 'sunflower' | 'quicksilver' | 'starman';
 
 export const MUSIC_THEME_ARTWORK: Record<MusicTheme, string> = {
   'am-i-dreaming': '/theme-am-i-dreaming-art.jpg',
-  sunflower: '/theme-sunflower-art.jpg',
+  sunflower: '/theme-sunflower-art-v2.jpg',
   quicksilver: '/theme-quicksilver-art.jpg',
   starman: '/theme-starman-art-v2.jpg',
 };
 
 export interface MusicVisual {
   src: string;
+  fallbackSrc?: string;
   type: 'image' | 'video';
   alt: string;
   objectPosition?: string;
@@ -58,7 +61,8 @@ export const MUSIC_TRACKS: MusicTrack[] = [
     src: '/Post_Malone_Swae_Lee_-_Sunflower_Spider-Man_Into_The_Spider-Verse_(mp3.pm).mp3',
     theme: 'sunflower',
     visual: {
-      src: '/sunflower gif.mp4',
+      src: getMediaUrl('sunflower.mp4'),
+      fallbackSrc: '/sunflower gif.mp4',
       type: 'video',
       alt: 'Spider-Verse animation for Sunflower',
       playCount: 1,
@@ -79,7 +83,8 @@ export const MUSIC_TRACKS: MusicTrack[] = [
     src: '/Z_Lala_-_Sweet_Dreams_Are_Made_Of_This_(mp3.pm).mp3',
     theme: 'quicksilver',
     visual: {
-      src: '/quicksilver gif.mp4',
+      src: getMediaUrl('quicksilver.mp4'),
+      fallbackSrc: '/quicksilver gif.mp4',
       type: 'video',
       alt: 'Quicksilver animation for Sweet Dreams',
       playCount: 1,
@@ -93,7 +98,8 @@ export const MUSIC_TRACKS: MusicTrack[] = [
     src: '/starman song.mpeg',
     theme: 'starman',
     visual: {
-      src: '/starman gif.mp4',
+      src: getMediaUrl('starman.mp4'),
+      fallbackSrc: '/starman gif.mp4',
       type: 'video',
       alt: 'Superman animation for Starman',
       playCount: 2,
@@ -106,7 +112,8 @@ export const MUSIC_TRACKS: MusicTrack[] = [
     codename: 'TAPE 06 // SPIDEY-2',
     src: '/raindrops keep falling on my head.mp3',
     visual: {
-      src: '/raindrops_opt.mp4',
+      src: getMediaUrl('raindrops.mp4'),
+      fallbackSrc: '/raindrops_opt.mp4',
       type: 'video',
       alt: "Spider-Man 2 Raindrops scene",
     },
@@ -118,7 +125,8 @@ export const MUSIC_TRACKS: MusicTrack[] = [
     codename: 'TAPE 07 // BULLY MAGUIRE',
     src: '/bully-maguire.mp3',
     visual: {
-      src: '/bully maguire_opt.mp4',
+      src: getMediaUrl('bully-maguire.mp4'),
+      fallbackSrc: '/bully maguire_opt.mp4',
       type: 'video',
       alt: 'Bully Maguire street walk',
     },
@@ -130,7 +138,8 @@ export const MUSIC_TRACKS: MusicTrack[] = [
     codename: 'TAPE 08 // GUARDIANS',
     src: '/Come and get your love.mp3',
     visual: {
-      src: '/come-get-love_opt.mp4',
+      src: getMediaUrl('come-get-love.mp4'),
+      fallbackSrc: '/come-get-love_opt.mp4',
       type: 'video',
       alt: 'Guardians of the Galaxy opening scene',
     },
@@ -142,7 +151,8 @@ export const MUSIC_TRACKS: MusicTrack[] = [
     codename: 'TAPE 09 // AMAZING',
     src: '/im-amazing.mp3',
     visual: {
-      src: '/im-amazing_opt.mp4',
+      src: getMediaUrl('im-amazing.mp4'),
+      fallbackSrc: '/im-amazing_opt.mp4',
       type: 'video',
       alt: "I'm Amazing Spider-Man scene",
     },
@@ -153,6 +163,7 @@ class MusicEngine {
   private audio: HTMLAudioElement | null = null;
   private trackIndex = 0;
   private volume = 0.5;
+  private isStarting = false;
   private listeners = new Set<(snapshot: PlaybackSnapshot) => void>();
 
   public subscribe(listener: (snapshot: PlaybackSnapshot) => void) {
@@ -171,6 +182,7 @@ class MusicEngine {
     if (normalizedIndex === this.trackIndex && audio.src) return;
 
     this.trackIndex = normalizedIndex;
+    this.isStarting = false;
     audio.pause();
     audio.src = encodeURI(MUSIC_TRACKS[normalizedIndex].src);
     audio.load();
@@ -184,17 +196,21 @@ class MusicEngine {
     const normalizedIndex = this.normalizeIndex(trackIndex);
     const nextSource = encodeURI(MUSIC_TRACKS[normalizedIndex].src);
 
+    this.isStarting = true;
     if (normalizedIndex !== this.trackIndex || !audio.src) {
       this.trackIndex = normalizedIndex;
       audio.src = nextSource;
       audio.load();
     }
+    this.notify();
 
     try {
       await audio.play();
+      this.isStarting = false;
       this.notify();
       return true;
     } catch (error) {
+      this.isStarting = false;
       console.error('Music playback could not start', error);
       this.notify();
       return false;
@@ -202,6 +218,7 @@ class MusicEngine {
   }
 
   public pause() {
+    this.isStarting = false;
     this.audio?.pause();
     this.notify();
   }
@@ -236,12 +253,12 @@ class MusicEngine {
   }
 
   public destroy() {
+    this.isStarting = false;
     if (!this.audio) return;
     this.audio.pause();
     this.audio.removeAttribute('src');
     this.audio.load();
     this.audio = null;
-    this.listeners.clear();
   }
 
   private initialize() {
@@ -274,7 +291,7 @@ class MusicEngine {
 
   private getSnapshot(): PlaybackSnapshot {
     return {
-      isPlaying: this.audio ? !this.audio.paused : false,
+      isPlaying: this.isStarting || (this.audio ? !this.audio.paused : false),
       currentTime: this.audio?.currentTime || 0,
       duration: Number.isFinite(this.audio?.duration) ? this.audio?.duration || 0 : 0,
       trackIndex: this.trackIndex,
