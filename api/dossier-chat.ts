@@ -3,9 +3,11 @@ import {
   GEMINI_MODEL_CASCADE,
   buildDossierPromptContext,
   sanitizeModelOutput,
-  type ConversationMessage,
-  type GeminiDossierResponse,
-  type VisitorLens,
+} from './_dossierEngine.js';
+import type {
+  ConversationMessage,
+  GeminiDossierResponse,
+  VisitorLens,
 } from '../src/lib/geminiDossierAi';
 
 const SERVER_RATE_WINDOW_MS = 60_000;
