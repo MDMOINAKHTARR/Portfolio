@@ -1,7 +1,10 @@
+import "dotenv/config";
 import express from "express";
 import path from "path";
 import fs from "fs";
 import { createServer as createViteServer } from "vite";
+import { fetchActivityTimeline } from "./api/activity-timeline";
+import { generateDossierChatReply } from "./api/dossier-chat";
 
 // Visitor tracking memory state
 const analyticsFile = path.join(process.cwd(), "analytics.json");
@@ -48,6 +51,66 @@ async function startServer() {
     res.json({ totalVisits, uniqueVisitors });
   });
 
+  app.post("/api/dossier-chat", async (req, res) => {
+    try {
+      const { query, history, routeContext, lens, stream } = req.body || {};
+      if (!query || typeof query !== "string") {
+        return res.status(400).json({ success: false, error: "Missing query" });
+      }
+      const clientIp =
+        (typeof req.headers["x-forwarded-for"] === "string"
+          ? req.headers["x-forwarded-for"].split(",")[0].trim()
+          : req.ip) || "unknown";
+
+      if (stream) {
+        res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
+        res.setHeader("Cache-Control", "no-cache, no-transform");
+        res.setHeader("Connection", "keep-alive");
+        res.flushHeaders?.();
+
+        const reply = await generateDossierChatReply({
+          query,
+          history,
+          routeContext,
+          lens,
+          clientIp,
+          onToken: (text) => {
+            res.write(`data: ${JSON.stringify({ type: "token", text })}\n\n`);
+          },
+        });
+        res.write(`data: ${JSON.stringify({ type: "done", response: reply })}\n\n`);
+        return res.end();
+      }
+
+      const reply = await generateDossierChatReply({
+        query,
+        history,
+        routeContext,
+        lens,
+        clientIp,
+      });
+      res.json({ success: true, ...reply });
+    } catch (error: any) {
+      console.error("Error in /api/dossier-chat:", error);
+      res.status(500).json({ success: false, error: error?.message || "Failed to generate chat response" });
+    }
+  });
+
+  app.get("/api/activity-timeline", async (req, res) => {
+    try {
+      res.setHeader("Cache-Control", "no-store, max-age=0");
+      const githubUser = typeof req.query.githubUser === "string" ? req.query.githubUser : undefined;
+      const leetcodeUser = typeof req.query.leetcodeUser === "string" ? req.query.leetcodeUser : undefined;
+      const xHandle = typeof req.query.xHandle === "string" ? req.query.xHandle : undefined;
+
+      const payload = await fetchActivityTimeline({ githubUser, leetcodeUser, xHandle });
+      res.json({ success: true, ...payload });
+    } catch (error: any) {
+      console.error("Error in /api/activity-timeline:", error);
+      res.status(500).json({ success: false, error: error.message || "Failed to fetch activity timeline", events: [] });
+    }
+  });
+
   app.get("/api/github-contributions", async (req, res) => {
     try {
       const username = (req.query.username as string) || "MDMOINAKHTARR";
@@ -71,6 +134,92 @@ async function startServer() {
     } catch (error: any) {
       console.error("Error in /api/github-contributions:", error);
       res.status(500).json({ success: false, error: error.message || "Failed to fetch GitHub contributions" });
+    }
+  });
+
+  // In-memory cache for GitHub activity events (5-min TTL)
+  let cachedGithubEvents: { timestamp: number; events: any[] } | null = null;
+
+  app.get("/api/github-events", async (req, res) => {
+    try {
+      const username = (req.query.username as string) || "MDMOINAKHTARR";
+      const now = Date.now();
+      if (cachedGithubEvents && now - cachedGithubEvents.timestamp < 300_000) {
+        return res.json({ success: true, events: cachedGithubEvents.events, source: "cache" });
+      }
+
+      const eventsRes = await fetch(`https://api.github.com/users/${encodeURIComponent(username)}/events`, {
+        headers: { Accept: "application/vnd.github.v3+json", "User-Agent": "Antigravity-Portfolio" }
+      });
+
+      if (!eventsRes.ok) {
+        if (cachedGithubEvents) {
+          return res.json({ success: true, events: cachedGithubEvents.events, source: "stale_cache" });
+        }
+        return res.status(eventsRes.status).json({ success: false, error: `GitHub events API returned status ${eventsRes.status}` });
+      }
+
+      const data = await eventsRes.json();
+      if (!Array.isArray(data)) {
+        return res.status(500).json({ success: false, error: "Unexpected GitHub API response" });
+      }
+
+      const results = [];
+      for (const item of data.slice(0, 10)) {
+        const at = new Date(item.created_at).getTime();
+        if (item.type === "PushEvent") {
+          const sha = item.payload?.head;
+          const repo = item.repo?.name || "";
+          let commitMsg = "";
+          if (item.payload?.commits && item.payload.commits[0]?.message) {
+            commitMsg = item.payload.commits[0].message.split("\n")[0];
+          } else if (sha && repo) {
+            try {
+              const cRes = await fetch(`https://api.github.com/repos/${repo}/commits/${sha}`, {
+                headers: { Accept: "application/vnd.github.v3+json", "User-Agent": "Antigravity-Portfolio" }
+              });
+              if (cRes.ok) {
+                const cData = await cRes.json();
+                commitMsg = cData.commit?.message?.split("\n")[0] || "";
+              }
+            } catch {
+              // ignore
+            }
+          }
+          const targetRepo = repo.replace(`${username}/`, "");
+          const branch = item.payload?.ref?.replace("refs/heads/", "") || "main";
+          results.push({
+            id: `gh-push-${sha ? sha.slice(0, 7) : item.id}`,
+            kind: "commit",
+            actor: username,
+            action: "pushed to",
+            target: `${targetRepo}:${branch}`,
+            detail: commitMsg,
+            at,
+            url: `https://github.com/${repo}${sha ? `/commit/${sha}` : ""}`
+          });
+        } else if (item.type === "WatchEvent") {
+          results.push({
+            id: `gh-star-${item.id}`,
+            kind: "star",
+            actor: username,
+            action: "starred",
+            target: item.repo?.name || "repository",
+            detail: "",
+            at,
+            url: `https://github.com/${item.repo?.name}`
+          });
+        }
+      }
+
+      cachedGithubEvents = { timestamp: now, events: results };
+      res.json({ success: true, events: results, source: "live" });
+    } catch (error: any) {
+      console.error("Error in /api/github-events:", error);
+      if (cachedGithubEvents) {
+        return res.json({ success: true, events: cachedGithubEvents.events, source: "fallback_cache" });
+      }
+      res.status(500).json({ success: false, error: error.message || "Failed to fetch GitHub events" });
     }
   });
 
@@ -214,6 +363,95 @@ async function startServer() {
     }
   });
 
+  // API route for live X / Twitter dispatches
+  app.get("/api/x-dispatches", async (req, res) => {
+    try {
+      const handle = (req.query.handle as string) || "Moincrafted";
+      const bearerToken = process.env.X_BEARER_TOKEN || process.env.TWITTER_BEARER_TOKEN;
+
+      // 1. If official Twitter Bearer Token is configured in environment, fetch live user timeline
+      if (bearerToken) {
+        try {
+          const userRes = await fetch(`https://api.twitter.com/2/users/by/username/${encodeURIComponent(handle)}`, {
+            headers: { Authorization: `Bearer ${bearerToken}` }
+          });
+          if (userRes.ok) {
+            const userData = await userRes.json();
+            const userId = userData.data?.id;
+            if (userId) {
+              const tweetsRes = await fetch(`https://api.twitter.com/2/users/${userId}/tweets?max_results=10&tweet.fields=created_at`, {
+                headers: { Authorization: `Bearer ${bearerToken}` }
+              });
+              if (tweetsRes.ok) {
+                const tweetsData = await tweetsRes.json();
+                if (Array.isArray(tweetsData.data)) {
+                  const liveTweets = tweetsData.data.map((t: any) => ({
+                    id: t.id,
+                    author: userData.data?.name || "Md Moin Akhtar",
+                    handle: `@${handle}`,
+                    url: `https://x.com/${handle}/status/${t.id}`,
+                    text: t.text,
+                    dateStr: t.created_at,
+                    timestamp: new Date(t.created_at).getTime(),
+                  }));
+                  return res.json({ success: true, source: "twitter_api_v2", tweets: liveTweets });
+                }
+              }
+            }
+          }
+        } catch (apiErr) {
+          console.warn("Twitter API v2 fetch error, falling back to official oEmbed:", apiErr);
+        }
+      }
+
+      // 2. Query official X oEmbed API to fetch live real tweet data, timestamps and text
+      const tweetIds = [
+        "2097019500835311787",
+        "2076235594209042859",
+        "2038219385077375293",
+        "2034662071808508329"
+      ];
+
+      const tweetPromises = tweetIds.map(async (id) => {
+        try {
+          const oembedRes = await fetch(`https://publish.twitter.com/oembed?url=https://x.com/${handle}/status/${id}`);
+          if (!oembedRes.ok) return null;
+          const data = await oembedRes.json();
+
+          const textMatch = data.html?.match(/<p[^>]*>([\s\S]*?)<\/p>/);
+          const rawText = textMatch ? textMatch[1].replace(/<br\s*\/?>/gi, " ").replace(/<[^>]+>/g, "").trim() : "";
+          const cleanText = rawText
+            .replace(/&#39;/g, "'")
+            .replace(/&quot;/g, '"')
+            .replace(/&amp;/g, "&")
+            .replace(/&lt;/g, "<")
+            .replace(/&gt;/g, ">");
+
+          const dateMatch = data.html?.match(/>([^<]+)<\/a><\/blockquote>/);
+          const dateStr = dateMatch ? dateMatch[1] : "";
+
+          return {
+            id,
+            author: data.author_name || "Md Moin Akhtar",
+            handle: "@Moincrafted",
+            url: data.url || `https://x.com/${handle}/status/${id}`,
+            text: cleanText,
+            dateStr,
+            timestamp: dateStr ? new Date(dateStr).getTime() : Date.now(),
+          };
+        } catch {
+          return null;
+        }
+      });
+
+      const fetchedTweets = (await Promise.all(tweetPromises)).filter(Boolean);
+      res.json({ success: true, source: "x_official_oembed", tweets: fetchedTweets });
+    } catch (error: any) {
+      console.error("Error in /api/x-dispatches:", error);
+      res.status(500).json({ success: false, error: error.message || "Failed to fetch X dispatches" });
+    }
+  });
+
   // API route for Telegram message
   app.post("/api/contact", async (req, res) => {
     try {
@@ -295,7 +533,7 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
+    app.use(express.static(distPath, { maxAge: '7d', etag: true }));
     app.get('*', (req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });
