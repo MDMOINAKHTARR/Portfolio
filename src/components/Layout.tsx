@@ -13,25 +13,61 @@ const XIcon = (props: React.ComponentProps<'svg'>) => (
   </svg>
 );
 
-import { ClassifiedStamp } from './Stamps';
 import { Paperclip } from './Paperclip';
 import { RandomCoffeeStains } from './RandomCoffeeStains';
 import { BackgroundElements } from './BackgroundElements';
 import { ThemeToggle } from './ThemeToggle';
-import { AudioToggle } from './AudioToggle';
-import { MusicPlayer } from './MusicPlayer';
-import { CrtTvWidget, VideoPreloader } from './CrtTvWidget';
+import { VideoPreloader } from './CrtTvWidget';
 import { audioEngine } from '../lib/audio';
-import { FileDrawer } from './FileDrawer';
+import { scrollToTop } from '../lib/smoothScroll';
 import { SocialSidebar } from './SocialSidebar';
-import { DeskComicWidget } from './DeskComicWidget';
 import { DogEar } from './DogEar';
+import { DeferredSection } from './DeferredSection';
 import { DistressedHeader } from './DistressedHeader';
 import { NavTypewriter } from './NavTypewriter';
-import { useState, useEffect } from 'react';
+import { paperBackground, slipDeskBackground } from '../lib/ink/textures';
+import { rulesLayer } from '../lib/ink/paper/stocks';
+import { useState, useEffect, lazy, Suspense } from 'react';
+
+const MusicPlayer = lazy(() => import('./MusicPlayer').then((m) => ({ default: m.MusicPlayer })));
+const CrtTvWidget = lazy(() => import('./CrtTvWidget').then((m) => ({ default: m.CrtTvWidget })));
+const FileDrawer = lazy(() => import('./FileDrawer').then((m) => ({ default: m.FileDrawer })));
+
+const CuttingMatSection = lazy(() => import('./CuttingMatSection').then((m) => ({ default: m.CuttingMatSection })));
+const ActivityStatusSection = lazy(() => import('./ActivityStatusSection').then((m) => ({ default: m.ActivityStatusSection })));
+const SiteFooter = lazy(() => import('./SiteFooter').then((m) => ({ default: m.SiteFooter })));
+const HomeContactSection = lazy(() => import('./HomeContactSection').then((m) => ({ default: m.HomeContactSection })));
 import React from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useTheme } from '../context/ThemeContext';
+
+function coldPressPaperStyle(bgColor: string, seed: string): React.CSSProperties {
+  const base = paperBackground(bgColor, { tooth: 'cold', seed });
+  return {
+    backgroundColor: base.backgroundColor,
+    backgroundImage: `${base.backgroundImage}, var(--ll-paper-light)`,
+    backgroundSize: `${base.backgroundSize}, 100% 100%`,
+    backgroundPosition: `${base.backgroundPosition}, 0 0`,
+    backgroundRepeat: `${base.backgroundRepeat}, no-repeat`,
+  };
+}
+
+function indexCardPaperStyle(bgColor: string, seed: string): React.CSSProperties {
+  const base = paperBackground(bgColor, { tooth: 'fine', seed });
+  const rules = rulesLayer('index', { calm: true });
+  const rulesBg = rules ? rules.style.backgroundImage : '';
+  const rulesSize = rules ? rules.style.backgroundSize : '';
+  const rulesPos = rules ? rules.style.backgroundPosition : '';
+  const rulesRepeat = rules ? rules.style.backgroundRepeat : '';
+
+  return {
+    backgroundColor: base.backgroundColor,
+    backgroundImage: [rulesBg, base.backgroundImage, 'var(--ll-paper-light)'].filter(Boolean).join(', '),
+    backgroundSize: [rulesSize, base.backgroundSize, '100% 100%'].filter(Boolean).join(', '),
+    backgroundPosition: [rulesPos, base.backgroundPosition, '0 0'].filter(Boolean).join(', '),
+    backgroundRepeat: [rulesRepeat, base.backgroundRepeat, 'no-repeat'].filter(Boolean).join(', '),
+  };
+}
 
 export function Layout() {
   const location = useLocation();
@@ -40,8 +76,9 @@ export function Layout() {
   const isEvidenceWall = location.pathname === '/evidence-wall';
   const isEvidencePage = isEvidenceWall;
   const isClassifiedPage = location.pathname === '/classified';
+  const isCommsPage = location.pathname === '/comms';
   const isFullPage = isEvidenceWall || isClassifiedPage;
-  const { theme, toggleTheme } = useTheme();
+  const { theme, toggleTheme, musicTheme } = useTheme();
   const [caseId, setCaseId] = useState('');
   const [timestamp, setTimestamp] = useState('');
   const [isMuted, setIsMuted] = useState(audioEngine.isMuted);
@@ -154,7 +191,6 @@ export function Layout() {
     audioEngine.init();
     audioEngine.toggleMute();
     setIsMuted(audioEngine.isMuted);
-    // Notify AudioToggle by simulating a storage event or just let it be. Handled fine.
   };
 
   useEffect(() => {
@@ -172,7 +208,7 @@ export function Layout() {
   }, []);
 
   useEffect(() => {
-    window.scrollTo(0, 0);
+    scrollToTop(true);
   }, [location.pathname]);
 
   const tabs = [
@@ -183,11 +219,14 @@ export function Layout() {
   ];
 
   return (
-    <div className={`print:p-0 print:bg-white ${isFullPage ? 'h-screen overflow-hidden' : 'min-h-screen'} bg-desk flex flex-col items-center justify-start font-typewriter text-ink selection:bg-folder selection:text-ink overflow-x-hidden relative ${
-      isFullPage 
-        ? 'p-0' 
-        : 'pt-[56px] sm:pt-10 md:pt-12 px-0 sm:px-8 pb-[64px] sm:pb-12'
-    }`}>
+    <div 
+      className={`print:p-0 print:bg-white ${isFullPage ? 'h-screen overflow-hidden' : 'min-h-screen'} bg-desk flex flex-col items-center justify-start font-typewriter text-ink selection:bg-folder selection:text-ink overflow-x-clip relative ${
+        isFullPage 
+          ? 'p-0' 
+          : 'pt-[58px] sm:pt-10 md:pt-12 px-0 sm:px-8 pb-0 sm:pb-12'
+      }`}
+      style={!musicTheme && theme !== 'noir' ? slipDeskBackground('#224836', { seed: 'site-desk-root' }) : undefined}
+    >
       {isFullPage && (
         <Link 
           to="/"
@@ -195,7 +234,7 @@ export function Layout() {
             audioEngine.init();
             audioEngine.playSwitch();
           }}
-          className="exit-file-btn fixed top-4 right-4 z-[9999] flex items-center gap-1.5 bg-rose-850 hover:bg-rose-900 text-white font-mono text-[10px] sm:text-[11px] font-black uppercase px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-sm shadow-md transition-all active:scale-95 border border-rose-950"
+          className={`exit-file-btn fixed ${isEvidenceWall ? 'top-12 right-3 sm:top-14 sm:right-4' : 'top-4 right-4'} z-[9999] flex items-center gap-1.5 bg-rose-850 hover:bg-rose-900 text-white font-mono text-[10px] sm:text-[11px] font-black uppercase px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-sm shadow-md transition-all active:scale-95 border border-rose-950`}
           title="Exit to Normal Website"
         >
           <X className="w-3.5 h-3.5" />
@@ -206,28 +245,48 @@ export function Layout() {
       
       {/* Top Mobile Header (visible only on small screens) */}
       {!isFullPage && (
-        <div className="flex sm:hidden absolute top-0 left-0 w-full bg-folder z-[100] px-4 py-2 items-center justify-between shadow-[0_4px_10px_rgba(0,0,0,0.15)] text-ink font-mono border-b border-folder-dark/50 transition-colors">
-           <div className="absolute inset-0 bg-cardboard opacity-40 mix-blend-overlay pointer-events-none"></div>
-           <div className="relative z-10 flex-1 pr-3 flex flex-col justify-center">
-             <div className="text-[10px] text-ink/70 tracking-[0.2em] font-bold uppercase transition-colors">ID: MMA-2026</div>
-             <div className="text-[18px] sm:text-[20px] font-stamp tracking-widest mt-0 px-0 uppercase leading-none font-bold text-ink">
-               MD MOIN AKHTAR
-             </div>
-           </div>
-           <div className="relative z-10 flex flex-col items-end gap-1 text-[8px] tracking-widest font-bold shrink-0">
-             <div className="flex gap-1">
-               <button onClick={toggleAudio} className="flex items-center gap-1.5 px-2 py-1 bg-ink/10 border border-ink/20 rounded-sm outline-none transition-colors hover:bg-ink/20 active:scale-95 text-ink/70">
-                 {!isMuted ? <Volume2 className="w-3 h-3" /> : <VolumeX className="w-3 h-3" />}
-               </button>
-               <button onClick={toggleTheme} className="flex items-center gap-1 whitespace-nowrap px-1.5 py-1 bg-ink/10 border border-ink/20 rounded-sm outline-none transition-colors hover:bg-ink/20 active:scale-95" aria-label={`Switch theme to ${theme === 'noir' ? 'color' : 'noir'}`}>
-                 <span className="text-ink/70 mt-0.5">THEME:</span>
-                 <span className={`font-black uppercase mt-0.5 ${theme === 'noir' ? 'text-ink/90' : 'text-red-700'}`}>
-                   {theme === 'noir' ? 'COLOR' : 'NOIR'}
-                 </span>
-               </button>
-             </div>
-           </div>
-        </div>
+        <header className="flex sm:hidden absolute top-0 left-0 w-full min-h-[58px] bg-folder z-[100] px-3 py-2 items-center justify-between gap-2 shadow-[0_4px_12px_rgba(0,0,0,0.18)] text-ink font-mono border-t border-white/25 border-b-2 border-folder-dark/70 transition-colors">
+          <div className="absolute inset-0 bg-cardboard opacity-45 mix-blend-overlay pointer-events-none" />
+          <div className="relative z-10 flex flex-col justify-center shrink-0">
+            <div className="flex items-center gap-1.5 text-[9px] leading-none text-ink/65 tracking-[0.16em] font-bold uppercase mb-1 transition-colors">
+              <span className="w-1.5 h-1.5 rounded-full bg-stamp/80 shrink-0" aria-hidden="true" />
+              <span>ID: MMA-2026</span>
+            </div>
+            <div className="text-[15.5px] min-[390px]:text-[17px] font-stamp tracking-[0.04em] uppercase leading-tight font-bold text-ink whitespace-nowrap">
+              MD MOIN AKHTAR
+            </div>
+          </div>
+          <div className="relative z-10 flex items-center gap-1.5 shrink-0 text-[8px] tracking-[0.08em] font-bold">
+            <button
+              type="button"
+              onClick={toggleAudio}
+              aria-label={!isMuted ? 'Mute audio effects' : 'Unmute audio effects'}
+              aria-pressed={!isMuted}
+              className={`h-8 w-8 flex items-center justify-center rounded-[3px] border outline-none transition-all active:scale-95 ${
+                !isMuted
+                  ? 'bg-paper/85 hover:bg-paper border-folder-dark/60 text-ink shadow-[1px_2px_0_rgba(0,0,0,0.14)]'
+                  : 'bg-ink/5 hover:bg-ink/10 border-ink/20 text-ink/50'
+              }`}
+            >
+              {!isMuted ? (
+                <Volume2 className="w-3.5 h-3.5 text-stamp" strokeWidth={2.3} />
+              ) : (
+                <VolumeX className="w-3.5 h-3.5 text-ink/45" strokeWidth={2} />
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={toggleTheme}
+              aria-label={`Switch theme to ${theme === 'noir' ? 'color' : 'noir'}`}
+              className="h-8 px-2 flex items-center gap-1 whitespace-nowrap bg-paper/85 hover:bg-paper border border-folder-dark/60 rounded-[3px] shadow-[1px_2px_0_rgba(0,0,0,0.14)] outline-none transition-all active:scale-95"
+            >
+              <span className="text-ink/65 leading-none">THEME:</span>
+              <span className={`font-black uppercase leading-none ${theme === 'noir' ? 'text-ink' : 'text-stamp'}`}>
+                {theme === 'noir' ? 'COLOR' : 'NOIR'}
+              </span>
+            </button>
+          </div>
+        </header>
       )}
 
       {!isFullPage && (
@@ -235,16 +294,17 @@ export function Layout() {
           <div className="hidden sm:block">
             <ThemeToggle />
           </div>
-          <AudioToggle />
-          <MusicPlayer />
-          <CrtTvWidget />
-          <FileDrawer />
+          <Suspense fallback={null}>
+            <MusicPlayer />
+            <CrtTvWidget />
+            <FileDrawer />
+          </Suspense>
           <SocialSidebar />
         </>
       )}
       <VideoPreloader />
 
-      <div className={isFullPage ? "w-full max-w-none h-full flex flex-col relative transition-all duration-300 mx-auto p-0" : "w-[100%] sm:w-[92%] lg:w-[85%] max-w-[1600px] relative transition-all duration-300 mx-auto"}>
+      <div className={isFullPage ? "w-full max-w-none h-full flex flex-col relative transition-all duration-300 mx-auto p-0" : "w-[100%] sm:w-[85%] lg:w-[79%] max-w-[1360px] relative transition-all duration-300 mx-auto"}>
         {/* Manila Folder Background Layer */}
         {!isFullPage && (
           <div className="hidden sm:block print:hidden absolute inset-0 -top-4 -bottom-4 -left-4 -right-4 bg-folder shadow-[0_20px_50px_-12px_rgba(0,0,0,0.8)] rounded-md border border-folder-dark transform rotate-[0.5deg] z-0">
@@ -255,30 +315,20 @@ export function Layout() {
             <div className="absolute -top-7 right-12 w-56 h-8 bg-tab-folder border border-folder-dark border-b-0 rounded-t-md transform -skew-x-[20deg] flex items-center px-6">
               <span className="font-stamp text-ink/70 tracking-widest text-sm uppercase transform skew-x-[20deg]">SUBJECT: MR-MOIN</span>
             </div>
-            {/* Right Folder Tab: Comic Log */}
-            <Link
-              to="/classified"
-              onClick={() => {
-                audioEngine.init();
-                audioEngine.playClick();
-              }}
-              title="Open Spider-Verse Origin Comic Log"
-              className="group/comictab absolute top-64 -right-12 xl:-right-14 w-12 xl:w-14 h-64 bg-tab-folder hover:bg-folder border border-folder-dark group-hover/comictab:border-rose-700/60 border-l-0 rounded-r-[16px] shadow-[4px_5px_10px_-2px_rgba(0,0,0,0.5)] group-hover/comictab:shadow-[6px_0_20px_rgba(225,29,72,0.35),4px_5px_10px_-2px_rgba(0,0,0,0.5)] origin-left transform hover:scale-x-110 hover:scale-y-105 transition-all duration-300 flex items-center justify-center z-10 cursor-pointer"
-            >
-               <div className="absolute inset-0 bg-cardboard opacity-40 mix-blend-overlay rounded-r-[16px]"></div>
-               <span className="font-mono font-bold text-ink/80 group-hover/comictab:text-rose-700 tracking-[0.2em] group-hover/comictab:tracking-[0.24em] text-sm xl:text-base whitespace-nowrap transform rotate-90 relative z-10 transition-all flex items-center gap-1.5">
-                 <Sparkles className="w-3.5 h-3.5 text-rose-600 opacity-0 group-hover/comictab:opacity-100 transition-opacity" />
-                 Comic Log
-               </span>
-            </Link>
           </div>
         )}
 
         {/* Paper Sheet 3 (Background) */}
         {!isFullPage && (
           <>
-            <div className="hidden sm:block print:hidden absolute inset-0 bg-paper-shadow border border-doc-border rounded-sm transform -rotate-[1.5deg] translate-y-1 -translate-x-1 z-0 shadow-sm"></div>
-            <div className="hidden sm:block print:hidden absolute inset-0 bg-paper border border-doc-border rounded-sm transform rotate-[0.5deg] translate-y-2 translate-x-1 z-0 shadow-sm"></div>
+            <div
+              className="hidden sm:block print:hidden absolute inset-0 border border-doc-border rounded-sm transform -rotate-[1.5deg] translate-y-1 -translate-x-1 z-0 shadow-sm transition-colors"
+              style={coldPressPaperStyle('var(--c-paper-shadow)', 'dossier-stack-1')}
+            />
+            <div
+              className="hidden sm:block print:hidden absolute inset-0 border border-doc-border rounded-sm transform rotate-[0.5deg] translate-y-2 translate-x-1 z-0 shadow-sm transition-colors"
+              style={coldPressPaperStyle('var(--c-paper)', 'dossier-stack-2')}
+            />
           </>
         )}
 
@@ -333,8 +383,8 @@ export function Layout() {
               </div>
             </div>
             
-            {/* Thick Horizontal Grey Band connecting tabs */}
-            <div className="absolute bottom-[2px] left-2 right-2 sm:left-6 sm:right-6 h-[4px] bg-band-bg border-y border-band-border shadow-[inset_0_1px_2px_rgba(0,0,0,0.15)] z-[25] pointer-events-none rounded-sm transition-colors" />
+            {/* Horizontal Grey Band aligned under tabs */}
+            <div className="absolute -bottom-[6px] left-2 right-2 sm:left-6 sm:right-6 h-[4px] bg-band-bg border-y border-band-border shadow-[inset_0_1px_2px_rgba(0,0,0,0.15)] z-[25] pointer-events-none rounded-sm transition-colors" />
           </div>
         )}
 
@@ -351,29 +401,37 @@ export function Layout() {
           onTouchEnd={() => {
             if (window.innerWidth < 640 && window.matchMedia("(orientation: portrait)").matches) handleTouchEnd();
           }}
-          className={`print:border-none print:shadow-none print:bg-white print:max-w-none print:w-full w-full relative transition-all duration-500 z-10 flex flex-col cursor-default ${isFullPage ? (isEvidencePage ? 'h-full bg-transparent shadow-none border-none' : 'min-h-full bg-transparent shadow-none border-none') : 'sm:min-h-[700px] bg-paper sm:bg-transparent'}`}
+          className={`print:border-none print:shadow-none print:bg-white print:max-w-none print:w-full w-full relative transition-all duration-500 z-10 flex flex-col cursor-default ${isFullPage ? (isEvidencePage ? 'h-full bg-transparent shadow-none border-none' : 'min-h-full bg-transparent shadow-none border-none') : 'min-h-[calc(100dvh-58px)] sm:min-h-[700px] bg-paper sm:bg-transparent'}`}
         >
           {!isFullPage && (
             <>
-              <div className="hidden sm:block"><DistressedHeader /></div>
+              {!isCommsPage && <div className="hidden sm:block"><DistressedHeader /></div>}
               <div className="hidden sm:block"><DogEar /></div>
             </>
           )}
           
-          {/* Weathered Background Layer */}
+          {/* Weathered Background Layer (Looseleaf Cold-Press Paper Stock / Index Card Stock) */}
           {!isFullPage && (
             <div 
-              className="hidden sm:block print:hidden absolute inset-0 bg-doc bg-texture shadow-[0_5px_15px_-3px_rgba(0,0,0,0.1)] border-[2px] border-doc-border rounded-b-sm rounded-tr-sm z-0 overflow-hidden transition-colors"
+              className="hidden sm:block print:hidden absolute inset-0 shadow-[0_5px_15px_-3px_rgba(0,0,0,0.1)] border-[2px] border-doc-border rounded-b-sm rounded-tr-sm z-0 overflow-hidden transition-colors"
+              style={isCommsPage ? indexCardPaperStyle(theme === 'noir' ? 'var(--c-doc)' : '#fbf6e9', 'dossier-main-comms') : coldPressPaperStyle('var(--c-doc)', 'dossier-main-sheet')}
             >
-              {/* Charred inner edges */}
-              <div className="absolute inset-0 shadow-[inset_0_0_25px_var(--c-distress-shadow),inset_0_0_8px_var(--c-distress-shadow-dark)] opacity-80 mix-blend-multiply rounded-b-sm rounded-tr-sm pointer-events-none transition-shadow"></div>
-              {/* Edge distress border */}
-              <div className="absolute inset-0 border-[4px] border-distress/20 pointer-events-none mix-blend-color-burn z-10 rounded-b-sm rounded-tr-sm transition-colors"></div>
+              {/* Charred inner edges - hide on clean index card page */}
+              {!isCommsPage && (
+                <>
+                  <div className="absolute inset-0 shadow-[inset_0_0_25px_var(--c-distress-shadow),inset_0_0_8px_var(--c-distress-shadow-dark)] opacity-80 mix-blend-multiply rounded-b-sm rounded-tr-sm pointer-events-none transition-shadow"></div>
+                  {/* Edge distress border */}
+                  <div className="absolute inset-0 border-[4px] border-distress/20 pointer-events-none mix-blend-color-burn z-10 rounded-b-sm rounded-tr-sm transition-colors"></div>
+                </>
+              )}
             </div>
           )}
 
           {!isFullPage && (
-            <div className="sm:hidden absolute inset-0 bg-doc transition-colors bg-[linear-gradient(transparent_0px,transparent_calc(100%-1px),var(--color-grid-lines)_calc(100%-1px)),linear-gradient(90deg,transparent_0px,transparent_calc(100%-1px),var(--color-grid-lines)_calc(100%-1px))] bg-[size:10px_10px] pointer-events-none z-0"></div>
+            <div
+              className="sm:hidden absolute inset-0 transition-colors pointer-events-none z-0"
+              style={coldPressPaperStyle('var(--c-doc)', 'dossier-main-mobile')}
+            />
           )}
 
           {/* Bottom Right Page Curl */}
@@ -423,16 +481,15 @@ export function Layout() {
           )}
 
           {/* Document Content Container (Extends to fill) */}
-          <div className={`flex-1 relative z-20 w-full ${isFullPage ? (isEvidencePage ? 'h-full flex flex-col' : 'min-h-full flex flex-col') : 'pb-8 sm:pb-0'}`}>
+          <div className={`flex-1 relative z-20 w-full ${isFullPage ? (isEvidencePage ? 'h-full flex flex-col' : 'min-h-full flex flex-col') : 'pb-20 sm:pb-0'}`}>
              <AnimatePresence mode="wait">
                {outlet && React.cloneElement(outlet as React.ReactElement, { key: location.pathname })}
              </AnimatePresence>
           </div>
 
-          {!isFullPage && (
+          {!isFullPage && !isCommsPage && (
             <div className="hidden sm:block">
                <RandomCoffeeStains />
-               <ClassifiedStamp />
             </div>
           )}
 
@@ -452,6 +509,30 @@ export function Layout() {
         </motion.main>
       </div>
 
+      {!isFullPage && location.pathname === '/' && (
+        <div className="hidden sm:block w-full">
+          <DeferredSection minHeight={480}>
+            <CuttingMatSection />
+          </DeferredSection>
+
+          <DeferredSection minHeight={640}>
+            <ActivityStatusSection />
+          </DeferredSection>
+
+          <DeferredSection minHeight={380}>
+            <HomeContactSection />
+          </DeferredSection>
+        </div>
+      )}
+
+      {!isFullPage && location.pathname === '/' && (
+        <div className="hidden sm:block w-full">
+          <DeferredSection minHeight={220} rootMargin="500px 0px">
+            <SiteFooter visits={visits} uniqueVisits={uniqueVisits} caseId={caseId} />
+          </DeferredSection>
+        </div>
+      )}
+
       {/* Floating Sticky Mobile Bottom Navigation */}
       {!isFullPage && (
         <div className="flex sm:hidden fixed bottom-[max(16px,env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 w-[96%] max-w-[400px] bg-paper/95 backdrop-blur-xl z-[100] justify-around items-center text-ink/60 font-mono text-[10px] py-1.5 px-2 shadow-[0_8px_30px_rgba(100,20,20,0.15)] border border-red-900/15 rounded-full transition-colors overflow-visible">
@@ -460,7 +541,7 @@ export function Layout() {
             { path: '/operations', label: 'PROJECTS', icon: Briefcase },
             { path: '/evidence', label: 'AWARDS', icon: Award },
             { path: '/comms', label: 'CONTACT', icon: Mail },
-            { path: '/MdMoinAkhtar.pdf', label: 'CV', icon: FileText, isExternal: true },
+            { path: '/MdMoinAkhtar_Resume.pdf', label: 'RESUME', icon: FileText, isExternal: true },
             { action: toggleTheme, label: theme === 'noir' ? 'COLOR' : 'NOIR', icon: theme === 'noir' ? Sun : Moon, isAction: true }
            ].map(tab => {
              let targetPath = tab.path;
@@ -485,7 +566,7 @@ export function Layout() {
                <>
                  {active && <motion.div layoutId="dock-indicator" className={`absolute inset-0 z-0 rounded-full border ${activeIndicatorClass}`}></motion.div>}
                  <Icon className={`relative z-10 h-4 w-4 transition-transform duration-300 sm:h-5 sm:w-5 ${active ? `-translate-y-0.5 ${activeTextClass}` : ''}`} strokeWidth={active ? 2.5 : 2} />
-                 <span className={`relative z-10 overflow-hidden text-[7px] font-bold uppercase leading-none transition-all duration-300 sm:text-[8px] ${active ? `mt-0.5 max-h-4 opacity-100 ${activeTextClass}` : 'max-h-0 opacity-0'}`}>{tab.label}</span>
+                 <span className={`relative z-10 mt-0.5 text-[9px] font-bold uppercase leading-none transition-all duration-300 ${active ? activeTextClass : 'text-ink/75'}`}>{tab.label}</span>
                </>
              );
   
