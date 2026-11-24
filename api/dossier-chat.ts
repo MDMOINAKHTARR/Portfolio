@@ -71,7 +71,12 @@ export async function generateDossierChatReply(options: {
     };
   }
 
-  const serverApiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || '';
+  const serverApiKey =
+    process.env.GEMINI_API_KEY ||
+    process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
+    process.env.GOOGLE_API_KEY ||
+    process.env.VITE_GEMINI_API_KEY ||
+    '';
   if (serverApiKey) {
     for (const model of GEMINI_MODEL_CASCADE) {
       try {
@@ -86,7 +91,7 @@ export async function generateDossierChatReply(options: {
                 contents,
                 generationConfig: { temperature, maxOutputTokens: 170 },
               }),
-              signal: AbortSignal.timeout(10000),
+              signal: AbortSignal.timeout(6500),
             }
           );
 
@@ -148,7 +153,7 @@ export async function generateDossierChatReply(options: {
                 contents,
                 generationConfig: { temperature, maxOutputTokens: 170 },
               }),
-              signal: AbortSignal.timeout(8000),
+              signal: AbortSignal.timeout(6500),
             }
           );
 
@@ -197,7 +202,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { query, history, routeContext, lens, stream } = req.body || {};
+    const parsedBody =
+      typeof req.body === 'string' ? JSON.parse(req.body || '{}') : req.body || {};
+    const { query, history, routeContext, lens, stream } = parsedBody;
     if (!query || typeof query !== 'string') {
       return res.status(400).json({ success: false, error: 'Missing query' });
     }

@@ -392,7 +392,7 @@ function buildDynamicAnalyzedFallback(
       (p.id === 'OP-410' && lower.includes('ledger'))
   );
   if (matchedProject) {
-    return `**${matchedProject.title} (${matchedProject.id})** [1]: ${matchedProject.tagline}\n• **Stack & Architecture**: ${matchedProject.caseEvidence.solution} (**${matchedProject.tech.join(', ')}**).\n• **Result**: ${matchedProject.caseEvidence.result}${matchedProject.metrics ? ` (**${matchedProject.metrics}**)` : ''}.`;
+    return `Ah, **${matchedProject.title} (${matchedProject.id})**—one of Moin's favorite excuses to skip sleep [1]: ${matchedProject.tagline}\n• **Under the Hood**: ${matchedProject.caseEvidence.solution} (**${matchedProject.tech.join(', ')}**).\n• **Damage Report**: ${matchedProject.caseEvidence.result}${matchedProject.metrics ? ` (**${matchedProject.metrics}**)` : ''}.`;
   }
 
   if (/^\/fit\b/i.test(q)) {
@@ -431,7 +431,22 @@ function buildDynamicAnalyzedFallback(
     return outOfDossierReplies[hash % outOfDossierReplies.length];
   }
 
-  return `${baseRag.answer} [1]\n${baseRag.bullets.slice(0, 2).map((b) => `• ${b}`).join('\n')}`;
+  const wadeIntros: Record<RagCategory | 'general', string> = {
+    overview: `Alright, quick dossier speed-run on **Md Moin Akhtar**—try to keep up [1]:`,
+    projects: `Pulling Moin's **shipped builds** out of Cabinet A-4 (spoiler: they actually work) [1]:`,
+    research: `Ah yes, the **IEEE hallucination paper (#11441054)**—because someone had to keep chatbots honest [1]:`,
+    hackathons: `Moin doesn't just show up to hackathons for free pizza—he takes the hardware home [1]:`,
+    skills: `Opening Moin's **arsenal**—no inflated LinkedIn buzzwords, just what he ships with [1]:`,
+    education: `Here's the academic paper trail—yes, he somehow passed with an **8.27 CGPA** while shipping 8 systems [1]:`,
+    contact: `Ready to slide into Moin's inbox? Here's where to actually reach him [1]:`,
+    general: `Checked the classified folder—here's the real tea without the corporate fluff [1]:`,
+  };
+  const intro = wadeIntros[baseRag.intent] || wadeIntros.general;
+  const bullets = baseRag.bullets
+    .slice(0, 2)
+    .map((b) => `• ${b}`)
+    .join('\n');
+  return `${intro}\n${baseRag.answer}\n${bullets}`;
 }
 
 function withRecruiterActions(
