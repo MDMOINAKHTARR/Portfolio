@@ -4,7 +4,7 @@ import { FaXTwitter } from 'react-icons/fa6';
 
 const TELEX_MESSAGES = [
   { source: 'LNKD_NET', icon: Linkedin, url: 'https://www.linkedin.com/in/mdmoinakhtar', payload: 'PROFESSIONAL_DOSSIER_LOCATED // STATUS: ACTIVE' },
-  { source: 'X_COMMS', icon: FaXTwitter, url: 'https://x.com/___moinn_', payload: 'SHORT_BURST_TRANSMISSIONS_INTERCEPTED // MONITORING' },
+  { source: 'X_COMMS', icon: FaXTwitter, url: 'https://x.com/Moincrafted', payload: 'SHORT_BURST_TRANSMISSIONS_INTERCEPTED // MONITORING' },
   { source: 'GIT_ARCHIVE', icon: Github, url: 'https://github.com/MDMOINAKHTARR', payload: 'CODE_VAULT_ACCESSED // REPOSITORIES_SYNCED' },
   { source: 'LEET_ALGOS', icon: Code2, url: 'https://leetcode.com/u/__moinn_/', payload: 'PROBLEM_SOLVING_CAPABILITIES_VERIFIED // RANK: HIGH' }
 ];

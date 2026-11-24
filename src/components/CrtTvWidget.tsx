@@ -2,51 +2,116 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { X } from 'lucide-react';
-import { MUSIC_TRACKS, musicEngine, type MusicTrack } from '../lib/music';
+import { MUSIC_THEME_ARTWORK, MUSIC_TRACKS, musicEngine, type MusicTrack, type MusicVisual } from '../lib/music';
+import { getEffectiveVideoSrc, tryVideoFallback } from '../lib/media';
+import { PROJECTS } from '../data/projectsData';
 
 const CRT_TV_TRACK_IDS = ['bully-maguire', 'raindrops', 'come-and-get-your-love', 'im-amazing'];
 
-// All video src paths used by the CRT TV widget — preloaded silently on mount
-const CRT_TV_VIDEO_SRCS = MUSIC_TRACKS
-  .filter((t) => CRT_TV_TRACK_IDS.includes(t.id) && t.visual?.type === 'video')
-  .map((t) => t.visual!.src);
+const DEFAULT_TV_TRACK = MUSIC_TRACKS.find((t) => t.id === 'bully-maguire');
 
-// Also grab any track whose audio src is a video (e.g. bully-maguire.mp4 doubles as audio+video)
-const CRT_TV_AUDIO_VIDEO_SRCS = MUSIC_TRACKS
-  .filter((t) => CRT_TV_TRACK_IDS.includes(t.id) && t.src.endsWith('.mp4'))
-  .map((t) => t.src);
+const CRITICAL_SITE_IMAGES = [
+  ...PROJECTS.map((p) => p.imageUrl),
+  '/hermeswin2-optimized.jpg',
+  '/hermeswin1.jpeg',
+  'https://plain-apac-prod-public.komododecks.com/202606/08/2zKDmOhXST56aBGDOvqi/image.jpg',
+  'https://plain-apac-prod-public.komododecks.com/202606/08/UetCU2yFfO1yPU1VnGh7/image.jpg',
+  '/DATA SCIENCE FOUNDATIONS (2024).jpeg',
+  '/ujr-certificate-preview.png',
+  '/leetcode banner.jpg',
+  '/linkedin banner.jpg',
+  '/twitter banner.jpg',
+  '/4th image.jpg',
+  '/moin cover.png',
+  '/am i dreaming gif.gif',
+  ...Object.values(MUSIC_THEME_ARTWORK),
+];
 
-const ALL_TV_PRELOAD_SRCS = [...new Set([...CRT_TV_VIDEO_SRCS, ...CRT_TV_AUDIO_VIDEO_SRCS])];
-
-/** Silently preloads all CRT TV video files as soon as the app mounts. */
+/**
+ * Warms page photos after initial paint and lazily warms only video metadata
+ * for the active/default track and next queued track, avoiding downloading
+ * all video files on initial page load.
+ */
 export function VideoPreloader() {
-  const videoRefs = useRef<HTMLVideoElement[]>([]);
+  const warmedVideoKeys = useRef<Set<string>>(new Set());
+  const videoElements = useRef<Map<string, HTMLVideoElement>>(new Map());
 
   useEffect(() => {
-    // Create hidden video elements that instruct the browser to download & cache the files
-    videoRefs.current = ALL_TV_PRELOAD_SRCS.map((src) => {
+    let cancelled = false;
+
+    const warmVideoMetadata = (visual?: MusicVisual) => {
+      if (cancelled || !visual || visual.type !== 'video') return;
+      if (warmedVideoKeys.current.has(visual.src)) return;
+      warmedVideoKeys.current.add(visual.src);
+
       const v = document.createElement('video');
-      v.src = src;
-      v.preload = 'auto';
+      v.preload = 'metadata';
       v.muted = true;
+      v.playsInline = true;
       v.style.display = 'none';
       v.style.position = 'absolute';
       v.style.pointerEvents = 'none';
       v.setAttribute('aria-hidden', 'true');
+
+      v.addEventListener('error', () => {
+        if (cancelled) return;
+        tryVideoFallback(v, visual.src, visual.fallbackSrc);
+      });
+
+      v.src = getEffectiveVideoSrc(visual.src, visual.fallbackSrc);
       document.body.appendChild(v);
-      // Load just enough to fill decode buffers — we don't need to play
       v.load();
-      return v;
+      videoElements.current.set(visual.src, v);
+    };
+
+    // 1. Warm critical site images asynchronously right after initial paint
+    const imgTimer = window.setTimeout(() => {
+      if (cancelled) return;
+      CRITICAL_SITE_IMAGES.forEach((src) => {
+        const img = new Image();
+        img.decoding = 'async';
+        img.src = src;
+      });
+    }, 120);
+
+    // 2. Only warm metadata for the default CRT TV video on initial load
+    const videoTimer = window.setTimeout(() => {
+      if (cancelled) return;
+      const isTvOffByUser = typeof window !== 'undefined' && localStorage.getItem('crt_tv_off') === 'true';
+      if (!isTvOffByUser && DEFAULT_TV_TRACK?.visual) {
+        warmVideoMetadata(DEFAULT_TV_TRACK.visual);
+      }
+    }, 400);
+
+    // 3. When user selects or plays a track, warm metadata for active & next video track
+    const unsubscribe = musicEngine.subscribe((snapshot) => {
+      if (cancelled) return;
+      const currentTrack = MUSIC_TRACKS[snapshot.trackIndex];
+      if (currentTrack?.visual?.type === 'video') {
+        warmVideoMetadata(currentTrack.visual);
+      }
+      if (snapshot.isPlaying) {
+        const nextIndex = (snapshot.trackIndex + 1) % MUSIC_TRACKS.length;
+        const nextTrack = MUSIC_TRACKS[nextIndex];
+        if (nextTrack?.visual?.type === 'video') {
+          warmVideoMetadata(nextTrack.visual);
+        }
+      }
     });
 
     return () => {
-      videoRefs.current.forEach((v) => {
+      cancelled = true;
+      unsubscribe();
+      window.clearTimeout(imgTimer);
+      window.clearTimeout(videoTimer);
+      videoElements.current.forEach((v) => {
         v.pause();
         v.removeAttribute('src');
         v.load();
         v.remove();
       });
-      videoRefs.current = [];
+      videoElements.current.clear();
+      warmedVideoKeys.current.clear();
     };
   }, []);
 
@@ -104,60 +169,60 @@ export function CrtTvWidget() {
 
   return typeof document !== 'undefined'
     ? createPortal(
-        <AnimatePresence>
-          {show && (
+      <AnimatePresence>
+        {show && (
+          <motion.div
+            key="tv-portal-wrapper"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 9998,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            {/* Background Filter Overlay */}
             <motion.div
-              key="tv-portal-wrapper"
+              key="tv-backdrop"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.4 }}
               style={{
-                position: 'fixed',
+                position: 'absolute',
                 inset: 0,
-                zIndex: 9998,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                background: 'rgba(0, 0, 0, 0.45)',
+                backdropFilter: 'blur(4px) brightness(0.75)',
+                WebkitBackdropFilter: 'blur(4px) brightness(0.75)',
+              }}
+              onClick={handleClose}
+            />
+
+            {/* TV Unit */}
+            <motion.div
+              key="tv-unit"
+              initial={{ opacity: 0, scale: 0.92, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.88 }}
+              transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+              style={{
+                position: 'relative',
+                zIndex: 1,
+                pointerEvents: 'auto',
               }}
             >
-              {/* Background Filter Overlay */}
-              <motion.div
-                key="tv-backdrop"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.4 }}
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  background: 'rgba(0, 0, 0, 0.45)',
-                  backdropFilter: 'blur(4px) brightness(0.75)',
-                  WebkitBackdropFilter: 'blur(4px) brightness(0.75)',
-                }}
-                onClick={handleClose}
-              />
-
-              {/* TV Unit */}
-              <motion.div
-                key="tv-unit"
-                initial={{ opacity: 0, scale: 0.92, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.88 }}
-                transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                style={{
-                  position: 'relative',
-                  zIndex: 1,
-                  pointerEvents: 'auto',
-                }}
-              >
-                <VintageTv track={currentTvTrack} playing={playing} onClose={handleClose} />
-              </motion.div>
+              <VintageTv track={currentTvTrack} playing={playing} onClose={handleClose} />
             </motion.div>
-          )}
-        </AnimatePresence>,
-        document.body
-      )
+          </motion.div>
+        )}
+      </AnimatePresence>,
+      document.body
+    )
     : null;
 }
 
@@ -190,7 +255,9 @@ function VintageTv({
   const [volAngle, setVolAngle] = useState(140);
   const isMobile = useIsMobile();
 
-  const videoSrc = track.visual?.src ?? '';
+  const primarySrc = track.visual?.src ?? '';
+  const fallbackSrc = track.visual?.fallbackSrc;
+  const videoSrc = getEffectiveVideoSrc(primarySrc, fallbackSrc);
 
   // Auto-expand 'im-amazing' track once on mount/switch
   useEffect(() => {
@@ -202,29 +269,29 @@ function VintageTv({
   // Start/sync video on mount, track switch, or play state change
   useEffect(() => {
     setEnded(false);
-    
+
     const audioTime = musicEngine.getCurrentTime();
-    
+
     const handleSync = () => {
-      // Sync small video
+      // Sync small video (only play when not expanded so we never decode two streams at once)
       if (vidRef.current) {
         if (Math.abs(vidRef.current.currentTime - audioTime) > 0.3) {
           vidRef.current.currentTime = audioTime;
         }
-        if (playing) {
-          vidRef.current.play().catch(() => {});
+        if (playing && !expanded) {
+          vidRef.current.play().catch(() => { });
         } else {
           vidRef.current.pause();
         }
       }
 
-      // Sync big video
+      // Sync big video (only play when expanded)
       if (vidBigRef.current) {
         if (Math.abs(vidBigRef.current.currentTime - audioTime) > 0.3) {
           vidBigRef.current.currentTime = audioTime;
         }
-        if (playing) {
-          vidBigRef.current.play().catch(() => {});
+        if (playing && expanded) {
+          vidBigRef.current.play().catch(() => { });
         } else {
           vidBigRef.current.pause();
         }
@@ -232,7 +299,7 @@ function VintageTv({
     };
 
     handleSync();
-  }, [track.id, playing]);
+  }, [track.id, playing, expanded]);
 
   // Periodically check drift between video currentTime and audio engine when TV is playing
   useEffect(() => {
@@ -240,7 +307,7 @@ function VintageTv({
 
     const syncInterval = setInterval(() => {
       const audioTime = musicEngine.getCurrentTime();
-      
+
       [vidRef.current, vidBigRef.current].forEach((video) => {
         if (video && video.readyState >= 2) {
           if (Math.abs(video.currentTime - audioTime) > 0.5) {
@@ -274,7 +341,7 @@ function VintageTv({
     const v = expanded ? vidBigRef.current : vidRef.current;
     if (v) {
       v.currentTime = 0;
-      v.play().catch(() => {});
+      v.play().catch(() => { });
     }
   };
 
@@ -404,13 +471,22 @@ function VintageTv({
                   }}
                 >
                   <video
-                    key={videoSrc}
+                    key={primarySrc}
                     ref={vidRef}
                     src={videoSrc}
                     preload="auto"
                     muted
                     playsInline
                     autoPlay
+                    onLoadedMetadata={(e) => {
+                      const audioTime = musicEngine.getCurrentTime();
+                      if (Math.abs(e.currentTarget.currentTime - audioTime) > 0.3) {
+                        e.currentTarget.currentTime = audioTime;
+                      }
+                    }}
+                    onError={(e) => {
+                      tryVideoFallback(e.currentTarget, primarySrc, fallbackSrc);
+                    }}
                     onEnded={() => setEnded(true)}
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />
@@ -687,20 +763,31 @@ function VintageTv({
             boxShadow: '0 0 120px rgba(0,0,0,1)',
           }}
         >
-          <video
-            key={`big-${videoSrc}`}
-            ref={vidBigRef}
-            src={videoSrc}
-            preload="auto"
-            muted
-            playsInline
-            autoPlay
-            onEnded={() => {
-              setEnded(true);
-              setExpanded(false);
-            }}
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-          />
+          {expanded && (
+            <video
+              key={`big-${primarySrc}`}
+              ref={vidBigRef}
+              src={videoSrc}
+              preload="auto"
+              muted
+              playsInline
+              autoPlay
+              onLoadedMetadata={(e) => {
+                const audioTime = musicEngine.getCurrentTime();
+                if (Math.abs(e.currentTarget.currentTime - audioTime) > 0.3) {
+                  e.currentTarget.currentTime = audioTime;
+                }
+              }}
+              onError={(e) => {
+                tryVideoFallback(e.currentTarget, primarySrc, fallbackSrc);
+              }}
+              onEnded={() => {
+                setEnded(true);
+                setExpanded(false);
+              }}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          )}
           <CrtFx />
           <div
             style={{
