@@ -6,6 +6,8 @@ import { PageTransition } from '../components/PageTransition';
 import { ClassifiedStamp } from '../components/Stamps';
 import { DailyBugle } from '../components/DailyBugle';
 import { Highlight } from '../components/Highlight';
+import { Paper } from '../components/ui/paper';
+import type { EdgeSpec } from '../lib/ink/paper/edges';
 import { 
   Trophy, Medal, BookOpen, ExternalLink, X, HelpCircle, 
   Sparkles, Award, Pin as PinIcon, RefreshCw, FileText,
@@ -70,7 +72,7 @@ const INITIAL_NODES: NodeItem[] = [
       'Active Stations: New Delhi Operations Core'
     ],
     fieldNotes: 'Subject exhibits intense focus during critical build sequences. Heavy ginger-cardamom chai dependency logged during late-night cycles (2300 - 0400 hours). Tends to optimize layout padding to pixel perfection.',
-    relatedEntities: ['p-lazyclip', 'p-relay', 'p-upstart', 'p-devcation', 'a-ieee']
+    relatedEntities: ['p-lazyclip', 'p-ledgerforge', 'p-relay', 'p-devcation', 'a-ieee', 'a-syndicate']
   },
   {
     id: 'p-lazyclip',
@@ -103,7 +105,7 @@ const INITIAL_NODES: NodeItem[] = [
       'Revenue Potential: High-density interest registered from creator economy'
     ],
     fieldNotes: 'An outstanding sprint of rapid prototyping. The speed of execution surprised global competition. Recommending further investment into AI audio/video sync loops.',
-    relatedEntities: ['subject', 'a-hermes']
+    relatedEntities: ['subject', 'p-ledgerforge']
   },
   {
     id: 'p-relay',
@@ -136,36 +138,7 @@ const INITIAL_NODES: NodeItem[] = [
     fieldNotes: 'Pushes the boundaries of decentralized autonomous agent economies. A critical component in the machine-to-machine financial infrastructure layer.',
     relatedEntities: ['subject']
   },
-  {
-    id: 'p-upstart',
-    type: 'project',
-    label: 'OPERATION UPSTART',
-    title: 'UPSTART BLUEPRINT',
-    desc: 'AI tool generating validated startup roadmaps from ideas. Employs Google GenAI and Trends API.',
-    tech: 'Next.js, SQLite, Gemini API',
-    imageUrl: '/upstart-mockup.png',
-    links: {
-      site: 'https://github.com/MDMOINAKHTARR'
-    },
-    width: 250,
-    height: 285,
-    rotation: 1.4,
-    status: 'ACTIVE DEVELOPMENT / PROTOTYPE V2',
-    codeName: 'PROJECT UPSTART',
-    briefing: 'An intelligent planning tool that takes startup business ideas and automatically generates complete development roadmaps, competitor analysis, suggested tech stacks, and step-by-step launch plans.',
-    technicalBreakdown: [
-      'Utilized Gemini Pro API for high-context structured JSON generation representing complete milestone timelines.',
-      'Implemented client-side caching with SQLite and IndexedDB to ensure zero-latency offline plan editing.',
-      'Integrated real-time search trends API to fetch live competitor keywords and validate market demand.'
-    ],
-    metrics: [
-      'Generation Speed: < 4 seconds for full multi-page blueprint',
-      'Validation Accuracy: 92% user satisfaction score on initial cohort',
-      'Data Points Indexed: 10k+ API specifications and market guides'
-    ],
-    fieldNotes: 'Simplifies the complex task of initial ideation and technical planning. Designed to decrease failure rates of early stage builders by highlighting existing dependencies.',
-    relatedEntities: ['subject']
-  },
+
   {
     id: 'p-devcation',
     type: 'project',
@@ -232,7 +205,7 @@ const INITIAL_NODES: NodeItem[] = [
     imageUrl: 'https://plain-apac-prod-public.komododecks.com/202606/08/UetCU2yFfO1yPU1VnGh7/image.jpg',
     pdfUrl: '/Team%20Kaizenn.pdf',
     links: {
-      x: 'https://x.com/___moinn_/status/2034662071808508329?s=20',
+      x: 'https://x.com/Moincrafted/status/2034662071808508329?s=20',
       linkedin: 'https://www.linkedin.com/posts/mdmoinakhtar_promptengineering-promptwars-innerve2026-ugcPost-7440279761559576576-iRby/'
     },
     width: 240,
@@ -263,7 +236,7 @@ const INITIAL_NODES: NodeItem[] = [
     tech: 'BERT Similarity, QA Factuality, NLI Entailment',
     links: {
       ieee: 'https://ieeexplore.ieee.org/document/11441054',
-      x: 'https://x.com/___moinn_/status/2038219385077375293?s=20',
+      x: 'https://x.com/Moincrafted/status/2038219385077375293?s=20',
       linkedin: 'https://www.linkedin.com/posts/mdmoinakhtar_ai-machinelearning-generativeai-share-7444005556559794176-z_Ot/'
     },
     width: 280,
@@ -362,22 +335,87 @@ const INITIAL_NODES: NodeItem[] = [
     ],
     fieldNotes: 'Crucial defense. The paper\'s mathematical pipeline has been integrated into the portfolio\'s mock server endpoints to validate input consistency.',
     relatedEntities: ['subject', 'a-ieee']
+  },
+  {
+    id: 'p-ledgerforge',
+    type: 'project',
+    label: 'OPERATION LEDGERFORGE',
+    title: 'LEDGERFORGE',
+    desc: 'Governed AI bank-to-ledger reconciliation engine with a 112-test safety suite.',
+    tech: 'React, FastAPI, Supabase, OpenAI, Python',
+    imageUrl: '/ledgerforge-landing.webp',
+    links: {
+      site: 'https://github.com/MDMOINAKHTARR/LedgerForge',
+      x: 'https://x.com/Moincrafted/status/2097019500835311787?s=20'
+    },
+    width: 245,
+    height: 265,
+    rotation: -1.6,
+    status: 'ACTIVE / 112-TEST SUITE',
+    codeName: 'OPERATION OP-410',
+    briefing: 'Auditable bank-to-ledger reconciliation platform pairing deterministic accounting rules with governed LLM exception review so every match is traceable and safe.',
+    technicalBreakdown: [
+      'Engineered deterministic matching rules paired with FastAPI & OpenAI exception explanation pipelines.',
+      'Persisted reconciliation ledgers and audit trails in Supabase PostgreSQL.',
+      'Validated edge-case financial invariants with a 112-test automated safety suite.'
+    ],
+    metrics: [
+      'Safety Coverage: 112-Test Automated Safety Suite',
+      'Architecture: Deterministic Rules + AI Governance',
+      'Core Stack: React, FastAPI, Supabase, Python'
+    ],
+    fieldNotes: 'Built for zero-hallucination financial workflows—every AI suggestion is backed by deterministic audit receipts.',
+    relatedEntities: ['subject', 'a-syndicate', 'a-ieee']
+  },
+  {
+    id: 'a-syndicate',
+    type: 'achievement',
+    label: 'HACKATHON WIN #04',
+    title: 'SYNDICATE BY MAXIMOR',
+    desc: 'Won $100 in GPU credits at the Syndicate hackathon by Maximor by building LedgerForge.',
+    tech: 'AI Engineering, Rapid Prototyping',
+    width: 235,
+    height: 225,
+    rotation: 2.1,
+    status: 'WINNER / $100 GPU CREDITS',
+    codeName: 'AWARD SYNDICATE-26',
+    briefing: 'Winner at the Syndicate hackathon hosted by Maximor, awarded $100 in GPU compute credits for building LedgerForge—an auditable AI bank-to-ledger reconciliation platform.',
+    technicalBreakdown: [
+      'Architected and shipped an end-to-end AI workflow under hackathon time constraints.',
+      'Demonstrated live functional reliability and clear engineering trade-offs to judges.'
+    ],
+    metrics: [
+      'Standing: Hackathon Winner',
+      'Prize: $100 GPU Compute Credits',
+      'Host: Maximor'
+    ],
+    fieldNotes: 'Fourth verified hackathon award—compute credits reinvested directly into model evaluation & prototyping.',
+    relatedEntities: ['subject', 'a-hermes']
   }
 ];
 
 const CONNECTIONS = [
   { from: 'subject', to: 'p-lazyclip' },
+  { from: 'subject', to: 'p-ledgerforge' },
   { from: 'subject', to: 'p-relay' },
-  { from: 'subject', to: 'p-upstart' },
   { from: 'subject', to: 'p-devcation' },
   { from: 'subject', to: 'a-ieee' },
+  { from: 'subject', to: 'a-syndicate' },
   { from: 'a-hermes', to: 'p-lazyclip' },
+  { from: 'a-syndicate', to: 'p-ledgerforge' },
   { from: 'a-promptwars', to: 'p-devcation' }
 ];
 
-const Pin = () => (
+const PIN_COLORS = {
+  red: 'bg-rose-600',
+  gold: 'bg-amber-400',
+  blue: 'bg-sky-600',
+  green: 'bg-emerald-600',
+} as const;
+
+const Pin = ({ color = 'red' }: { color?: keyof typeof PIN_COLORS }) => (
   <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center pointer-events-none">
-    <div className="w-3.5 h-3.5 rounded-full bg-rose-600 shadow-[0_2px_4px_rgba(0,0,0,0.5),inset_-1px_-1px_3px_rgba(0,0,0,0.5),inset_1px_1px_3px_rgba(255,255,255,0.7)]" />
+    <div className={`w-3.5 h-3.5 rounded-full ${PIN_COLORS[color]} shadow-[0_2px_4px_rgba(0,0,0,0.5),inset_-1px_-1px_3px_rgba(0,0,0,0.5),inset_1px_1px_3px_rgba(255,255,255,0.7)]`} />
     <div className="w-1 h-3.5 bg-neutral-900/40 -mt-1 blur-[1px] rotate-[15deg] transform origin-top" />
   </div>
 );
@@ -394,24 +432,77 @@ const Tape = ({ rotate = 0 }: { rotate?: number }) => (
   />
 );
 
+const RedTape = ({ className = '' }: { className?: string }) => (
+  <div
+    aria-hidden="true"
+    className={`pointer-events-none select-none absolute z-40 h-4 w-12 bg-rose-700/75 border-y border-rose-950/25 shadow-[0_2px_4px_rgba(0,0,0,0.28)] backdrop-blur-[0.5px] ${className}`}
+    style={{
+      backgroundImage:
+        'repeating-linear-gradient(90deg, rgba(255,255,255,0.08) 0px, rgba(255,255,255,0.08) 1px, transparent 1px, transparent 4px)',
+      clipPath:
+        'polygon(4% 0%, 96% 2%, 100% 18%, 95% 42%, 100% 72%, 96% 98%, 4% 100%, 0% 76%, 5% 48%, 0% 20%)',
+    }}
+  />
+);
+
+const ScotchTape = ({ className = '' }: { className?: string }) => (
+  <div
+    aria-hidden="true"
+    className={`pointer-events-none select-none absolute z-40 h-3.5 w-11 bg-amber-100/55 border-y border-amber-900/15 shadow-[0_1px_3px_rgba(0,0,0,0.18)] backdrop-blur-[0.5px] ${className}`}
+    style={{
+      clipPath:
+        'polygon(3% 0%, 97% 4%, 100% 25%, 96% 52%, 100% 80%, 96% 100%, 3% 97%, 0% 74%, 4% 44%, 0% 18%)',
+    }}
+  />
+);
+
+const BrassTack = ({ className = '' }: { className?: string }) => (
+  <span
+    aria-hidden="true"
+    className={`pointer-events-none select-none absolute z-40 w-3 h-3 rounded-full border border-amber-950/55 bg-gradient-to-br from-amber-200 via-amber-400 to-amber-700 shadow-[0_2px_3px_rgba(0,0,0,0.45),inset_0_1px_1px_rgba(255,255,255,0.7)] ${className}`}
+  />
+);
+
+const PaperClip = ({ className = '' }: { className?: string }) => (
+  <div
+    aria-hidden="true"
+    className={`pointer-events-none select-none absolute z-40 w-3 h-7 rounded-full border-[1.5px] border-stone-400 shadow-[1px_2px_3px_rgba(0,0,0,0.35)] ${className}`}
+  >
+    <div className="absolute inset-x-0.5 top-1 bottom-1.5 rounded-full border border-stone-300/80" />
+  </div>
+);
+
+const BinderClip = ({ className = '' }: { className?: string }) => (
+  <div
+    aria-hidden="true"
+    className={`pointer-events-none select-none absolute z-40 flex flex-col items-center ${className}`}
+  >
+    <div className="w-3.5 h-2 rounded-t-full border-[1.5px] border-stone-400 border-b-0 -mb-0.5" />
+    <div className="w-6 h-2.5 rounded-[1px] bg-stone-900 border border-stone-700 shadow-[0_2px_4px_rgba(0,0,0,0.45)]" />
+  </div>
+);
+
 const NODE_OFFSETS: Record<string, { x: number; y: number }> = {
-  subject: { x: 660, y: 330 },
-  'p-lazyclip': { x: 160, y: 40 },
-  'p-relay': { x: 120, y: 680 },
-  'p-upstart': { x: 1190, y: 40 },
-  'p-devcation': { x: 1230, y: 680 },
-  'a-hermes': { x: 40, y: 360 },
-  'a-promptwars': { x: 1320, y: 360 },
-  'a-ieee': { x: 660, y: 40 },
-  's-chai': { x: 440, y: 40 },
-  's-intel': { x: 980, y: 680 },
-  's-warn': { x: 440, y: 680 }
+  subject: { x: 660, y: 325 },
+  'p-lazyclip': { x: 120, y: 62 },
+  'p-ledgerforge': { x: 1120, y: 62 },
+  'p-relay': { x: 125, y: 655 },
+  'p-devcation': { x: 1215, y: 655 },
+  'a-hermes': { x: 140, y: 365 },
+  'a-syndicate': { x: 1005, y: 375 },
+  'a-promptwars': { x: 1280, y: 365 },
+  'a-ieee': { x: 675, y: 64 },
+  's-chai': { x: 430, y: 78 },
+  's-intel': { x: 965, y: 705 },
+  's-warn': { x: 435, y: 705 }
 };
 
 export function EvidenceWall() {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const [flippedNodeId, setFlippedNodeId] = useState<string | null>(null);
+  const [boardFilter, setBoardFilter] = useState<'all' | 'project' | 'achievement' | 'sticky'>('all');
+  const [zoomMul, setZoomMul] = useState(1);
   const [showPubDetails, setShowPubDetails] = useState(false);
   const [activePdf, setActivePdf] = useState<string | null>(null);
   const [scale, setScale] = useState(1);
@@ -469,6 +560,28 @@ export function EvidenceWall() {
       return () => clearInterval(interval);
     }
   }, [activeTab, selectedNodeId]);
+
+  // Keyboard shortcuts: Escape closes drawer or flips card back; ArrowLeft/ArrowRight steps through cards when drawer is open
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (selectedNodeId) setSelectedNodeId(null);
+        else if (flippedNodeId) setFlippedNodeId(null);
+        return;
+      }
+      if (selectedNodeId && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) {
+        const idx = INITIAL_NODES.findIndex((n) => n.id === selectedNodeId);
+        if (idx === -1) return;
+        const nextIdx =
+          e.key === 'ArrowRight'
+            ? (idx + 1) % INITIAL_NODES.length
+            : (idx - 1 + INITIAL_NODES.length) % INITIAL_NODES.length;
+        setSelectedNodeId(INITIAL_NODES[nextIdx].id);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [selectedNodeId, flippedNodeId]);
 
   // Whenever selectedNodeId changes, default tab back to overview and toggle body class for Exit button slide
   useEffect(() => {
@@ -539,7 +652,7 @@ export function EvidenceWall() {
     }
   };
 
-  const activeNodeId = hoveredNodeId || selectedNodeId || 'subject';
+  const activeNodeId = hoveredNodeId || selectedNodeId;
   const selectedNode = INITIAL_NODES.find(n => n.id === selectedNodeId);
 
   return (
@@ -551,10 +664,74 @@ export function EvidenceWall() {
           audioEngine.init();
           audioEngine.playClick();
         }}
-        className="fixed top-3 right-4 z-50 inline-flex items-center gap-1.5 border border-stone-950 bg-stone-950 px-2.5 py-1 font-mono text-[9px] font-black text-amber-200 shadow-md hover:bg-rose-700 hover:text-white transition-colors"
+        className="fixed right-3 top-3 z-50 inline-flex items-center gap-1.5 border border-stone-950 bg-stone-950 px-2.5 py-1 font-mono text-[9px] font-black text-amber-200 shadow-md transition-colors hover:bg-rose-700 hover:text-white sm:right-4"
       >
         <span>➔ RETURN TO AWARDS DOSSIER</span>
       </Link>
+
+      {/* Compact Corkboard Filter Tabs (Top Center) */}
+      <div
+        role="group"
+        aria-label="Filter evidence board"
+        className="fixed top-3 left-1/2 -translate-x-1/2 z-50 hidden md:flex items-center gap-1 rounded-[3px] border border-stone-950 bg-[#faf7eb]/95 p-1 shadow-[3px_3px_0_rgba(0,0,0,0.35)] backdrop-blur-xs"
+      >
+        {(
+          [
+            { id: 'all', label: 'ALL (12)' },
+            { id: 'project', label: 'PROJECTS' },
+            { id: 'achievement', label: 'AWARDS' },
+            { id: 'sticky', label: 'NOTES' },
+          ] as const
+        ).map((tab) => {
+          const active = boardFilter === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => {
+                audioEngine.init();
+                audioEngine.playClick();
+                setBoardFilter(tab.id);
+              }}
+              className={`px-2 py-0.5 rounded-[2px] font-mono text-[9px] font-black tracking-wider uppercase transition-colors cursor-pointer ${
+                active
+                  ? 'bg-rose-700 text-white'
+                  : 'text-stone-800 hover:bg-amber-200/70'
+              }`}
+            >
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Compact Zoom Controls (Bottom-Left Desktop) */}
+      <div className="fixed bottom-3 left-3 z-40 hidden xl:flex items-center gap-1 rounded-[3px] border border-stone-950 bg-[#faf7eb]/95 p-1 shadow-[2px_2px_0_rgba(0,0,0,0.3)] font-mono text-[9px] font-black text-stone-900">
+        <button
+          type="button"
+          onClick={() => setZoomMul((z) => Math.max(0.8, +(z - 0.1).toFixed(2)))}
+          className="w-5 h-5 flex items-center justify-center rounded-[2px] hover:bg-amber-200/70 cursor-pointer"
+          aria-label="Zoom out board"
+        >
+          -
+        </button>
+        <button
+          type="button"
+          onClick={() => setZoomMul(1)}
+          className="px-1.5 h-5 flex items-center justify-center rounded-[2px] hover:bg-amber-200/70 cursor-pointer"
+          title="Reset zoom"
+        >
+          {Math.round(zoomMul * 100)}%
+        </button>
+        <button
+          type="button"
+          onClick={() => setZoomMul((z) => Math.min(1.25, +(z + 0.1).toFixed(2)))}
+          className="w-5 h-5 flex items-center justify-center rounded-[2px] hover:bg-amber-200/70 cursor-pointer"
+          aria-label="Zoom in board"
+        >
+          +
+        </button>
+      </div>
 
       {/* LEFT SIDEBAR — Daily Bugle */}
       <DailyBugle />
@@ -595,23 +772,29 @@ export function EvidenceWall() {
             initial={{ opacity: 0, scale: scale * 0.95, y: 15 }}
             animate={{ 
               opacity: 1,
-              scale: selectedNodeId ? scale * 0.90 : scale, 
+              scale: (selectedNodeId ? scale * 0.90 : scale) * zoomMul, 
               x: selectedNodeId ? -160 * scale : 0, 
               y: 0 
             }}
-            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute w-[1600px] h-[1000px] rounded-lg border-[14px] border-amber-950 bg-[#88624a] shadow-[0_20px_50px_rgba(0,0,0,0.85),inset_0_0_100px_rgba(0,0,0,0.55)] overflow-hidden"
+            transition={{ type: 'spring', stiffness: 260, damping: 28, mass: 0.9 }}
+            className="absolute w-[1600px] h-[1000px] rounded-lg border-[14px] border-[#3b2314] bg-[#8b634b] shadow-[0_28px_70px_rgba(0,0,0,0.9),inset_0_0_0_2px_rgba(255,215,160,0.14),inset_0_0_120px_rgba(0,0,0,0.6)] overflow-hidden"
             style={{
               transformOrigin: 'center center',
               backgroundImage: `
-                radial-gradient(circle at 50% 50%, rgba(255,255,255,0.06) 1px, transparent 1px),
-                radial-gradient(circle at 0 0, rgba(0,0,0,0.15) 1.5px, transparent 1.5px)
+                radial-gradient(ellipse 65% 55% at 50% 40%, rgba(255,244,214,0.17) 0%, transparent 65%, rgba(16,8,3,0.45) 100%),
+                radial-gradient(circle at 50% 50%, rgba(255,255,255,0.08) 1px, transparent 1px),
+                radial-gradient(circle at 0 0, rgba(0,0,0,0.18) 1.5px, transparent 1.5px),
+                radial-gradient(circle at 30% 70%, rgba(62,34,16,0.14) 1px, transparent 1px)
               `,
-              backgroundSize: '8px 8px, 16px 16px'
+              backgroundSize: '100% 100%, 7px 7px, 15px 15px, 11px 11px'
             }}
           >
-            {/* Cork Board Wood Trim shadow overlay */}
-            <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_30px_rgba(0,0,0,0.8)] z-15" />
+            {/* Cork Board Wood Trim shadow overlay & Brass Corner Brackets */}
+            <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_34px_rgba(0,0,0,0.82)] z-15" />
+            <span aria-hidden="true" className="pointer-events-none absolute top-2 left-2 w-6 h-6 border-t-2 border-l-2 border-amber-500/45 z-20" />
+            <span aria-hidden="true" className="pointer-events-none absolute top-2 right-2 w-6 h-6 border-t-2 border-r-2 border-amber-500/45 z-20" />
+            <span aria-hidden="true" className="pointer-events-none absolute bottom-2 left-2 w-6 h-6 border-b-2 border-l-2 border-amber-500/45 z-20" />
+            <span aria-hidden="true" className="pointer-events-none absolute bottom-2 right-2 w-6 h-6 border-b-2 border-r-2 border-amber-500/45 z-20" />
 
             {/* Background Board Dividers & Chalk Markings */}
             <div className="absolute inset-0 pointer-events-none select-none overflow-hidden z-0 opacity-45">
@@ -708,8 +891,24 @@ export function EvidenceWall() {
                 <div className="w-1.5 h-16 bg-black transform rotate-[30deg] shrink-0" />
               </div>
 
-              {/* Pinned memo scrap — bottom-right */}
-              <div className="absolute right-[50px] bottom-[80px] w-48 h-[120px] bg-[#faf7eb] border border-ink/20 shadow-lg transform rotate-[4deg] p-3.5 font-mono text-[9px] text-ink/80 leading-normal select-none pointer-events-none z-15">
+              {/* Pinned Lab Clearance Tag — top-right (chamfered inspection tag corners) */}
+              <div
+                className="relative absolute right-[42px] top-[168px] w-36 bg-[#f6f1e2] border border-ink/25 shadow-md transform rotate-[5deg] p-2.5 font-mono text-[8.5px] text-ink/80 select-none pointer-events-none z-15"
+                style={{ clipPath: 'polygon(10px 0%, calc(100% - 10px) 0%, 100% 10px, 100% 100%, 0% 100%, 0% 10px)' }}
+              >
+                <BrassTack className="-top-1.5 -right-1.5" />
+                <div className="w-2 h-2 rounded-full bg-amber-500 border border-amber-800/50 mx-auto mb-1.5" />
+                <div className="text-[7.5px] font-black tracking-[0.18em] text-rose-800 uppercase">VIPS-TC // LAB</div>
+                <div className="font-stamp text-xs text-ink mt-0.5">CGPA 8.27</div>
+                <div className="text-[7.5px] text-ink/55 mt-0.5">B.TECH AI &amp; DS</div>
+              </div>
+
+              {/* Pinned memo scrap — bottom-right (torn notepad top edge) */}
+              <div
+                className="absolute right-[50px] bottom-[80px] w-48 h-[120px] bg-[#faf7eb] border border-ink/20 shadow-lg transform rotate-[4deg] p-3.5 pt-4 font-mono text-[9px] text-ink/80 leading-normal select-none pointer-events-none z-15"
+                style={{ clipPath: 'polygon(0% 3%, 8% 0%, 16% 3.5%, 24% 0.5%, 33% 3%, 42% 0%, 51% 3.5%, 60% 0.5%, 69% 3%, 78% 0%, 87% 3.5%, 95% 0.5%, 100% 3%, 100% 100%, 0% 100%)' }}
+              >
+                <ScotchTape className="-bottom-1.5 -left-3 rotate-[32deg]" />
                 {/* Red pushpin */}
                 <div className="absolute -top-2 left-1/2 -translate-x-1/2 flex flex-col items-center">
                   <div className="w-2.5 h-2.5 rounded-full bg-rose-600 shadow-[0_1px_3px_rgba(0,0,0,0.4)]" />
@@ -718,26 +917,45 @@ export function EvidenceWall() {
                 <div className="border-b border-dashed border-ink/15 pb-1 mb-1.5 font-bold text-[8px] text-rose-800 uppercase tracking-wider">
                   Portfolio Summary
                 </div>
-                <p className="text-[8.5px] leading-relaxed">All 11 records verified. Projects, awards, and certifications confirmed active.</p>
+                <p className="text-[8.5px] leading-relaxed">All 12 records verified. Projects, awards, and certifications confirmed active.</p>
                 <div className="mt-2 text-right text-[7.5px] font-bold text-ink/35 tracking-widest">MMA · 2026</div>
               </div>
 
-              {/* Second sticky note — top center-right, pinned with yellow pin */}
-              <div className="absolute right-[310px] top-[75px] w-36 bg-[#fefce8] border border-yellow-300/60 shadow-md transform rotate-[-3deg] p-3 font-mono text-[9px] text-ink/75 leading-normal select-none pointer-events-none z-15">
+              {/* Second sticky note — top center-right, Looseleaf torn bottom edge */}
+              <Paper
+                stock="sticky-yellow"
+                edge={{ bottom: 'torn' }}
+                curl
+                tilt={false}
+                seed="ew-quick-note"
+                className="absolute! right-[310px] top-[75px] w-36 transform rotate-[-3deg] p-3 font-mono text-[9px] text-ink/80 leading-normal select-none pointer-events-none z-15"
+              >
+                <ScotchTape className="-bottom-1.5 -left-3 rotate-[28deg]" />
                 <div className="absolute -top-2 left-1/2 -translate-x-1/2 flex flex-col items-center">
                   <div className="w-2.5 h-2.5 rounded-full bg-yellow-500 shadow-[0_1px_3px_rgba(0,0,0,0.3)]" />
                   <div className="w-0.5 h-2 bg-neutral-900/30 -mt-0.5" />
                 </div>
-                <div className="font-black text-[8px] text-yellow-700 uppercase tracking-wider mb-1 border-b border-yellow-200 pb-1">Quick Note</div>
+                <div className="font-black text-[8px] text-yellow-800 uppercase tracking-wider mb-1 border-b border-yellow-900/15 pb-1">Quick Note</div>
                 <p className="text-[8.5px] leading-relaxed">Click any card on the board to read more about it.</p>
-              </div>
+              </Paper>
             </div>
 
-            {/* Spider-Man handwritten courtesy note — bottom-center, clear of other notes */}
-            <div
-              className="absolute w-[152px] bg-white shadow-[4px_6px_22px_rgba(0,0,0,0.45)] transform rotate-[2.5deg] select-none pointer-events-none"
-              style={{ padding: '20px 18px 16px', zIndex: 25, left: '680px', bottom: '88px' }}
+            {/* Spider-Man handwritten courtesy note — bottom-center (Looseleaf torn bottom edge) */}
+            <Paper
+              stock="paper"
+              edge={{ bottom: 'torn' }}
+              curl
+              tilt={false}
+              seed="ew-spiderman-note"
+              className="absolute! w-[152px] transform rotate-[2.5deg] select-none pointer-events-none"
+              style={{
+                padding: '20px 18px 18px',
+                zIndex: 25,
+                left: '680px',
+                bottom: '88px',
+              }}
             >
+              <ScotchTape className="-bottom-1.5 -right-3 -rotate-[32deg]" />
               {/* Red pushpin */}
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex flex-col items-center">
                 <div className="w-3.5 h-3.5 rounded-full bg-rose-600 shadow-[0_2px_6px_rgba(180,0,0,0.55)]" />
@@ -759,7 +977,7 @@ export function EvidenceWall() {
                 Neighborhood<br />
                 <span style={{ fontWeight: 600 }}>Spider-Man</span>
               </p>
-            </div>
+            </Paper>
 
             {/* SVG Yarn Connections */}
             <svg className="absolute inset-0 w-full h-full pointer-events-none z-20">
@@ -787,35 +1005,71 @@ export function EvidenceWall() {
 
                 if (!fromNode || !toNode || !fromPos || !toPos) return null;
 
-                // Compute center pin positions
+                // Pin anchor coordinates
                 const startX = fromPos.x + fromNode.width / 2;
-                const startY = fromPos.y; // Connect at top pin coordinate
+                const startY = fromPos.y;
                 const endX = toPos.x + toNode.width / 2;
-                const endY = toPos.y; // Connect at top pin coordinate
+                const endY = toPos.y;
 
                 const isRelatedHovered = activeNodeId === conn.from || activeNodeId === conn.to;
+                const dx = endX - startX;
+                const dy = endY - startY;
+                const dist = Math.hypot(dx, dy);
+
+                // Distance-proportional gravity sag: longer spans droop naturally; hovered/active threads pull taut
+                const relaxedSag = Math.min(76, Math.max(22, dist * 0.095)) + (idx % 2) * 6;
+                const tautSag = relaxedSag * 0.52;
+                const swayX = dx * 0.035;
+                const midX = (startX + endX) / 2 + swayX;
+                const midY = (startY + endY) / 2;
+
+                const activePath = isRelatedHovered
+                  ? `M ${startX} ${startY} Q ${midX} ${midY + tautSag} ${endX} ${endY}`
+                  : `M ${startX} ${startY} Q ${midX} ${midY + relaxedSag} ${endX} ${endY}`;
+                const shadowPath = isRelatedHovered
+                  ? `M ${startX + 1.5} ${startY + 6} Q ${midX + 1.5} ${midY + tautSag + 6} ${endX + 1.5} ${endY + 6}`
+                  : `M ${startX + 1.5} ${startY + 6} Q ${midX + 1.5} ${midY + relaxedSag + 6} ${endX + 1.5} ${endY + 6}`;
+                const threadOpacity = activeNodeId ? (isRelatedHovered ? 1 : 0.25) : 0.88;
+                const springConfig = { type: 'spring' as const, stiffness: 210, damping: 14, mass: 0.7 };
 
                 return (
                   <g key={`${conn.from}-${conn.to}-${idx}`}>
-                    {isRelatedHovered && (
-                      <path
-                        d={`M ${startX} ${startY} Q ${(startX + endX) / 2 + 10} ${(startY + endY) / 2 - 15} ${endX} ${endY}`}
-                        fill="none"
-                        stroke="#dc2626"
-                        strokeWidth="6"
-                        strokeOpacity="0.8"
-                        filter="url(#yarn-glow)"
-                      />
-                    )}
-                    <path
-                      d={`M ${startX} ${startY} Q ${(startX + endX) / 2 + 5} ${(startY + endY) / 2 - 10} ${endX} ${endY}`}
+                    {/* Cast shadow onto corkboard below the hanging thread */}
+                    <motion.path
+                      initial={false}
+                      animate={{ d: shadowPath, strokeOpacity: activeNodeId ? (isRelatedHovered ? 0.48 : 0.1) : 0.35 }}
+                      transition={springConfig}
                       fill="none"
-                      stroke={isRelatedHovered ? '#ff3333' : '#a82020'}
-                      strokeWidth="2.5"
-                      strokeOpacity={hoveredNodeId ? (isRelatedHovered ? 1.0 : 0.2) : 0.8}
-                      filter="url(#yarn-shadow)"
-                      className="transition-all duration-300"
+                      stroke="rgba(18, 7, 2, 0.42)"
+                      strokeWidth="3"
+                      strokeLinecap="round"
                     />
+                    {/* Core twisted crimson yarn */}
+                    <motion.path
+                      initial={false}
+                      animate={{ d: activePath, strokeOpacity: threadOpacity }}
+                      transition={springConfig}
+                      fill="none"
+                      stroke={isRelatedHovered ? '#ef4444' : '#9f1d1d'}
+                      strokeWidth={isRelatedHovered ? 2.8 : 2.4}
+                      strokeLinecap="round"
+                    />
+                    {/* Fine fiber-twist highlight along the yarn */}
+                    <motion.path
+                      initial={false}
+                      animate={{ d: activePath, strokeOpacity: isRelatedHovered ? 0.42 : threadOpacity * 0.22 }}
+                      transition={springConfig}
+                      fill="none"
+                      stroke="#fecaca"
+                      strokeWidth="0.95"
+                      strokeDasharray="5 6"
+                      strokeLinecap="round"
+                    />
+                    {/* Wrapped yarn knots at pushpin endpoints */}
+                    <circle cx={startX} cy={startY} r="4.2" fill="none" stroke={isRelatedHovered ? '#ef4444' : '#7f1d1d'} strokeWidth="1.6" opacity={threadOpacity} />
+                    <circle cx={startX} cy={startY} r="2.2" fill={isRelatedHovered ? '#fca5a5' : '#991b1b'} opacity={threadOpacity} />
+                    <circle cx={endX} cy={endY} r="4.2" fill="none" stroke={isRelatedHovered ? '#ef4444' : '#7f1d1d'} strokeWidth="1.6" opacity={threadOpacity} />
+                    <circle cx={endX} cy={endY} r="2.2" fill={isRelatedHovered ? '#fca5a5' : '#991b1b'} opacity={threadOpacity} />
                   </g>
                 );
               })}
@@ -829,13 +1083,17 @@ export function EvidenceWall() {
               const isHovered = hoveredNodeId === node.id;
               const isFlipped = flippedNodeId === node.id;
               const isSelected = selectedNodeId === node.id;
+              const isDimmedByFilter =
+                boardFilter !== 'all' && node.type !== boardFilter && node.type !== 'subject';
 
               return (
                 <div
                   key={node.id}
                   onMouseEnter={() => setHoveredNodeId(node.id)}
                   onMouseLeave={() => setHoveredNodeId(null)}
-                  className="absolute pointer-events-auto cursor-pointer z-30"
+                  className={`absolute pointer-events-auto cursor-pointer z-30 transition-opacity duration-300 ${
+                    isDimmedByFilter ? 'opacity-30' : 'opacity-100'
+                  }`}
                   style={{
                     left: pos.x,
                     top: pos.y,
@@ -845,20 +1103,75 @@ export function EvidenceWall() {
                   }}
                 >
                   <motion.div
-                    className="w-full h-full"
-                    style={{
-                      transform: `rotate(${node.rotation || 0}deg)`
-                    }}
-                    whileHover={{ scale: 1.03 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                    className="group/card w-full h-full"
+                    style={{ transformOrigin: '50% 10px' }}
+                    initial={{ rotate: node.rotation || 0 }}
+                    whileHover={{ scale: 1.03, y: -3, rotate: (node.rotation || 0) * 0.35 }}
+                    whileTap={{ scale: 0.985, rotate: (node.rotation || 0) * 1.35 }}
+                    transition={{ type: "spring", stiffness: 240, damping: 16, mass: 0.85 }}
                   >
                     {node.type === 'sticky' ? (
                       <Tape rotate={-3} />
                     ) : node.type === 'project' ? (
                       <Tape rotate={2} />
                     ) : (
-                      <Pin />
+                      <Pin
+                        color={
+                          node.id === 'a-hermes'
+                            ? 'gold'
+                            : node.id === 'a-ieee'
+                              ? 'blue'
+                              : node.id === 'a-syndicate'
+                                ? 'green'
+                                : 'red'
+                        }
+                      />
                     )}
+                    {node.id === 'subject' && (
+                      <BrassTack className="bottom-1.5 left-1.5" />
+                    )}
+                    {node.id === 'p-lazyclip' && (
+                      <>
+                        <ScotchTape className="-top-1.5 -left-3.5 -rotate-[36deg]" />
+                        <RedTape className="-bottom-1.5 -left-3.5 rotate-[34deg]" />
+                      </>
+                    )}
+                    {node.id === 'p-ledgerforge' && (
+                      <>
+                        <PaperClip className="-top-3 right-5 rotate-[8deg]" />
+                        <ScotchTape className="-bottom-1.5 -left-3.5 rotate-[32deg]" />
+                      </>
+                    )}
+                    {node.id === 'p-relay' && (
+                      <>
+                        <ScotchTape className="-top-1.5 -left-3.5 -rotate-[36deg]" />
+                        <BrassTack className="bottom-1.5 left-1.5" />
+                      </>
+                    )}
+                    {node.id === 'p-devcation' && (
+                      <>
+                        <PaperClip className="-top-3 left-5 -rotate-[6deg]" />
+                        <RedTape className="-top-1.5 -right-3.5 rotate-[30deg]" />
+                      </>
+                    )}
+                    {node.id === 'a-hermes' && <BrassTack className="bottom-1.5 left-1.5" />}
+                    {node.id === 'a-syndicate' && <RedTape className="-bottom-1.5 -left-3.5 rotate-[34deg]" />}
+                    {node.id === 'a-promptwars' && <BrassTack className="bottom-1.5 right-1.5" />}
+                    {node.id === 'a-ieee' && (
+                      <>
+                        <BinderClip className="-top-3.5 right-6 rotate-[4deg]" />
+                        <ScotchTape className="-bottom-1.5 -left-3.5 rotate-[32deg]" />
+                        <div
+                          aria-hidden="true"
+                          className="pointer-events-none select-none absolute -bottom-2 -right-2 z-40 w-7 h-7 rounded-full bg-rose-800 border-2 border-rose-950/60 shadow-md flex items-center justify-center font-stamp text-[6px] text-amber-200 tracking-tighter"
+                        >
+                          IEEE
+                        </div>
+                      </>
+                    )}
+                    {node.id === 's-chai' && <ScotchTape className="-bottom-1.5 -left-3 rotate-[32deg]" />}
+                    {node.id === 's-intel' && <BrassTack className="bottom-1.5 left-1.5" />}
+                    {node.id === 's-warn' && <ScotchTape className="-top-1.5 -right-3 rotate-[34deg]" />}
 
                     <div 
                       className="w-full h-full perspective-1000 cursor-pointer"
@@ -870,36 +1183,56 @@ export function EvidenceWall() {
                       }}
                     >
                       <div 
-                        className={`relative w-full h-full transition-transform duration-500 transform-style-3d ${isFlipped ? 'rotate-y-180' : ''}`}
+                        className={`relative w-full h-full transition-transform duration-650 ease-[cubic-bezier(0.22,1,0.36,1)] transform-style-3d ${isFlipped ? 'rotate-y-180' : ''}`}
                       >
                         {/* Selection highlight glow */}
                         {isSelected && (
                           <div className="absolute -inset-3 bg-rose-600/20 blur-xs rounded-lg pointer-events-none z-0 border-2 border-dashed border-rose-600 shadow-[0_0_25px_rgba(220,38,38,0.6)] animate-pulse" />
                         )}
-                        
+
                         {/* CARD FRONT */}
                         {node.type === 'sticky' ? (
-                          <div 
-                            className={`absolute inset-0 backface-hidden border border-amber-900/25 p-3.5 shadow-md flex flex-col justify-between overflow-hidden ${
-                              node.stickyColor === 'pink' 
-                                ? 'bg-[#ffd3e8] text-pink-950' 
+                          <Paper
+                            stock={
+                              node.stickyColor === 'pink'
+                                ? 'sticky-pink'
                                 : node.stickyColor === 'cyan'
-                                ? 'bg-[#d0f5fc] text-cyan-950'
-                                : 'bg-[#fef3c7] text-amber-950'
+                                  ? 'sticky-blue'
+                                  : 'sticky-yellow'
+                            }
+                            edge={
+                              node.id === 's-warn'
+                                ? 'deckle'
+                                : node.id === 's-intel'
+                                  ? { top: 'perf' }
+                                  : { bottom: 'torn' }
+                            }
+                            curl
+                            tilt={false}
+                            seed={`ew-sticky-${node.id}`}
+                            className={`absolute! inset-0 backface-hidden p-3.5 flex flex-col justify-between overflow-hidden ${
+                              node.stickyColor === 'pink'
+                                ? 'text-pink-950'
+                                : node.stickyColor === 'cyan'
+                                  ? 'text-cyan-950'
+                                  : 'text-amber-950'
                             }`}
-                            style={{
-                              boxShadow: '3px 8px 16px rgba(0,0,0,0.18)',
-                              backgroundImage: 'url("https://www.transparenttextures.com/patterns/cream-paper.png")'
-                            }}
                           >
-                            <div className="space-y-1.5">
-                              <span className="text-[9px] font-black tracking-widest uppercase opacity-65 block">
+                            {/* Realistic Sticky-Note Adhesive Top Band (inset clear of Paper edges) */}
+                            <div className="px-2 py-1 mb-1.5 rounded-[2px] bg-black/[0.045] border-b border-black/[0.06] flex items-center justify-between">
+                              <span className="text-[8.5px] font-black tracking-widest uppercase opacity-70">
                                 {node.label}
                               </span>
-                              <h3 className="font-stamp text-xs sm:text-[13px] font-black uppercase tracking-tight border-b border-black/10 pb-1 leading-none">
+                              <span className="font-mono text-[7.5px] font-bold opacity-45">
+                                #{String(idx + 1).padStart(2, '0')}
+                              </span>
+                            </div>
+
+                            <div className="space-y-1.5 flex-1">
+                              <h3 className="font-stamp text-xs sm:text-[13px] font-black uppercase tracking-tight border-b border-black/12 pb-1 leading-none">
                                 {node.title}
                               </h3>
-                              <p className="font-mono text-[12px] sm:text-[12.5px] font-bold leading-normal italic pt-1.5 text-black/85">
+                              <p className="font-mono text-[11.5px] sm:text-[12px] font-bold leading-snug italic pt-1 text-black/85 line-clamp-4">
                                 "{node.desc}"
                               </p>
                             </div>
@@ -911,11 +1244,14 @@ export function EvidenceWall() {
                                   audioEngine.init();
                                   audioEngine.playSwitch();
                                 }}
-                                className="w-full py-1.5 bg-black/85 hover:bg-black text-white rounded-xs font-mono text-[9px] font-black uppercase tracking-wider flex items-center justify-center gap-1 shadow-xs transition-colors"
+                                className="w-full py-1.5 bg-stone-900/90 hover:bg-rose-800 text-white rounded-[2px] font-mono text-[9px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer"
                               >
-                                📂 OPEN FILE
+                                <FileText className="w-3 h-3" />
+                                <span>INSPECT FILE</span>
                               </button>
                             </div>
+
+
 
                             {/* Target Lock-On Reticle */}
                             {isSelected && (
@@ -934,58 +1270,102 @@ export function EvidenceWall() {
                                 </div>
                               </div>
                             )}
-                          </div>
-                        ) : (
-                          <div 
-                            className={`absolute inset-0 backface-hidden bg-[#fdfaf2] border border-ink/20 p-2.5 pb-4 shadow-lg flex flex-col justify-between overflow-hidden ${
-                              node.type === 'subject' 
-                                ? 'bg-polaroid' 
-                                : node.type === 'achievement' 
-                                ? 'bg-amber-50/90 border-amber-900/25' 
-                                : 'bg-stone-100/95 border-stone-300'
-                            }`}
-                            style={{
-                              backgroundImage: 'url("https://www.transparenttextures.com/patterns/cardboard-flat.png")'
-                            }}
+                          </Paper>
+) : (
+                          <Paper
+                            stock={
+                              node.type === 'subject'
+                                ? 'paper'
+                                : node.type === 'achievement'
+                                  ? 'card'
+                                  : 'index-card'
+                            }
+                            edge={
+                              (node.id === 'a-hermes' || node.id === 'a-promptwars'
+                                ? 'deckle'
+                                : node.id === 'a-ieee'
+                                  ? 'crimp'
+                                  : node.id === 'p-ledgerforge' || node.id === 'a-syndicate'
+                                    ? { top: 'perf' }
+                                    : 'cut') as EdgeSpec
+                            }
+                            curl={node.type !== 'achievement' || node.id === 'a-syndicate'}
+                            tilt={false}
+                            seed={`ew-card-${node.id}`}
+                            className="absolute! inset-0 backface-hidden p-2.5 pb-4 flex flex-col justify-between overflow-hidden"
                           >
+                            {/* Category Top Accent Bar (inset clear of Paper perf/deckle/crimp edges) */}
+                            <span
+                              aria-hidden="true"
+                              className={`pointer-events-none shrink-0 mb-1.5 h-[2.5px] w-full rounded-full ${
+                                node.type === 'subject' ? 'bg-rose-700/85' : node.type === 'achievement' ? 'bg-amber-600/85' : 'bg-sky-700/85'
+                              }`}
+                            />
                             {node.imageUrl ? (
-                              <div className="w-full flex-1 border border-zinc-700 bg-neutral-900 overflow-hidden relative select-none">
+                              <div className="w-full flex-1 border border-zinc-800 bg-neutral-900 overflow-hidden relative select-none shadow-inner">
                                 <img 
                                   src={node.imageUrl} 
                                   alt={node.title} 
                                   draggable="false"
-                                  className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-300 select-none pointer-events-none"
+                                  className="w-full h-full object-cover grayscale group-hover/card:grayscale-0 group-hover/card:scale-[1.04] transition-all duration-500 ease-out select-none pointer-events-none"
                                 />
-                                <div className="absolute top-1 left-1.5 bg-black/60 text-white font-mono text-[9px] px-1 rounded uppercase tracking-wider">
+                                {/* Glossy Photo Sheen */}
+                                <div
+                                  aria-hidden="true"
+                                  className="pointer-events-none absolute inset-0 bg-[linear-gradient(130deg,rgba(255,255,255,0.16)_0%,transparent_42%)]"
+                                />
+                                {/* Archival Photo Corner Mounts */}
+                                <span aria-hidden="true" className="pointer-events-none absolute top-0 right-0 w-3 h-3 bg-stone-900/75 [clip-path:polygon(0_0,100%_0,100%_100%)]" />
+                                <span aria-hidden="true" className="pointer-events-none absolute bottom-0 left-0 w-3 h-3 bg-stone-900/75 [clip-path:polygon(0_0,0_100%,100%_100%)]" />
+                                <div className="absolute top-1.5 left-1.5 bg-black/70 backdrop-blur-2xs text-white font-mono text-[8.5px] px-1.5 py-0.5 rounded-[2px] uppercase tracking-wider">
                                   {node.label}
                                 </div>
                               </div>
-                            ) : (
-                              <div className="w-full flex-1 border border-dashed border-ink/25 flex flex-col items-center justify-center p-3 text-center">
-                                <BookOpen className="h-6 w-6 text-rose-800 opacity-60 mb-1" />
-                                <span className="font-mono text-[9.5px] font-black text-rose-800 tracking-wider uppercase">
-                                  {node.label}
+                            ) : node.id === 'a-syndicate' ? (
+                              <div className="w-full flex-1 border border-emerald-900/25 bg-gradient-to-b from-emerald-50/80 to-amber-50/70 flex flex-col items-center justify-center p-3 text-center relative">
+                                <div className="w-8 h-8 rounded-full bg-emerald-700/12 border border-emerald-700/30 flex items-center justify-center mb-1.5">
+                                  <Trophy className="h-4 w-4 text-emerald-800" />
+                                </div>
+                                <span className="px-2 py-0.5 rounded-[2px] bg-emerald-700 text-white font-mono text-[8px] font-black tracking-widest uppercase">
+                                  $100 GPU CREDITS
                                 </span>
-                                <span className="font-stamp text-[13px] font-black text-ink leading-tight mt-1">
+                                <span className="font-stamp text-[13px] font-black text-ink leading-tight mt-1.5">
+                                  {node.title}
+                                </span>
+                              </div>
+                            ) : (
+                              <div className="w-full flex-1 border border-sky-900/25 bg-gradient-to-b from-sky-50/75 to-amber-50/60 flex flex-col items-center justify-center p-3 text-center relative">
+                                <div className="w-8 h-8 rounded-full bg-sky-800/10 border border-sky-800/25 flex items-center justify-center mb-1.5">
+                                  <BookOpen className="h-4 w-4 text-sky-900" />
+                                </div>
+                                <span className="px-2 py-0.5 rounded-[2px] bg-sky-900 text-white font-mono text-[8px] font-black tracking-widest uppercase">
+                                  IEEE XPLORE #11441054
+                                </span>
+                                <span className="font-stamp text-[13px] font-black text-ink leading-tight mt-1.5">
                                   {node.title}
                                 </span>
                               </div>
                             )}
 
-                            <div className="mt-2.5 px-0.5">
+                            <div className="mt-2 px-0.5">
                               {node.imageUrl && (
-                                <h3 className="font-stamp text-xs sm:text-[13px] font-black text-ink uppercase tracking-tight leading-none mb-1">
-                                  {node.title}
-                                </h3>
+                                <div className="flex items-baseline justify-between gap-1 mb-1">
+                                  <h3 className="font-stamp text-xs sm:text-[13px] font-black text-ink uppercase tracking-tight leading-none truncate">
+                                    {node.title}
+                                  </h3>
+                                  <span className="font-mono text-[7.5px] font-bold text-ink/40 shrink-0">
+                                    REC-{String(idx + 1).padStart(2, '0')}
+                                  </span>
+                                </div>
                               )}
-                              <p className="font-mono text-[12px] sm:text-[12.5px] font-semibold leading-normal text-ink/95 line-clamp-3">
+                              <p className="font-mono text-[11.5px] sm:text-[12px] font-semibold leading-snug text-ink/90 line-clamp-3">
                                 {node.desc}
                               </p>
                             </div>
 
-                            {/* Small click indicator */}
-                            <div className="absolute bottom-1.5 right-2 text-[8px] font-mono text-ink/55 uppercase font-black tracking-widest flex items-center gap-0.5 pointer-events-none">
-                              <RefreshCw className="h-2.5 w-2.5 animate-spin-slow text-rose-800" /> FLIP
+                            {/* Hover-Only Subtle Flip Cue */}
+                            <div className="absolute bottom-1.5 right-2 text-[8px] font-mono text-ink/70 bg-amber-100/80 border border-ink/20 px-1.5 py-0.5 rounded-[2px] uppercase font-black tracking-widest flex items-center gap-1 pointer-events-none opacity-0 group-hover/card:opacity-100 transition-opacity duration-200">
+                              <RefreshCw className="h-2.5 w-2.5 text-rose-800" /> FLIP
                             </div>
 
                             {/* Target Lock-On Reticle */}
@@ -1005,16 +1385,16 @@ export function EvidenceWall() {
                                 </div>
                               </div>
                             )}
-                          </div>
+                          </Paper>
                         )}
 
-                        {/* CARD BACK */}
-                        <div 
-                          className="absolute inset-0 backface-hidden rotate-y-180 bg-[#fbf8f0] border-[2px] border-rose-900/40 p-3.5 flex flex-col justify-between shadow-2xl"
-                          style={{
-                            backgroundImage: 'url("https://www.transparenttextures.com/patterns/cream-paper.png")',
-                            boxShadow: 'inset 0 0 15px rgba(139, 30, 30, 0.05)'
-                          }}
+                        {/* CARD BACK (Looseleaf Index-Card Stock) */}
+                        <Paper
+                          stock="index-card"
+                          edge="cut"
+                          tilt={false}
+                          seed={`ew-back-${node.id}`}
+                          className="absolute! inset-0 backface-hidden rotate-y-180 p-3.5 flex flex-col justify-between text-ink"
                         >
                           <div className="space-y-2 flex-1">
                             <div className="border-b border-rose-900/25 pb-2">
@@ -1108,7 +1488,7 @@ export function EvidenceWall() {
                               </div>
                             </div>
                           )}
-                        </div>
+                        </Paper>
                       </div>
                     </div>
                   </motion.div>
@@ -1202,7 +1582,7 @@ export function EvidenceWall() {
                 </div>
 
                 {/* ─── BODY ─── */}
-                <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+                <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5" data-lenis-prevent>
 
                   {/* ══════ OVERVIEW TAB ══════ */}
                   {activeTab === 'overview' && (
