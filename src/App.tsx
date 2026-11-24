@@ -4,7 +4,10 @@ import { Layout } from './components/Layout';
 import { Dossier } from './pages/Dossier';
 import { ThemeProvider } from './context/ThemeContext';
 import { GlobalAudio } from './components/GlobalAudio';
-import { CommandCenter } from './components/CommandCenter';
+import { PageTracker } from './components/PageTracker';
+import { SmoothScroll } from './lib/smoothScroll';
+
+const CommandCenter = lazy(() => import('./components/CommandCenter').then((module) => ({ default: module.CommandCenter })));
 
 const Capabilities = lazy(() => import('./pages/Capabilities').then((module) => ({ default: module.Capabilities })));
 const Operations = lazy(() => import('./pages/Operations').then((module) => ({ default: module.Operations })));
@@ -21,8 +24,10 @@ const loadRoute = (element: ReactNode) => (
 
 function RouteFallback() {
   return (
-    <div className="flex min-h-[55vh] w-full items-center justify-center px-6 font-mono text-ink">
-      <div className="text-[10px] font-black tracking-[0.2em] opacity-55">Loading…</div>
+    <div className="flex min-h-[55vh] w-full items-center justify-center px-6 font-mono text-ink" role="status" aria-live="polite">
+      <div className="text-xs font-bold tracking-[0.2em] text-ink/85 bg-paper/90 border border-ink/20 px-4 py-2 rounded-xs shadow-xs">
+        LOADING DOSSIER…
+      </div>
     </div>
   );
 }
@@ -31,19 +36,24 @@ export default function App() {
   return (
     <ThemeProvider>
       <BrowserRouter>
-        <GlobalAudio />
-        <CommandCenter />
-        <Routes>
-          <Route path="/classified" element={loadRoute(<Classified />)} />
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Dossier />} />
-            <Route path="capabilities" element={loadRoute(<Capabilities />)} />
-            <Route path="operations" element={loadRoute(<Operations />)} />
-            <Route path="evidence" element={loadRoute(<Evidence />)} />
-            <Route path="comms" element={loadRoute(<Comms />)} />
-            <Route path="evidence-wall" element={loadRoute(<EvidenceWall />)} />
-          </Route>
-        </Routes>
+        <SmoothScroll>
+          <PageTracker />
+          <GlobalAudio />
+          <Suspense fallback={null}>
+            <CommandCenter />
+          </Suspense>
+          <Routes>
+            <Route path="/classified" element={loadRoute(<Classified />)} />
+            <Route path="/" element={<Layout />}>
+              <Route index element={<Dossier />} />
+              <Route path="capabilities" element={loadRoute(<Capabilities />)} />
+              <Route path="operations" element={loadRoute(<Operations />)} />
+              <Route path="evidence" element={loadRoute(<Evidence />)} />
+              <Route path="comms" element={loadRoute(<Comms />)} />
+              <Route path="evidence-wall" element={loadRoute(<EvidenceWall />)} />
+            </Route>
+          </Routes>
+        </SmoothScroll>
       </BrowserRouter>
     </ThemeProvider>
   );
