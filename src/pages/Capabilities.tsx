@@ -1,20 +1,12 @@
-import { Highlight } from '../components/Highlight';
 import { TopSecretStamp } from '../components/Stamps';
-import { Typewriter } from '../components/Typewriter';
 import { PageTransition } from '../components/PageTransition';
-import { useState } from 'react';
-import { Fingerprint, Search, MapPin, Activity, X, ExternalLink, Github, Terminal, Award, Code, Linkedin } from 'lucide-react';
+import { Github, Terminal, Code, Linkedin } from 'lucide-react';
 import { FaXTwitter } from 'react-icons/fa6';
-import { GithubStreak } from '../components/GithubStreak';
-import { LeetcodeStreak } from '../components/LeetcodeStreak';
-import { createPortal } from 'react-dom';
-import { PdfViewer } from '../components/PdfViewer';
+import { ActivityHeatmaps } from '../components/ActivityHeatmaps';
+import { CertificatesSection } from '../components/CertificatesSection';
 import { SkillsCarousel } from '../components/SkillsCarousel';
 
 export function Capabilities() {
-  const [showDataScienceCert, setShowDataScienceCert] = useState(false);
-  const [showUltimateCert, setShowUltimateCert] = useState(false);
-
   return (
     <PageTransition className="px-6 pt-6 pb-12 sm:px-20 sm:pt-10 sm:pb-24 relative overflow-hidden">
       <div className="mb-6">
@@ -139,7 +131,7 @@ export function Capabilities() {
                 </div>
 
                 <a 
-                  href="https://x.com/___moinn_" 
+                  href="https://x.com/Moincrafted" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="block relative overflow-hidden border-2 border-ink/40 shadow-sm group bg-ink rounded-[2px] col-span-6 h-full"
@@ -154,7 +146,7 @@ export function Capabilities() {
                       <FaXTwitter className="w-4 h-4 text-paper shrink-0 group-hover:scale-110 transition-transform" />
                       <div>
                         <h3 className="text-paper font-bold font-mono tracking-widest text-sm sm:text-base leading-tight">TWITTER / X</h3>
-                        <p className="text-paper/70 font-mono text-[9px] sm:text-[11px] tracking-widest mt-0.5 font-bold">@___moinn_</p>
+                        <p className="text-paper/70 font-mono text-[9px] sm:text-[11px] tracking-widest mt-0.5 font-bold">@Moincrafted</p>
                       </div>
                     </div>
                   </div>
@@ -165,88 +157,13 @@ export function Capabilities() {
 
           {/* Interactive Contribution Matrices */}
           <div className="flex flex-col gap-6 mb-8">
-            <LeetcodeStreak />
-            <GithubStreak />
+            <ActivityHeatmaps />
           </div>
 
-          <div className="flex items-center gap-3 mb-6 mt-10 border-b-2 border-amber-900/20 pb-4">
-            <div className="bg-amber-900/10 p-2.5 rounded-lg border border-amber-900/20 shadow-sm">
-              <Award className="w-6 h-6 sm:w-8 sm:h-8 text-amber-700 dark:text-amber-500" />
-            </div>
-            <h2 className="text-xl sm:text-3xl font-black tracking-[0.15em] font-mono leading-none pt-[2px] text-amber-900 dark:text-amber-500 uppercase drop-shadow-sm">
-              CERTIFICATES
-            </h2>
-          </div>
-
-          <div 
-            className="p-4 bg-amber-900/5 border border-amber-900/10 shadow-sm flex items-start gap-3 w-full cursor-pointer hover:bg-amber-900/15 dark:bg-amber-500/5 dark:border-amber-500/10 dark:hover:bg-amber-500/10 transition-colors group"
-            onClick={() => setShowDataScienceCert(true)}
-          >
-              <Typewriter delay={0.1} className="opacity-50 font-bold font-mono tracking-widest mt-1 shrink-0">[!]</Typewriter>
-              <div className="flex flex-col gap-1.5 flex-1 select-none">
-                <Typewriter delay={0.2} className="font-bold text-[11px] leading-tight sm:text-sm tracking-widest font-mono text-amber-900 dark:text-amber-500">
-                  <Highlight style="circle" color="yellow" className="border-b border-dashed border-amber-500/40 pb-1">
-                    CERTIFIED: DATA SCIENCE FOUNDATIONS (2024)
-                  </Highlight>
-                </Typewriter>
-                <span className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-mono tracking-widest font-bold text-zinc-950 bg-amber-200 hover:bg-amber-300 dark:bg-amber-700 dark:hover:bg-amber-600 dark:text-white border border-amber-500 dark:border-amber-600 rounded shadow-sm group-hover:scale-[1.02] transition-all w-fit">
-                  <ExternalLink className="w-3 h-3" /> VIEW CERTIFICATE
-                </span>
-              </div>
-          </div>
-
-          <div 
-            className="mt-4 p-4 bg-amber-900/5 border border-amber-900/10 shadow-sm flex items-start gap-3 w-full cursor-pointer hover:bg-amber-900/15 dark:bg-amber-500/5 dark:border-amber-500/10 dark:hover:bg-amber-500/10 transition-colors group"
-            onClick={() => setShowUltimateCert(true)}
-          >
-              <Typewriter delay={0.2} className="opacity-50 font-bold font-mono tracking-widest mt-1 shrink-0">[!]</Typewriter>
-              <div className="flex flex-col gap-1.5 flex-1 select-none">
-                <Typewriter delay={0.3} className="font-bold text-[11px] leading-tight sm:text-sm tracking-widest font-mono text-amber-900 dark:text-amber-500">
-                  <Highlight style="circle" color="yellow" className="border-b border-dashed border-amber-500/40 pb-1">
-                    CERTIFIED: THE ULTIMATE JOB READY DATA SCIENCE COURSE
-                  </Highlight>
-                </Typewriter>
-                <span className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-mono tracking-widest font-bold text-zinc-950 bg-amber-200 hover:bg-amber-300 dark:bg-amber-700 dark:hover:bg-amber-600 dark:text-white border border-amber-500 dark:border-amber-600 rounded shadow-sm group-hover:scale-[1.02] transition-all w-fit">
-                  <ExternalLink className="w-3 h-3" /> VIEW CERTIFICATE
-                </span>
-              </div>
-          </div>
+          <CertificatesSection />
         </div>
       </section>
 
-      {showDataScienceCert && typeof document !== 'undefined' && createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 pb-20 sm:pb-6 bg-ink/80 backdrop-blur-sm" onClick={() => setShowDataScienceCert(false)}>
-          <div className="relative w-full max-w-4xl max-h-[85vh] bg-paper shadow-2xl flex flex-col z-10 animate-in fade-in zoom-in duration-200" onClick={(e) => e.stopPropagation()}>
-            <div className="flex justify-between items-center bg-ink text-paper p-3 shrink-0">
-               <span className="font-mono text-xs uppercase tracking-widest font-bold">SECURE VIEWER // [ENCRYPTED DATA]</span>
-               <button onClick={() => setShowDataScienceCert(false)} className="p-1 transition-colors hover:bg-red-700 hover:text-white">
-                 <X className="w-5 h-5" />
-               </button>
-            </div>
-            <div className="flex-1 w-full bg-zinc-200 relative overflow-hidden flex items-center justify-center p-4">
-               <img src="/DATA SCIENCE FOUNDATIONS (2024).jpeg" alt="Data Science Foundations Certificate" className="max-w-full max-h-[75vh] object-contain shadow-md" />
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
-
-      {showUltimateCert && typeof document !== 'undefined' && createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 pb-20 sm:pb-6 bg-ink/80 backdrop-blur-sm" onClick={() => setShowUltimateCert(false)}>
-          <div className="relative w-full max-w-4xl h-[85vh] bg-paper shadow-2xl flex flex-col z-10 animate-in fade-in zoom-in duration-200" onClick={(e) => e.stopPropagation()}>
-            <div className="flex justify-between items-center bg-ink text-paper p-3 shrink-0">
-               <span className="font-mono text-xs uppercase tracking-widest font-bold">SECURE VIEWER // [ENCRYPTED DATA]</span>
-               <button onClick={() => setShowUltimateCert(false)} className="p-1 transition-colors hover:bg-red-700 hover:text-white">
-                 <X className="w-5 h-5" />
-               </button>
-            </div>
-            <div className="flex-1 w-full bg-zinc-200 relative overflow-hidden flex items-center justify-center">
-               <PdfViewer url="/The_Ultimate_Job_Ready_Data_Science_Course_Certificate.pdf" />
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
     </PageTransition>
   );
 }
