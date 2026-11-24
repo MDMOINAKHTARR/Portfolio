@@ -27,7 +27,7 @@ export function PdfViewer({ url }: { url: string }) {
   }
 
   return (
-    <div id="pdf-container" className="w-full h-full bg-zinc-200 overflow-auto flex flex-col items-center justify-start pt-8 pb-8">
+    <div id="pdf-container" className="w-full h-full bg-zinc-200 overflow-auto flex flex-col items-center justify-start pt-8 pb-8" data-lenis-prevent>
       <Document 
         file={url} 
         onLoadSuccess={onDocumentLoadSuccess}
