@@ -79,7 +79,20 @@ export function MusicPlayer({ mobileNav = false }: { mobileNav?: boolean }) {
     return () => { document.removeEventListener('pointerdown', fn); document.removeEventListener('keydown', esc); };
   }, [open, mobileNav]);
 
-  useEffect(() => () => musicEngine.destroy(), []);
+  const [footerVisible, setFooterVisible] = useState(() =>
+    typeof document !== 'undefined' && document.documentElement.classList.contains('footer-in-view')
+  );
+
+  useEffect(() => {
+    if (mobileNav) return;
+    const onFooterVisibility = (e: Event) => {
+      const visible = Boolean((e as CustomEvent<boolean>).detail);
+      setFooterVisible(visible);
+      if (visible) setOpen(false);
+    };
+    window.addEventListener('footer-visibility', onFooterVisibility);
+    return () => window.removeEventListener('footer-visibility', onFooterVisibility);
+  }, [mobileNav]);
 
   const play = async (i: number) => { setIdx(i); await musicEngine.play(i); };
   const move = (d: -1 | 1) => play((idx + d + MUSIC_TRACKS.length) % MUSIC_TRACKS.length);
@@ -87,7 +100,9 @@ export function MusicPlayer({ mobileNav = false }: { mobileNav?: boolean }) {
 
   const wrap = mobileNav
     ? 'pointer-events-none relative flex min-w-[36px] flex-1 items-center justify-center font-mono print:hidden'
-    : 'pointer-events-none fixed bottom-6 left-4 z-[96] hidden font-mono print:hidden sm:block';
+    : `pointer-events-none fixed bottom-6 left-4 z-[96] hidden font-mono print:hidden sm:block transition-all duration-300 ease-out ${
+        footerVisible ? 'opacity-0 translate-y-12 !pointer-events-none invisible' : 'opacity-100 translate-y-0 visible'
+      }`;
 
   return (
     <div data-prevent-page-swipe className={wrap}>
@@ -104,6 +119,9 @@ export function MusicPlayer({ mobileNav = false }: { mobileNav?: boolean }) {
           </motion.button>
         ) : (
           <motion.aside ref={exRef} key="e"
+            data-lenis-prevent
+            data-lenis-prevent-wheel
+            data-lenis-prevent-touch
             initial={{ opacity:0, y:18, scale:0.94 }} animate={{ opacity:1, y:0, scale:1 }} exit={{ opacity:0, y:18, scale:0.94 }}
             transition={{ duration:0.22, ease:[0.16,1,0.3,1] }}
             onMouseLeave={mobileNav ? undefined : () => setOpen(false)}
@@ -430,11 +448,28 @@ export function MusicPlayer({ mobileNav = false }: { mobileNav?: boolean }) {
                   }} />
 
                   {/* Scroll Container */}
-                  <div ref={listRef} style={{
-                    maxHeight: 220, overflowY: 'auto', display: 'flex', flexDirection: 'column',
-                    scrollbarWidth: 'none', // clean typewriter index card layout
-                    paddingRight: 0, paddingBottom: 4, paddingTop: 4
-                  }}>
+                  <div
+                    ref={listRef}
+                    data-lenis-prevent
+                    data-lenis-prevent-wheel
+                    data-lenis-prevent-touch
+                    onWheel={(e) => e.stopPropagation()}
+                    onTouchMove={(e) => e.stopPropagation()}
+                    style={{
+                      maxHeight: 220,
+                      overflowY: 'auto',
+                      overscrollBehavior: 'contain',
+                      WebkitOverflowScrolling: 'touch',
+                      touchAction: 'pan-y',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      scrollbarWidth: 'thin',
+                      scrollbarColor: 'rgba(139, 92, 26, 0.32) transparent',
+                      paddingRight: 2,
+                      paddingBottom: 4,
+                      paddingTop: 4,
+                    }}
+                  >
                     {MUSIC_TRACKS.map((t, i) => {
                       const a = TRACK_ACCENTS[i] ?? '#b45309';
                       const active = i === idx;
@@ -666,13 +701,24 @@ function MiniCassette({ playing }: { playing: boolean }) {
 function AwesomeMixCassette({ playing, accent }: { playing: boolean; accent: string }) {
   return (
     <div style={{
-      width: 180, height: 106, position: 'relative',
-      background: 'linear-gradient(180deg, #2c2c2c 0%, #1a1a1a 60%, #111111 100%)',
-      borderRadius: 7, border: '1.8px solid #080808',
-      boxShadow: '0 12px 35px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(0,0,0,0.8)',
-      padding: '5px 6px 3px', cursor: 'pointer',
-      display: 'flex', flexDirection: 'column', gap: 3,
+      width: 135,
+      height: 80,
+      position: 'relative',
     }}>
+      <div style={{
+        width: 180,
+        height: 106,
+        transform: 'scale(0.75)',
+        transformOrigin: 'top left',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        background: 'linear-gradient(180deg, #2c2c2c 0%, #1a1a1a 60%, #111111 100%)',
+        borderRadius: 7, border: '1.8px solid #080808',
+        boxShadow: '0 8px 24px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(0,0,0,0.8)',
+        padding: '5px 6px 3px', cursor: 'pointer',
+        display: 'flex', flexDirection: 'column', gap: 3,
+      }}>
       {[
         { top: 4, left: 5 }, { top: 4, right: 5 },
         { bottom: 22, left: 5 }, { bottom: 22, right: 5 },
@@ -751,6 +797,7 @@ function AwesomeMixCassette({ playing, accent }: { playing: boolean; accent: str
         background: playing ? '#10b981' : '#333333',
         boxShadow: playing ? '0 0 6px #10b981' : 'none'
       }} className={playing ? 'animate-pulse' : ''} />
+      </div>
     </div>
   );
 }
