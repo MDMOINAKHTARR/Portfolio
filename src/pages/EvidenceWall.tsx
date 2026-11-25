@@ -1191,6 +1191,7 @@ export function EvidenceWall() {
                         )}
 
                         {/* CARD FRONT */}
+                        <div className="absolute inset-0 backface-hidden">
                         {node.type === 'sticky' ? (
                           <Paper
                             stock={
@@ -1210,7 +1211,7 @@ export function EvidenceWall() {
                             curl
                             tilt={false}
                             seed={`ew-sticky-${node.id}`}
-                            className={`absolute! inset-0 backface-hidden p-3.5 flex flex-col justify-between overflow-hidden ${
+                            className={`w-full h-full p-3.5 flex flex-col justify-between overflow-hidden ${
                               node.stickyColor === 'pink'
                                 ? 'text-pink-950'
                                 : node.stickyColor === 'cyan'
@@ -1292,7 +1293,7 @@ export function EvidenceWall() {
                             curl={node.type !== 'achievement' || node.id === 'a-syndicate'}
                             tilt={false}
                             seed={`ew-card-${node.id}`}
-                            className="absolute! inset-0 backface-hidden p-2.5 pb-4 flex flex-col justify-between overflow-hidden"
+                            className="w-full h-full p-2.5 pb-4 flex flex-col justify-between overflow-hidden"
                           >
                             {/* Category Top Accent Bar (inset clear of Paper perf/deckle/crimp edges) */}
                             <span
@@ -1388,13 +1389,16 @@ export function EvidenceWall() {
                           </Paper>
                         )}
 
+                        </div>
+
                         {/* CARD BACK (Looseleaf Index-Card Stock) */}
+                        <div className="absolute inset-0 backface-hidden rotate-y-180 bg-[#f6f1e4]">
                         <Paper
                           stock="index-card"
                           edge="cut"
                           tilt={false}
                           seed={`ew-back-${node.id}`}
-                          className="absolute! inset-0 backface-hidden rotate-y-180 p-3.5 flex flex-col justify-between text-ink"
+                          className="w-full h-full bg-[#f6f1e4] p-3.5 flex flex-col justify-between text-ink"
                         >
                           <div className="space-y-2 flex-1">
                             <div className="border-b border-rose-900/25 pb-2">
@@ -1489,6 +1493,7 @@ export function EvidenceWall() {
                             </div>
                           )}
                         </Paper>
+                        </div>
                       </div>
                     </div>
                   </motion.div>
