@@ -501,6 +501,9 @@ export function EvidenceWall() {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const [flippedNodeId, setFlippedNodeId] = useState<string | null>(null);
+  const [hoveredThreadIdx, setHoveredThreadIdx] = useState<number | null>(null);
+  const [pluckedThreadIdx, setPluckedThreadIdx] = useState<number | null>(null);
+  const [threadPull, setThreadPull] = useState<{ idx: number; dx: number; dy: number } | null>(null);
   const [boardFilter, setBoardFilter] = useState<'all' | 'project' | 'achievement' | 'sticky'>('all');
   const [zoomMul, setZoomMul] = useState(1);
   const [showPubDetails, setShowPubDetails] = useState(false);
@@ -1011,33 +1014,83 @@ export function EvidenceWall() {
                 const endX = toPos.x + toNode.width / 2;
                 const endY = toPos.y;
 
-                const isRelatedHovered = activeNodeId === conn.from || activeNodeId === conn.to;
+                const isRelatedHovered =
+                  activeNodeId === conn.from ||
+                  activeNodeId === conn.to ||
+                  hoveredThreadIdx === idx;
+                const isThreadHovered = hoveredThreadIdx === idx;
+                const isPlucked = pluckedThreadIdx === idx;
                 const dx = endX - startX;
                 const dy = endY - startY;
                 const dist = Math.hypot(dx, dy);
 
-                // Distance-proportional gravity sag: longer spans droop naturally; hovered/active threads pull taut
+                // Distance-proportional gravity sag: longer spans droop naturally; hovered/active threads pull taut or bow toward pointer
                 const relaxedSag = Math.min(76, Math.max(22, dist * 0.095)) + (idx % 2) * 6;
                 const tautSag = relaxedSag * 0.52;
                 const swayX = dx * 0.035;
-                const midX = (startX + endX) / 2 + swayX;
+                const pullDx = threadPull?.idx === idx ? threadPull.dx : 0;
+                const pullDy = threadPull?.idx === idx ? threadPull.dy : 0;
+                const twangOffset = isPlucked ? -18 : 0;
+                const baseMidX = (startX + endX) / 2 + swayX + pullDx;
                 const midY = (startY + endY) / 2;
+                const ctrlY =
+                  midY +
+                  (isRelatedHovered ? tautSag : relaxedSag) +
+                  pullDy +
+                  twangOffset;
 
-                const activePath = isRelatedHovered
-                  ? `M ${startX} ${startY} Q ${midX} ${midY + tautSag} ${endX} ${endY}`
-                  : `M ${startX} ${startY} Q ${midX} ${midY + relaxedSag} ${endX} ${endY}`;
-                const shadowPath = isRelatedHovered
-                  ? `M ${startX + 1.5} ${startY + 6} Q ${midX + 1.5} ${midY + tautSag + 6} ${endX + 1.5} ${endY + 6}`
-                  : `M ${startX + 1.5} ${startY + 6} Q ${midX + 1.5} ${midY + relaxedSag + 6} ${endX + 1.5} ${endY + 6}`;
-                const threadOpacity = activeNodeId ? (isRelatedHovered ? 1 : 0.25) : 0.88;
-                const springConfig = { type: 'spring' as const, stiffness: 210, damping: 14, mass: 0.7 };
+                const activePath = `M ${startX} ${startY} Q ${baseMidX} ${ctrlY} ${endX} ${endY}`;
+                const shadowPath = `M ${startX + 1.5} ${startY + 6} Q ${baseMidX + 1.5} ${ctrlY + 6} ${endX + 1.5} ${endY + 6}`;
+                const threadOpacity =
+                  hoveredThreadIdx !== null
+                    ? isThreadHovered
+                      ? 1
+                      : 0.22
+                    : activeNodeId
+                      ? isRelatedHovered
+                        ? 1
+                        : 0.25
+                      : 0.88;
+                const springConfig = isPlucked
+                  ? { type: 'spring' as const, stiffness: 520, damping: 8, mass: 0.45 }
+                  : { type: 'spring' as const, stiffness: 210, damping: 14, mass: 0.7 };
+
+                const handleThreadPointerMove = (e: React.PointerEvent<SVGPathElement>) => {
+                  const svg = e.currentTarget.ownerSVGElement;
+                  if (!svg) return;
+                  const rect = svg.getBoundingClientRect();
+                  const scaleX = rect.width ? svg.viewBox.baseVal.width || rect.width : rect.width;
+                  const scaleY = rect.height ? svg.viewBox.baseVal.height || rect.height : rect.height;
+                  const pointerX = ((e.clientX - rect.left) / rect.width) * scaleX;
+                  const pointerY = ((e.clientY - rect.top) / rect.height) * scaleY;
+                  const rawDx = pointerX - ((startX + endX) / 2 + swayX);
+                  const rawDy = pointerY - (midY + tautSag);
+                  const clamp = (v: number, lim: number) => Math.max(-lim, Math.min(lim, v));
+                  setThreadPull({ idx, dx: clamp(rawDx * 0.42, 42), dy: clamp(rawDy * 0.48, 42) });
+                };
+
+                const handleThreadClick = (e: React.MouseEvent<SVGPathElement>) => {
+                  e.stopPropagation();
+                  audioEngine.init();
+                  audioEngine.playClick();
+                  setPluckedThreadIdx(idx);
+                  window.setTimeout(() => {
+                    setPluckedThreadIdx((cur) => (cur === idx ? null : cur));
+                  }, 320);
+                  // Toggle selection between the two connected evidence nodes
+                  setSelectedNodeId((prev) => (prev === conn.to ? conn.from : conn.to));
+                };
+
+                const labelMidX = 0.25 * startX + 0.5 * baseMidX + 0.25 * endX;
+                const labelMidY = 0.25 * startY + 0.5 * ctrlY + 0.25 * endY;
+                const linkText = `${fromNode.title.split(' ')[0]} ⇄ ${toNode.title}`;
 
                 return (
                   <g key={`${conn.from}-${conn.to}-${idx}`}>
                     {/* Cast shadow onto corkboard below the hanging thread */}
                     <motion.path
                       initial={false}
-                      animate={{ d: shadowPath, strokeOpacity: activeNodeId ? (isRelatedHovered ? 0.48 : 0.1) : 0.35 }}
+                      animate={{ d: shadowPath, strokeOpacity: isThreadHovered ? 0.55 : activeNodeId ? (isRelatedHovered ? 0.48 : 0.1) : 0.35 }}
                       transition={springConfig}
                       fill="none"
                       stroke="rgba(18, 7, 2, 0.42)"
@@ -1050,14 +1103,15 @@ export function EvidenceWall() {
                       animate={{ d: activePath, strokeOpacity: threadOpacity }}
                       transition={springConfig}
                       fill="none"
+                      filter={isThreadHovered ? 'url(#yarn-glow)' : undefined}
                       stroke={isRelatedHovered ? '#ef4444' : '#9f1d1d'}
-                      strokeWidth={isRelatedHovered ? 2.8 : 2.4}
+                      strokeWidth={isThreadHovered ? 3.4 : isRelatedHovered ? 2.8 : 2.4}
                       strokeLinecap="round"
                     />
                     {/* Fine fiber-twist highlight along the yarn */}
                     <motion.path
                       initial={false}
-                      animate={{ d: activePath, strokeOpacity: isRelatedHovered ? 0.42 : threadOpacity * 0.22 }}
+                      animate={{ d: activePath, strokeOpacity: isRelatedHovered ? 0.52 : threadOpacity * 0.22 }}
                       transition={springConfig}
                       fill="none"
                       stroke="#fecaca"
@@ -1066,10 +1120,53 @@ export function EvidenceWall() {
                       strokeLinecap="round"
                     />
                     {/* Wrapped yarn knots at pushpin endpoints */}
-                    <circle cx={startX} cy={startY} r="4.2" fill="none" stroke={isRelatedHovered ? '#ef4444' : '#7f1d1d'} strokeWidth="1.6" opacity={threadOpacity} />
+                    <circle cx={startX} cy={startY} r={isThreadHovered ? 5.2 : 4.2} fill="none" stroke={isRelatedHovered ? '#ef4444' : '#7f1d1d'} strokeWidth="1.6" opacity={threadOpacity} />
                     <circle cx={startX} cy={startY} r="2.2" fill={isRelatedHovered ? '#fca5a5' : '#991b1b'} opacity={threadOpacity} />
-                    <circle cx={endX} cy={endY} r="4.2" fill="none" stroke={isRelatedHovered ? '#ef4444' : '#7f1d1d'} strokeWidth="1.6" opacity={threadOpacity} />
+                    <circle cx={endX} cy={endY} r={isThreadHovered ? 5.2 : 4.2} fill="none" stroke={isRelatedHovered ? '#ef4444' : '#7f1d1d'} strokeWidth="1.6" opacity={threadOpacity} />
                     <circle cx={endX} cy={endY} r="2.2" fill={isRelatedHovered ? '#fca5a5' : '#991b1b'} opacity={threadOpacity} />
+                    {/* Interactive hover/pluck hit area */}
+                    <path
+                      d={activePath}
+                      fill="none"
+                      stroke="transparent"
+                      strokeWidth="22"
+                      strokeLinecap="round"
+                      className="pointer-events-auto cursor-pointer"
+                      onPointerEnter={() => setHoveredThreadIdx(idx)}
+                      onPointerMove={handleThreadPointerMove}
+                      onPointerLeave={() => {
+                        setHoveredThreadIdx((cur) => (cur === idx ? null : cur));
+                        setThreadPull((cur) => (cur?.idx === idx ? null : cur));
+                      }}
+                      onClick={handleThreadClick}
+                    />
+                    {/* Floating connection tag on thread hover */}
+                    {isThreadHovered && (
+                      <g className="pointer-events-none select-none">
+                        <rect
+                          x={labelMidX - Math.min(130, linkText.length * 3.4 + 14)}
+                          y={labelMidY - 22}
+                          width={Math.min(260, linkText.length * 6.8 + 28)}
+                          height={20}
+                          rx={4}
+                          fill="#1c1917"
+                          stroke="#ef4444"
+                          strokeWidth="1.2"
+                        />
+                        <text
+                          x={labelMidX}
+                          y={labelMidY - 9}
+                          textAnchor="middle"
+                          fill="#fef2f2"
+                          fontSize="9"
+                          fontWeight="700"
+                          fontFamily="monospace"
+                          letterSpacing="0.06em"
+                        >
+                          {linkText.toUpperCase()}
+                        </text>
+                      </g>
+                    )}
                   </g>
                 );
               })}
