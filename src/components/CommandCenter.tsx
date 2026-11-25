@@ -547,8 +547,6 @@ export function CommandCenter() {
   }, [ragHistory]);
 
   const resetWadeSheet = () => {
-    audioEngine.init();
-    audioEngine.playClick();
     setPromptHistoryIdx(-1);
     const fresh: ChatTurn[] = [
       {
@@ -567,8 +565,6 @@ export function CommandCenter() {
   };
 
   const exportWadeNotes = () => {
-    audioEngine.init();
-    audioEngine.playClick();
     const lines = [
       '# WADE // Moin Portfolio Clipboard Notes',
       `Exported: ${new Date().toLocaleString()}`,
@@ -606,8 +602,6 @@ export function CommandCenter() {
   const askRagQuestion = async (question: string) => {
     const trimmed = question.trim();
     if (!trimmed) return;
-    audioEngine.init();
-    audioEngine.playClick();
 
     const turnId = `turn-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
     const preliminaryBase = queryDossierRag(trimmed);
@@ -703,15 +697,11 @@ export function CommandCenter() {
     }
     if (item.cmd === '/recruiter') {
       setRagInput('');
-      audioEngine.init();
-      audioEngine.playClick();
       setVisitorLens((prev) => (prev === 'recruiter' ? 'default' : 'recruiter'));
       return;
     }
     if (item.cmd === '/dev') {
       setRagInput('');
-      audioEngine.init();
-      audioEngine.playClick();
       setVisitorLens((prev) => (prev === 'dev' ? 'default' : 'dev'));
       return;
     }
@@ -751,8 +741,6 @@ export function CommandCenter() {
   };
 
   const handleRagAction = (action: RagAction) => {
-    audioEngine.init();
-    audioEngine.playClick();
     if (action.route) {
       setRagOpen(false);
       navigate(action.route);
@@ -1008,8 +996,6 @@ export function CommandCenter() {
                     <button
                       type="button"
                       onClick={() => {
-                        audioEngine.init();
-                        audioEngine.playClick();
                         setHeaderMoodIdx((i) => i + 1);
                       }}
                       className="shrink-0 -my-0.5 cursor-pointer hover:scale-105 active:scale-95 transition-transform"
@@ -1240,8 +1226,6 @@ export function CommandCenter() {
                     <button
                       type="button"
                       onClick={() => {
-                        audioEngine.init();
-                        audioEngine.playClick();
                         if (ragScrollRef.current) {
                           ragScrollRef.current.scrollTo({
                             top: ragScrollRef.current.scrollHeight,

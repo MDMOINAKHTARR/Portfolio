@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { audioEngine } from '../lib/audio';
 
 // Module-level cache: once a label has finished typing, store the result so
 // subsequent mounts skip the animation loop entirely (no more 5x concurrent timers).
@@ -47,9 +46,6 @@ export function NavTypewriter({
         const slice = text.slice(0, index + 1);
         setDisplayedText(slice);
         setIsTyping(true);
-        if (text[index] !== ' ' && !audioEngine.isMuted) {
-          audioEngine.playClack();
-        }
         index++;
         rafRef.current = requestAnimationFrame(step);
       } else {
