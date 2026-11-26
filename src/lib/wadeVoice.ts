@@ -19,6 +19,7 @@ export interface WadeVoiceCallbacks {
 
 let activeSessionId = 0;
 let activeRafId: number | null = null;
+let activeAudioEl: HTMLAudioElement | null = null;
 
 function pickBestWadeVoice(): SpeechSynthesisVoice | null {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) return null;
@@ -132,7 +133,11 @@ function splitIntoExpressiveSegments(rawText: string): SpeechSegment[] {
 }
 
 export function isWadeVoiceSupported(): boolean {
-  return typeof window !== 'undefined' && 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
+  return (
+    typeof window !== 'undefined' &&
+    (('speechSynthesis' in window && 'SpeechSynthesisUtterance' in window) ||
+      typeof Audio !== 'undefined')
+  );
 }
 
 export function stopWadeVoice(): void {
@@ -141,7 +146,16 @@ export function stopWadeVoice(): void {
     window.cancelAnimationFrame(activeRafId);
     activeRafId = null;
   }
-  if (isWadeVoiceSupported()) {
+  if (activeAudioEl) {
+    try {
+      activeAudioEl.pause();
+      activeAudioEl.src = '';
+    } catch {
+      // ignore audio stop errors
+    }
+    activeAudioEl = null;
+  }
+  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
     try {
       window.speechSynthesis.cancel();
     } catch {
@@ -150,7 +164,93 @@ export function stopWadeVoice(): void {
   }
 }
 
-export function speakWadeSynced(rawText: string, callbacks: WadeVoiceCallbacks): void {
+interface NeuralVoiceResponse {
+  success?: boolean;
+  audioBase64?: string;
+  mimeType?: string;
+  alignment?: {
+    characters: string[];
+    character_start_times_seconds: number[];
+    character_end_times_seconds: number[];
+  } | null;
+}
+
+function playNeuralAudioSynced(
+  rawText: string,
+  payload: NeuralVoiceResponse,
+  sessionId: number,
+  callbacks: WadeVoiceCallbacks
+): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (!payload.audioBase64 || sessionId !== activeSessionId) {
+      resolve(false);
+      return;
+    }
+
+    const mime = payload.mimeType || 'audio/mpeg';
+    const audio = new Audio(`data:${mime};base64,${payload.audioBase64}`);
+    activeAudioEl = audio;
+
+    const { map: spokenToRaw } = buildSpokenWithMap(rawText, 0);
+    const startTimes = payload.alignment?.character_start_times_seconds;
+
+    const tick = () => {
+      if (sessionId !== activeSessionId) return;
+      const t = audio.currentTime;
+
+      if (Array.isArray(startTimes) && startTimes.length > 0) {
+        let spokenIdx = 0;
+        for (let i = 0; i < startTimes.length; i++) {
+          if (startTimes[i] <= t) spokenIdx = i + 1;
+          else break;
+        }
+        const mapped =
+          spokenIdx <= 0
+            ? 1
+            : spokenToRaw[Math.min(spokenToRaw.length - 1, spokenIdx - 1)] ?? rawText.length;
+        callbacks.onProgress(mapped);
+      } else if (Number.isFinite(audio.duration) && audio.duration > 0) {
+        const frac = Math.min(1, t / audio.duration);
+        callbacks.onProgress(Math.max(1, Math.round(rawText.length * frac)));
+      }
+
+      if (!audio.paused && !audio.ended) {
+        activeRafId = window.requestAnimationFrame(tick);
+      }
+    };
+
+    audio.onplay = () => {
+      if (sessionId !== activeSessionId) return;
+      activeRafId = window.requestAnimationFrame(tick);
+    };
+
+    audio.onended = () => {
+      if (activeRafId !== null) {
+        window.cancelAnimationFrame(activeRafId);
+        activeRafId = null;
+      }
+      if (activeAudioEl === audio) activeAudioEl = null;
+      if (sessionId !== activeSessionId) return;
+      callbacks.onProgress(rawText.length);
+      callbacks.onComplete();
+    };
+
+    audio.onerror = () => {
+      if (activeAudioEl === audio) activeAudioEl = null;
+      resolve(false);
+    };
+
+    audio
+      .play()
+      .then(() => resolve(true))
+      .catch(() => {
+        if (activeAudioEl === audio) activeAudioEl = null;
+        resolve(false);
+      });
+  });
+}
+
+export async function speakWadeSynced(rawText: string, callbacks: WadeVoiceCallbacks): Promise<void> {
   if (!isWadeVoiceSupported() || !rawText.trim()) {
     callbacks.onProgress(rawText.length);
     callbacks.onComplete();
@@ -159,6 +259,34 @@ export function speakWadeSynced(rawText: string, callbacks: WadeVoiceCallbacks):
 
   stopWadeVoice();
   const sessionId = activeSessionId;
+
+  // Try neural voice-cloning / ElevenLabs backend first if configured
+  try {
+    const res = await fetch('/api/dossier-voice', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: rawText }),
+      signal: AbortSignal.timeout(9500),
+    });
+    if (sessionId !== activeSessionId) return;
+    if (res.ok) {
+      const data = (await res.json()) as NeuralVoiceResponse;
+      if (data?.success && data.audioBase64) {
+        const started = await playNeuralAudioSynced(rawText, data, sessionId, callbacks);
+        if (started) return;
+      }
+    }
+  } catch {
+    // Fall back to free browser Web Speech API below
+  }
+
+  if (sessionId !== activeSessionId) return;
+  if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) {
+    callbacks.onProgress(rawText.length);
+    callbacks.onComplete();
+    return;
+  }
+
   const segments = splitIntoExpressiveSegments(rawText);
 
   if (segments.length === 0) {

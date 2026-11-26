@@ -5,6 +5,7 @@ import fs from "fs";
 import { createServer as createViteServer } from "vite";
 import { fetchActivityTimeline } from "./api/activity-timeline";
 import { generateDossierChatReply } from "./api/dossier-chat";
+import { generateDossierVoiceReply } from "./api/dossier-voice";
 
 // Visitor tracking memory state
 const analyticsFile = path.join(process.cwd(), "analytics.json");
@@ -93,6 +94,19 @@ async function startServer() {
     } catch (error: any) {
       console.error("Error in /api/dossier-chat:", error);
       res.status(500).json({ success: false, error: error?.message || "Failed to generate chat response" });
+    }
+  });
+
+  app.post("/api/dossier-voice", async (req, res) => {
+    try {
+      const text = typeof req.body?.text === "string" ? req.body.text : "";
+      if (!text.trim()) {
+        return res.status(400).json({ success: false, error: "Missing text" });
+      }
+      const result = await generateDossierVoiceReply(text);
+      res.json(result);
+    } catch (error: any) {
+      res.json({ success: false, fallback: "browser", error: error?.message || "Voice fallback" });
     }
   });
 
