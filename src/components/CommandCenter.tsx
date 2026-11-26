@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useRef, useState, type FormEvent } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Bookmark, Check, CheckSquare, Command, Copy, Download, Keyboard, Square, X, BookOpen, Compass, Paperclip, Play, Pause, Radio, FolderGit2, UserCheck, Sparkles, ArrowDown, ArrowRight, Volume2, Terminal, Send, ExternalLink, Database, RotateCcw, Bot, User, ChevronDown, ChevronUp, Cpu } from 'lucide-react';
+import { Bookmark, Check, CheckSquare, Command, Copy, Download, Keyboard, Square, X, BookOpen, Compass, Paperclip, Play, Pause, Radio, FolderGit2, UserCheck, Sparkles, ArrowDown, ArrowRight, Volume2, VolumeX, Terminal, Send, ExternalLink, Database, RotateCcw, Bot, User, ChevronDown, ChevronUp, Cpu } from 'lucide-react';
+import { isWadeVoiceSupported, speakWadeSynced, stopWadeVoice } from '../lib/wadeVoice';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { MUSIC_TRACKS, musicEngine, type PlaybackSnapshot } from '../lib/music';
 import { useTheme } from '../context/ThemeContext';
@@ -214,12 +215,14 @@ function StreamingRagMessage({
   onFollowUp,
   isLatestCompleted = false,
   onStreamTick,
+  voiceSyncCount,
 }: {
   turn: ChatTurn;
   onAction: (action: RagAction) => void;
   onFollowUp?: (question: string) => void;
   isLatestCompleted?: boolean;
   onStreamTick?: () => void;
+  voiceSyncCount?: number;
 }) {
   const rawParagraphs = [
     ...turn.response.answer.split('\n').filter((l) => l.trim().length > 0),
@@ -264,8 +267,14 @@ function StreamingRagMessage({
     return () => window.clearTimeout(timer);
   }, [turn.isGenerating, turn.isStreaming, turn.isLiveStream, charCount, fullText.length, onStreamTick]);
 
-  const isDone = !turn.isGenerating && (!turn.isStreaming || (!turn.isLiveStream && charCount >= fullText.length));
-  const visibleText = isDone ? fullText : fullText.slice(0, charCount);
+  const isVoiceSynced = typeof voiceSyncCount === 'number';
+  const effectiveCharCount = isVoiceSynced ? voiceSyncCount : charCount;
+  const isDone =
+    !turn.isGenerating &&
+    (isVoiceSynced
+      ? voiceSyncCount >= fullText.length
+      : !turn.isStreaming || (!turn.isLiveStream && charCount >= fullText.length));
+  const visibleText = isDone ? fullText : fullText.slice(0, effectiveCharCount);
   const lines = visibleText.split('\n').filter((l) => l.trim().length > 0);
   const activeMode = turn.response.conversationMode || 'casual';
   const activeTypingText =
@@ -546,7 +555,20 @@ export function CommandCenter() {
     }
   }, [ragHistory]);
 
+  const [voiceEnabled, setVoiceEnabled] = useState(false);
+  const [voiceSync, setVoiceSync] = useState<{ turnId: string; charCount: number } | null>(null);
+  const voiceSupported = isWadeVoiceSupported();
+
+  useEffect(() => {
+    if (!ragOpen) {
+      stopWadeVoice();
+      setVoiceSync(null);
+    }
+  }, [ragOpen]);
+
   const resetWadeSheet = () => {
+    stopWadeVoice();
+    setVoiceSync(null);
     setPromptHistoryIdx(-1);
     const fresh: ChatTurn[] = [
       {
@@ -602,6 +624,8 @@ export function CommandCenter() {
   const askRagQuestion = async (question: string) => {
     const trimmed = question.trim();
     if (!trimmed) return;
+    stopWadeVoice();
+    setVoiceSync(null);
 
     const turnId = `turn-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
     const preliminaryBase = queryDossierRag(trimmed);
@@ -646,27 +670,29 @@ export function CommandCenter() {
       priorHistory,
       location.pathname,
       visitorLens,
-      (partialText) => {
-        receivedLiveTokens = true;
-        setRagHistory((prev) =>
-          prev.map((t) =>
-            t.id === turnId
-              ? {
-                ...t,
-                response: { ...t.response, answer: partialText },
-                isGenerating: false,
-                isStreaming: true,
-                isLiveStream: true,
+      voiceEnabled
+        ? undefined
+        : (partialText) => {
+            receivedLiveTokens = true;
+            setRagHistory((prev) =>
+              prev.map((t) =>
+                t.id === turnId
+                  ? {
+                    ...t,
+                    response: { ...t.response, answer: partialText },
+                    isGenerating: false,
+                    isStreaming: true,
+                    isLiveStream: true,
+                  }
+                  : t
+              )
+            );
+            requestAnimationFrame(() => {
+              if (ragScrollRef.current) {
+                ragScrollRef.current.scrollTop = ragScrollRef.current.scrollHeight;
               }
-              : t
-          )
-        );
-        requestAnimationFrame(() => {
-          if (ragScrollRef.current) {
-            ragScrollRef.current.scrollTop = ragScrollRef.current.scrollHeight;
+            });
           }
-        });
-      }
     );
     setRagHistory((prev) =>
       prev.map((t) =>
@@ -675,12 +701,30 @@ export function CommandCenter() {
             ...t,
             response: geminiResponse,
             isGenerating: false,
-            isStreaming: !receivedLiveTokens,
+            isStreaming: !receivedLiveTokens && !voiceEnabled,
             isLiveStream: receivedLiveTokens,
           }
           : t
       )
     );
+    if (voiceEnabled && voiceSupported) {
+      const spokenFullText = [
+        ...geminiResponse.answer.split('\n').filter((l) => l.trim().length > 0),
+        ...geminiResponse.bullets.map((b) => `• ${b}`),
+      ].join('\n');
+      setVoiceSync({ turnId, charCount: 0 });
+      speakWadeSynced(spokenFullText, {
+        onProgress: (charCount) => {
+          setVoiceSync({ turnId, charCount });
+          if (ragScrollRef.current) {
+            ragScrollRef.current.scrollTop = ragScrollRef.current.scrollHeight;
+          }
+        },
+        onComplete: () => {
+          setVoiceSync(null);
+        },
+      });
+    }
     requestAnimationFrame(() => {
       if (ragScrollRef.current) {
         ragScrollRef.current.scrollTop = ragScrollRef.current.scrollHeight;
@@ -1026,8 +1070,33 @@ export function CommandCenter() {
                     </div>
                   </div>
 
-                  {/* Redesigned Tactile Header Actions (SAVE / NEW / CLOSE) */}
+                  {/* Redesigned Tactile Header Actions (VOICE / SAVE / NEW / CLOSE) */}
                   <div className="flex items-center gap-1.5 shrink-0">
+                    {voiceSupported && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setVoiceEnabled((prev) => {
+                            const next = !prev;
+                            if (!next) {
+                              stopWadeVoice();
+                              setVoiceSync(null);
+                            }
+                            return next;
+                          });
+                        }}
+                        title={voiceEnabled ? 'Mute WADE voice' : 'Enable synced WADE voice'}
+                        aria-label={voiceEnabled ? 'Mute WADE voice' : 'Enable synced WADE voice'}
+                        className={`h-7 px-2 inline-flex items-center gap-1 rounded-xs border-[1.5px] border-ink/80 font-mono text-[9px] font-black tracking-wider uppercase shadow-[1.5px_1.5px_0_var(--c-ink)] active:translate-y-[1px] active:shadow-none transition-all cursor-pointer ${
+                          voiceEnabled
+                            ? 'bg-stamp text-paper'
+                            : 'bg-doc text-ink hover:bg-hl-yellow-bg'
+                        }`}
+                      >
+                        {voiceEnabled ? <Volume2 className="w-3 h-3" /> : <VolumeX className="w-3 h-3" />}
+                        <span>{voiceEnabled ? 'VOICE ON' : 'VOICE'}</span>
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={exportWadeNotes}
@@ -1147,6 +1216,7 @@ export function CommandCenter() {
                             onAction={handleRagAction}
                             onFollowUp={askRagQuestion}
                             isLatestCompleted={turnIdx === ragHistory.length - 1}
+                            voiceSyncCount={voiceSync?.turnId === normalizedTurn.id ? voiceSync.charCount : undefined}
                             onStreamTick={() => {
                               if (ragScrollRef.current) {
                                 ragScrollRef.current.scrollTop = ragScrollRef.current.scrollHeight;
